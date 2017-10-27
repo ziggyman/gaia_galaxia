@@ -1,0 +1,1 @@
+g++ plotStarsLonLat.c -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -l mgl -o plotStarsLonLat

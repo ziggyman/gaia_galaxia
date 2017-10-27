@@ -1,0 +1,1 @@
+g++ readGalaxia.cpp -o readGalaxia -I/usr/local/include/ -L /usr/local/lib/ -lebf_cpp
