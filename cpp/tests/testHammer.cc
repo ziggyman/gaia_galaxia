@@ -44,6 +44,23 @@ TEST_F(HammerTest, testGetOuterLimits) {
 //  EXPECT_EQ(0, f.Bar(input_filepath, output_filepath));
 }
 
+TEST_F(HammerTest, testXYAndLonLat){
+    for (double lon=-179.9; lon<180.0; lon+=10){
+        for (double lat=-89.9; lat<90.0; lat+=10){
+            XY xy = lonLatToXY(lon, lat);
+            LonLat lonLat = xYToLonLat(xy.x, xy.y);
+            cout << "lon = " << lon
+                 << ", lat = " << lat
+                 << ": x = " << xy.x
+                 << ", y = " << xy.y
+                 << ", lonLat.lon = " << lonLat.lon
+                 << ", lonLat.lat = " << lonLat.lat << endl;
+            EXPECT_LT(fabs(lon - lonLat.lon), 0.000001);
+            EXPECT_LT(fabs(lat - lonLat.lat), 0.000001);
+        }
+    }
+}
+
 // Tests that Hammer does Xyz.
 //TEST_F(HammerTest, DoesXyz) {
   // Exercises the Xyz feature of Hammer.
