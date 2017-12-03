@@ -93,34 +93,17 @@ LonLat xYToLonLat(const double& x, const double& y){
     return lonLat;
 }
 
-/**
- * @brief Calculate the outer limits in x and y of the Hammer projection
- * @return Vector containing the outer limits (lon=-180, lon=180)
- */
-vector<LonLatXY> getOuterLimits(){
-    LonLatXY lonLatXY;
-    vector<LonLatXY> out;
-    out.reserve(2*180);
-    for (double lon=-180.0; lon <= 180.0; lon += 10.0){
-        for (double lat=-90.0; lat <= 90.0; lat += 1.0){
-            lonLatXY.lonLat.lon = lon;
-            lonLatXY.lonLat.lat = lat;
-            lonLatXY.xy = lonLatToXY(lon, lat);
-            out.push_back(lonLatXY);
-        }
-    }
-#ifdef __PLOT__
-    string plotName("/Volumes/external/azuri/data/limits.png");
-    mglGraph gr;
+
+void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName=""){
     gr.Title("Hammer sphere");
     gr.Box();
     vector<double> xs(0);
-    xs.reserve(out.size());
+    xs.reserve(lonLatXY.size());
     vector<double> ys(0);
-    ys.reserve(out.size());
-    for (int i=0; i<out.size(); ++i){
-        xs.push_back(out[i].xy.x);
-        ys.push_back(out[i].xy.y);
+    ys.reserve(lonLatXY.size());
+    for (int i=0; i<lonLatXY.size(); ++i){
+        xs.push_back(lonLatXY[i].xy.x);
+        ys.push_back(lonLatXY[i].xy.y);
     }
     mglData MGLData_X;
     MGLData_X.Link(xs.data(), xs.size(), 0, 0);
@@ -137,10 +120,61 @@ vector<LonLatXY> getOuterLimits(){
     gr.Axis();
     gr.Label('x',"",0);
     gr.Label('y',"",0);
-    gr.Plot(MGLData_X, MGLData_Y);
-    gr.WriteFrame(plotName.c_str());
+    gr.SetSize(4096, 2024);
+    gr.Plot(MGLData_X, MGLData_Y, " .");
+    if (plotName.compare("") != 0)
+        gr.WriteFrame(plotName.c_str());
+    return;
+}
+
+/**
+ * @brief Calculate the outer limits in x and y of the Hammer projection
+ * @return Vector containing the outer limits (lon=-180, lon=180)
+ */
+vector<LonLatXY> getOuterLimits(){
+    LonLatXY lonLatXY;
+    vector<LonLatXY> out;
+    out.reserve(2*180);
+    for (double lon=-180.0; lon <= 180.0; lon += 360.0){
+        for (double lat=-90.0; lat < 90.0; lat += 1.0){
+            lonLatXY.lonLat.lon = lon;
+            lonLatXY.lonLat.lat = lat;
+            lonLatXY.xy = lonLatToXY(lon, lat);
+            out.push_back(lonLatXY);
+        }
+    }
+#ifdef __PLOT__
+    string plotName("/Volumes/external/azuri/data/limits.png");
+    mglGraph gr;
+    plot(out, gr, plotName);
 #endif
     return out;
+}
+
+void plotGrid(string plotName=""){
+    mglGraph gr;
+    gr.SetMarkSize(0.001);
+    LonLatXY lonLatXY;
+    vector<LonLatXY> out;
+    out.reserve(180*180);
+    for (double lon=-180.0; lon <= 180.0; lon += 10.0){
+        for (double lat=-90.0; lat < 90.0; lat += 0.1){
+            lonLatXY.lonLat.lon = lon;
+            lonLatXY.lonLat.lat = lat;
+            lonLatXY.xy = lonLatToXY(lon, lat);
+            out.push_back(lonLatXY);
+        }
+    }
+    for (double lon=-180.0; lon <= 180.0; lon += 0.1){
+        for (double lat=-90.0; lat < 90.0; lat += 10.0){
+            lonLatXY.lonLat.lon = lon;
+            lonLatXY.lonLat.lat = lat;
+            lonLatXY.xy = lonLatToXY(lon, lat);
+            out.push_back(lonLatXY);
+        }
+    }
+    plot(out, gr, plotName);
+    return;
 }
 
 #endif
