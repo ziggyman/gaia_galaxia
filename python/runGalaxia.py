@@ -1,17 +1,15 @@
 #! /usr/bin/env python
 
-from astropy import units as u
-from astropy.coordinates import SkyCoord
 import ebf
 import fnmatch
 import gxutil
 import os
 import sys
 import subprocess
-from multiprocessing import Pool, Lock
+from multiprocessing import Pool
 import numpy as np
 
-globallock = Lock()
+#globallock = Lock()
 
 def get_aebv_factor(band):
     if band == 'sdss_u':
@@ -34,10 +32,10 @@ def processGalaxia(lon):
     parameterFileIn = os.path.join(dir, 'parameterfile')
     outputFile = ''
     fileNameOut = os.path.join(dir,'galaxia_%d-%d_%d-%d.csv')
-    overwrite = True
+    overwrite = False
 
     for lat in np.arange(-85, 90, 10):
-        globallock.acquire()
+#        globallock.acquire()
         parameterFileOut = os.path.join(dir, 'parameterfile_%d_%d' % (lon, lat))
         surveyArea = 157.08
 
@@ -60,96 +58,92 @@ def processGalaxia(lon):
                     fOut.write(parameterName+' '+parameterValue)
 
         filterMatch = fnmatch.filter(os.listdir(outputDir), outputFile+'.ebf.*')
-        print 'filterMatch = ',filterMatch
+#        print 'filterMatch = ',filterMatch
         tmpFiles = [n for n in filterMatch if os.path.isfile(os.path.join(outputDir, n))]
-        print 'outputFile = ',outputFile,': len(tmpFiles) = ',len(tmpFiles),': tmpFiles = ',tmpFiles
+#        print 'outputFile = ',outputFile,': len(tmpFiles) = ',len(tmpFiles),': tmpFiles = ',tmpFiles
         if (overwrite
             or (not os.path.isfile(os.path.join(outputDir, outputFile+'.ebf')))
             or (os.path.isfile(os.path.join(outputDir, outputFile+'.ebf'))
                 and len(tmpFiles) > 0)):
             print 'outputFile = ',outputFile,': calculating'
+            if True:
+                args = ['galaxia', '-r', parameterFileOut]
+                rv = subprocess.call(args)
+                if rv == 1:
+                    print "longitude=%d, latitude=%d processed." % (lon, lat)
+                else:
+                    print "Error when processing file longitude=%d, latitude=%d: error code = %d" % (lon, lat, rv)
 
-            args = ['galaxia', '-r', parameterFileOut]
-            rv = subprocess.call(args)
-            if rv == 1:
-                print "longitude=%d, latitude=%d processed." % (lon, lat)
-            else:
-                print "Error when processing file longitude=%d, latitude=%d: error code = %d" % (lon, lat, rv)
+                """Add proper motions, radial velocity"""
+                data = ebf.read(os.path.join(outputDir, outputFile+'.ebf'),'/')
+                gxutil.append_pm(data)
 
-        else:
-            print 'outputFile = ',outputFile,': output file found and no tmp files => not calculating'
+                """convert absolute magnitudes to apparent ones"""
+                gxutil.abs2app(data,corr=True)
 
-        """Add proper motions, radial velocity"""
-        data = ebf.read(os.path.join(outputDir, outputFile+'.ebf'),'/')
-        gxutil.append_pm(data)
+                lonStart = lon-5
+                lonEnd = lon+5
+                latStart = lat-5
+                latEnd = lat+5
+                cache = 10000
+                data = ebf.iterate(os.path.join(outputDir, outputFile+'.ebf'), '/px+', cache)
 
-        """convert absolute magnitudes to apparent ones"""
-        gxutil.abs2app(data,corr=True)
-
-        lonStart = lon-5
-        lonEnd = lon+5
-        latStart = lat-5
-        latEnd = lat+5
-        cache = 10000
-        data = ebf.iterate(os.path.join(outputDir, outputFile+'.ebf'), '/px+', cache)
-
-        keys = []
-        for it in data:
-            keys = it.keys()
-            break
-        print 'keys = ',keys
-        keys.append('glon')
-        keys.append('glat')
-        keyStr = keys[0]
-        for key in keys[1:]:
-            keyStr += ','+key
-
-        with open(fileNameOut % (lonStart, lonEnd, latStart, latEnd),'w') as csvFileOut:
-
-            csvFileOut.write(keyStr)
-
-            data = ebf.iterate(os.path.join(outputDir, outputFile+'.ebf'), '/px+', cache)
-
-            iIter = 0
-            for it in data:
-                if iIter == 0:
+                keys = []
+                for it in data:
                     keys = it.keys()
-                    iIter = 1
-                print 'type(it["px"]) = ',type(it['px']),': ',type(it['px'][0])
-                it['glon'] = np.ndarray(len(it['px']), dtype=np.float32)
-                it['glat'] = np.ndarray(len(it['px']), dtype=np.float32)
+                    break
+        #        print 'keys = ',keys
+                keys.append('glon')
+                keys.append('glat')
+                keyStr = keys[0]
+                for key in keys[1:]:
+                    keyStr += ','+key
 
-                for iStar in range(len(it['px'])):
-                    x = it['px'][iStar]
-                    y = it['py'][iStar]
-                    z = it['pz'][iStar]
-                    print 'iStar = ',iStar,': x = ',x,', y = ',y,', z = ',z
+                nStarsWritten = 0
 
-                    c = SkyCoord(x=x, y=y, z=z, unit='kpc', representation='cartesian').galactic
-                    print 'c = ',c
+                outFileName = fileNameOut % (lonStart, lonEnd, latStart, latEnd)
+                with open(outFileName,'w') as csvFileOut:
 
-                    a = np.degrees(np.arctan(z/np.sqrt(x*x+y*y)))
-                    print 'a = ',a
+                    csvFileOut.write(keyStr)
 
-                    it['glon'][iStar] = c.l.deg
-                    it['glat'][iStar] = c.b.deg
-#                    it['dist'][iStar] = c.distance.kpc
-                    print 'lon = ',lon,', lat = ',lat,': glon = ',it['glon'][iStar],', glat = ',it['glat'][iStar],', dist = ',c.distance.kpc,': it["rad"][',iStar,'] = ',it['rad'][iStar]
-                    if np.fabs(c.distance.kpc - it['rad'][iStar]) > 0.001:
-                        print 'error: np.fabs(it["dist"][iStar] - it["rad"][iStar]) > 0.001'
-                    if ((lon >= lonStart)
-                        and (lon < lonEnd)
-                        and (lat >= latStart)
-                        and (lat < latEnd)):
-                        outString = str(it[keys[0]][iStar])
-                        for key in keys[1:]:
-                            outString += ','+str(it[key][iStar])
-                        print 'outString = <',outString,'>'
-                        csvFileOut.write(outString+'\n')
-                    STOP
+                    data = ebf.iterate(os.path.join(outputDir, outputFile+'.ebf'), '/px+', cache)
+
+                    iIter = 0
+                    for it in data:
+                        if iIter == 0:
+                            keys = it.keys()
+                            iIter = 1
+                        #print 'type(it["px"]) = ',type(it['px']),': ',type(it['px'][0])
+                        it['glon'] = np.ndarray(len(it['px']), dtype=np.float32)
+                        it['glat'] = np.ndarray(len(it['px']), dtype=np.float32)
+
+                        for iStar in range(len(it['px'])):
+                            x = it['px'][iStar]
+                            y = it['py'][iStar]
+                            z = it['pz'][iStar]
+                            #print 'iStar = ',iStar,': x = ',x,', y = ',y,', z = ',z
+
+                            lbr = gxutil.xyz2lbr(x,y,z)
+                            #print 'lbr = ',lbr
+                            it['glon'][iStar] = lbr[0]
+                            it['glat'][iStar] = lbr[1]
+                            if ((lbr[0] >= lonStart)
+                                and (lbr[0] < lonEnd)
+                                and (lbr[1] >= latStart)
+                                and (lbr[1] < latEnd)):
+                                outString = str(it[keys[0]][iStar])
+                                for key in keys[1:]:
+                                    outString += ','+str(it[key][iStar])
+                                #print 'outString = <',outString,'>'
+                                csvFileOut.write(outString+'\n')
+                                nStarsWritten += 1
+                print nStarsWritten,' stars written to ',outFileName
+                                #STOP
+#        else:
+#            print 'outputFile = ',outputFile,': output file found and no tmp files => not calculating'
 
 
-        globallock.release()
+#        globallock.release()
 
 def main(argv):
     """Main program.
@@ -157,8 +151,9 @@ def main(argv):
     Arguments:
     argv -- command line arguments
     """
-    p = Pool()
-    lon = np.arange(5, 360, 10)
+    p = Pool(processes=16)
+    lon = np.arange(-175, 178, 10)
+#    lon = np.arange(5, 360, 10)
     print 'lon = ',lon
     p.map(processGalaxia, lon)
     p.close()

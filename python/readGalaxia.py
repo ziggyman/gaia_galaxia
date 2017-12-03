@@ -1,7 +1,8 @@
 import ebf
+import gxutil
 import numpy
 
-fileToRead = '/Volumes/yoda/azuri/data/galaxia/sdss/galaxia_25_-5.ebf'
+fileToRead = '/Volumes/yoda/azuri/data/galaxia/sdss/galaxia_185_55.ebf'
 
 def iterAll(filename, cache):
     tagname = '/'
@@ -79,6 +80,8 @@ for it in data:
         print 'key = ',key
         print 'it[',key,'] = ',len(it[key]),': ',it[key]
         print 'it[',key,'][0] = ',it[key][0]
+    l, b, r = gxutil.xyz2lbr(it['px'],it['py'], it['pz'])
+    print 'l = ',l,', b = ',b,', r = ',r
     STOP
 
 """read one parameter in iterations"""
