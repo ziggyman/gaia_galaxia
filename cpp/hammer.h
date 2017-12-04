@@ -23,6 +23,16 @@ struct XY{
 };
 
 /**
+ * @brief Structure for pixels in x and y
+ */
+struct Pixel{
+    double xLow;
+    double xHigh;
+    double yLow;
+    double yHigh;
+};
+
+/**
  * @brief Structure for Galactic Longitude and Latitude
  */
 struct LonLat{
@@ -34,6 +44,9 @@ struct LonLatXY{
     LonLat lonLat;
     XY xy;
 };
+
+vector<LonLatXY> _OuterLimits;
+vector<XY> _OuterLimitsXY(2);
 
 /**
  * @brief Convert degrees to radians
@@ -121,7 +134,7 @@ void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName
     gr.Label('x',"",0);
     gr.Label('y',"",0);
     gr.SetSize(4096, 2024);
-    gr.Plot(MGLData_X, MGLData_Y, " .");
+    gr.Plot(MGLData_X, MGLData_Y, " *");
     if (plotName.compare("") != 0)
         gr.WriteFrame(plotName.c_str());
     return;
@@ -131,29 +144,71 @@ void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName
  * @brief Calculate the outer limits in x and y of the Hammer projection
  * @return Vector containing the outer limits (lon=-180, lon=180)
  */
-vector<LonLatXY> getOuterLimits(){
+void calcOuterLimits(){
     LonLatXY lonLatXY;
-    vector<LonLatXY> out;
-    out.reserve(2*180);
-    for (double lon=-180.0; lon <= 180.0; lon += 360.0){
-        for (double lat=-90.0; lat < 90.0; lat += 1.0){
-            lonLatXY.lonLat.lon = lon;
-            lonLatXY.lonLat.lat = lat;
-            lonLatXY.xy = lonLatToXY(lon, lat);
-            out.push_back(lonLatXY);
+    if (_OuterLimits.size() == 0){
+        _OuterLimits.reserve(2*180);
+        for (double lon=-180.0; lon <= 180.0; lon += 360.0){
+            for (double lat=-90.0; lat < 90.0; lat += 0.1){
+                lonLatXY.lonLat.lon = lon;
+                lonLatXY.lonLat.lat = lat;
+                lonLatXY.xy = lonLatToXY(lon, lat);
+                _OuterLimits.push_back(lonLatXY);
+            }
         }
     }
+    int size = _OuterLimits.size();
+    vector<double> outerLimitsX(0);
+    vector<double> outerLimitsY(0);
+    outerLimitsX.reserve(size);
+    outerLimitsY.reserve(size);
+    for (int i=0; i<size; ++i){
+        outerLimitsX.push_back(_OuterLimits[i].xy.x);
+        outerLimitsY.push_back(_OuterLimits[i].xy.y);
+    }
+    _OuterLimitsXY[0].x = *(min_element(outerLimitsX.begin(), outerLimitsX.end()));
+    _OuterLimitsXY[1].x = *(max_element(outerLimitsX.begin(), outerLimitsX.end()));
+    _OuterLimitsXY[0].y = *(min_element(outerLimitsY.begin(), outerLimitsY.end()));
+    _OuterLimitsXY[1].y = *(max_element(outerLimitsY.begin(), outerLimitsY.end()));
+    cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
+         << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
 #ifdef __PLOT__
     string plotName("/Volumes/external/azuri/data/limits.png");
     mglGraph gr;
-    plot(out, gr, plotName);
+    gr.SetMarkSize(0.00001);
+    plot(_OuterLimits, gr, plotName);
 #endif
-    return out;
+    return _OuterLimits;
 }
 
+/**
+ * @brief Check if a x-y coordinate is inside the outer limits
+ * @param x x-coordinate
+ * @param y y-coordinate
+ */
+bool isInside(double x, double y){
+    if (_OuterLimits.size() == 0)
+        calcOuterLimits();
+    if ((x < _OuterLimitsXY[0].x) || (x > _OuterLimitsXY[1].x))
+        return false;
+    if ((y < _OuterLimitsXY[0].y) || (y > _OuterLimitsXY[1].y))
+        return false;
+    LonLat lonLatZero = xYToLonLat(0.0, y);
+    XY xyLeft = lonLatToXY(-179.99999, lonLatZero.lat);
+    XY xyRight = lonLatToXY(179.99999, lonLatZero.lat);
+    if ((x < xyLeft.x) || (x > xyRight.x))
+        return false;
+    return true;
+}
+
+
+/**
+ * @brief Plot the grid of longitudes and latitudes in Hammer projection
+ * @param plotName Name for the file to write
+ */
 void plotGrid(string plotName=""){
     mglGraph gr;
-    gr.SetMarkSize(0.001);
+    gr.SetMarkSize(0.00001);
     LonLatXY lonLatXY;
     vector<LonLatXY> out;
     out.reserve(180*180);

@@ -34,8 +34,8 @@ class HammerTest : public ::testing::Test {
 };
 
 // Tests that the Hammer::Bar() method does Abc.
-TEST_F(HammerTest, testGetOuterLimits) {
-  vector<LonLatXY> lonLatXY = getOuterLimits();
+TEST_F(HammerTest, testCalcOuterLimits) {
+  calcOuterLimits();
 /*  for (int i=0; i<lonLatXY.size(); ++i)
       cout << "lonLatXY[" << i << "]: lon = " << lonLatXY[i].lonLat.lon
               << ", lat = " << lonLatXY[i].lonLat.lat
@@ -62,16 +62,18 @@ TEST_F(HammerTest, testXYAndLonLat){
     }
 }
 
-// Tests that the Hammer::Bar() method does Abc.
+// Tests plotGrid.
 TEST_F(HammerTest, testPlotGrid) {
     string plotName("/Volumes/external/azuri/data/grid.png");
     plotGrid(plotName);
 }
 
-// Tests that Hammer does Xyz.
-//TEST_F(HammerTest, DoesXyz) {
-  // Exercises the Xyz feature of Hammer.
-//}
+// Tests isInside
+TEST_F(HammerTest, testIsInside) {
+    double x = 0.0;
+    double y = 0.0;
+    ASSERT_TRUE(isInside(x,y));
+}
 
 }  // namespace
 
