@@ -12,26 +12,33 @@ void gaiaMoveStarsToXY(){
     string dataDirOut("/Volumes/external/azuri/data/gaia/xy");
     boost::format fileNameOutRoot = boost::format("GaiaSource_%06fn-%06fn_%06fn-%06fn.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 
+    cout << "running calcOuterLimits" << endl;
     calcOuterLimits();
+
+    cout << "running getPixels" << endl;
     vector<Pixel> pixels=getPixels();
 
+    cout << "creating vector of outFiles" << endl;
     vector< std::shared_ptr< ofstream > > outFiles(0);
     outFiles.reserve(pixels.size());
 
+    cout << "creating vectors for longitudes and latitudes" << endl;
     vector<int> longitudes(0);
     vector<int> latitudes(0);
-    for (int lon=5; lon<360; lon+=10)
+    for (int lon=0; lon<=360; lon+=10)
         longitudes.push_back(lon);
-    for (int lat=-85; lat<90; lat+=10)
+    for (int lat=-90; lat<=90; lat+=10)
         latitudes.push_back(lat);
 
     string fileName = dataDir + (fileNameRoot % longitudes[0]
                                               % longitudes[1]
                                               % latitudes[0]
                                               % latitudes[1]).str();
+    cout << "running readHeader for " << fileName << endl;
     vector<string> header = readHeader(fileName);
     header.push_back("hammerX");
     header.push_back("hammerY");
+    cout << "opening outfiles and writing headers" << endl;
     for (int iPix=0; iPix<pixels.size(); ++iPix){
         string outFileName = dataDirOut + (fileNameOutRoot % pixels[iPix].xLow
                                                            % pixels[iPix].xHigh
@@ -43,6 +50,7 @@ void gaiaMoveStarsToXY(){
         outFiles.push_back(outFile);
     }
 
+    cout << "reading input lon lat files" << endl;
     for (int iLon=1; iLon<longitudes.size(); ++iLon){
         for (int iLat=1; iLat<latitudes.size(); ++iLat){
             string fileName = dataDir + (fileNameRoot % longitudes[iLon-1]
@@ -78,6 +86,7 @@ void gaiaMoveStarsToXY(){
         }
     }
 
+    cout << "closing outfiles" << endl;
     for (int iPix=0; iPix<pixels.size(); ++iPix){
         outFiles[iPix]->close();
     }
