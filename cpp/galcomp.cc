@@ -1,5 +1,44 @@
-#include "galcomp.h"
+#ifndef __GALCOMP_H__
+#define __GALCOMP_H__
 
+#include "hammer.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sys/time.h>
+#include <vector>
+
+using namespace std;
+
+int _NPixX = 320;
+int _NPixY = 160;
+
+struct CSVData{
+    vector<string> header;
+    vector< vector< string > > data;
+
+    int findKeywordPos(string const& keyword){
+        int keywordPos = -1;
+        for (int headerPos=0; headerPos<header.size(); ++headerPos){
+            if (keyword.compare(header[headerPos]) == 0)
+                keywordPos = headerPos;
+        }
+        return keywordPos;
+    }
+
+    string getData(string const& keyword, int row){
+        int headerPos = findKeywordPos(keyword);
+        if (headerPos < 0){
+            cout << "ERROR: keyword <" << keyword << "> not found" << endl;
+            exit(EXIT_FAILURE);
+        }
+        return data[row][headerPos];
+    }
+};
+
+/**
+ * @brief return pixels within outer Hammer sphere limits
+ */
 vector<Pixel> getPixels(){
     calcOuterLimits();
     vector<Pixel> pixels(0);
@@ -19,6 +58,11 @@ vector<Pixel> getPixels(){
         }
     }
     return pixels;
+}
+
+void countStars(string const& dir, string const& fileNameRoot, bool zeroToThreeSixty){
+    vector<Pixel> pixels = getPixels();
+    
 }
 
 CSVData readCSVFile(string const& fileName){
@@ -69,3 +113,5 @@ CSVData readCSVFile(string const& fileName){
     }
     return csvData;
 }
+
+#endif

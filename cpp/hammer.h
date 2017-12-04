@@ -92,6 +92,10 @@ XY lonLatToXY(const double& lonDeg, const double& latDeg){
     return xy;
 }
 
+XY lonLatToXY(const LonLat& lonLat){
+    return lonLatToXY(lonLat.lon, lonLat.lat);
+}
+
 /**
  * @brief Convert Hammer x and y back to Galactic longitude and latitude in degrees
  * @param x Hammer x
@@ -178,7 +182,7 @@ void calcOuterLimits(){
     gr.SetMarkSize(0.00001);
     plot(_OuterLimits, gr, plotName);
 #endif
-    return _OuterLimits;
+    return;
 }
 
 /**
@@ -201,6 +205,16 @@ bool isInside(double x, double y){
     return true;
 }
 
+/**
+ * @brief Check if xy is inside pixel
+ * @param pixel Pixel to check if xy position is inside
+ * @param xy    XY position to check if it is inside pixel
+ */
+bool isInPixel(Pixel const& pixel, XY const& xy){
+    if ((xy.x >= pixel.xLow) && (xy.x < pixel.xHigh) && (xy.y >= pixel.yLow) && (xy.y < pixel.yHigh))
+        return true;
+    return false;
+}
 
 /**
  * @brief Plot the grid of longitudes and latitudes in Hammer projection

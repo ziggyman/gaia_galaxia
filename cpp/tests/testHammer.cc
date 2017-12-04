@@ -75,6 +75,23 @@ TEST_F(HammerTest, testIsInside) {
     ASSERT_TRUE(isInside(x,y));
 }
 
+// Tests isInPixel
+TEST_F(HammerTest, testIsInPixel) {
+    Pixel pixel;
+    pixel.xLow = 1.0;
+    pixel.xHigh = 1.5;
+    pixel.yLow = 1.0;
+    pixel.yHigh = 1.5;
+    XY xy;
+    xy.x = 0.0;
+    xy.y = 0.0;
+    ASSERT_FALSE(isInPixel(pixel,xy));
+    xy.x = 1.1;
+    ASSERT_FALSE(isInPixel(pixel,xy));
+    xy.y = 1.1;
+    ASSERT_TRUE(isInPixel(pixel,xy));
+}
+
 }  // namespace
 
 int main(int argc, char **argv) {
