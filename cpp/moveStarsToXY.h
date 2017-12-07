@@ -9,8 +9,8 @@ void gaiaMoveStarsToXY(){
     string dataDir("/Volumes/external/azuri/data/gaia/lon-lat/");
     boost::format fileNameRoot = boost::format("GaiaSource_%i-%i_%i-%i.csv");// % (int(minLongitude), int(maxLongitude), int(minLatitude), int(maxLatitude))
 
-    string dataDirOut("/Volumes/external/azuri/data/gaia/xy");
-    boost::format fileNameOutRoot = boost::format("GaiaSource_%06fn-%06fn_%06fn-%06fn.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+    string dataDirOut("/Volumes/external/azuri/data/gaia/xy/");
+    boost::format fileNameOutRoot = boost::format("GaiaSource_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 
     cout << "running calcOuterLimits" << endl;
     calcOuterLimits();
@@ -30,35 +30,44 @@ void gaiaMoveStarsToXY(){
     for (int lat=-90; lat<=90; lat+=10)
         latitudes.push_back(lat);
 
-    string fileName = dataDir + (fileNameRoot % longitudes[0]
-                                              % longitudes[1]
-                                              % latitudes[0]
-                                              % latitudes[1]).str();
+    string fileName = dataDir + (fileNameRoot % longitudes[longitudes.size()-2]
+                                              % longitudes[longitudes.size()-1]
+                                              % latitudes[latitudes.size()-2]
+                                              % latitudes[latitudes.size()-1]).str();
     cout << "running readHeader for " << fileName << endl;
     vector<string> header = readHeader(fileName);
     header.push_back("hammerX");
     header.push_back("hammerY");
+    
     cout << "opening outfiles and writing headers" << endl;
+    int nOpenFiles = 0;
     for (int iPix=0; iPix<pixels.size(); ++iPix){
         string outFileName = dataDirOut + (fileNameOutRoot % pixels[iPix].xLow
                                                            % pixels[iPix].xHigh
                                                            % pixels[iPix].yLow
                                                            % pixels[iPix].yHigh).str();
         std::shared_ptr<ofstream> outFile(new ofstream);
+        outFile->exceptions(ofstream::failbit | ofstream::badbit);
         outFile->open(outFileName);
+        if (!outFile->is_open()){
+            cout << "gaiaMoveStarsToXY: ERROR: Failed to open outFile = <"
+                 << outFileName << ">, nOpenFiles = " << nOpenFiles << endl;
+            exit(EXIT_FAILURE);
+        }
         writeStrVecToFile(header, *outFile);
         outFiles.push_back(outFile);
+        ++nOpenFiles;
     }
 
     cout << "reading input lon lat files" << endl;
     for (int iLon=1; iLon<longitudes.size(); ++iLon){
         for (int iLat=1; iLat<latitudes.size(); ++iLat){
-            string fileName = dataDir + (fileNameRoot % longitudes[iLon-1]
+            string fileNameIn = dataDir + (fileNameRoot % longitudes[iLon-1]
                                                       % longitudes[iLon]
                                                       % latitudes[iLat-1]
                                                       % latitudes[iLat]).str();
-            cout << "reading fileName <" << fileName << ">" << endl;
-            CSVData csvData = readCSVFile(fileName);
+            cout << "reading fileName <" << fileNameIn << ">" << endl;
+            CSVData csvData = readCSVFile(fileNameIn);
             vector<string> lonStr = csvData.getData(string("l"));
             vector<string> latStr = csvData.getData(string("b"));
             vector<double> lonDbl = convertStringVectortoDoubleVector(lonStr);

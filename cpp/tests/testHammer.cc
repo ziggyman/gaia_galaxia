@@ -92,6 +92,17 @@ TEST_F(HammerTest, testIsInPixel) {
     ASSERT_TRUE(isInPixel(pixel,xy));
 }
 
+TEST_F(HammerTest, testGetPixels){
+    vector<Pixel> pix = getPixels();
+    for (int iPix=0; iPix<pix.size(); ++iPix){
+        Pixel pixel = pix[iPix];
+        cout << "pix[" << iPix << "]: xLow = " << pixel.xLow
+                                << ", xHigh = " << pixel.xHigh
+                                << ", yLow = " << pixel.yLow
+                                << ", yHigh = " << pixel.yHigh << endl;
+    }
+}
+
 }  // namespace
 
 int main(int argc, char **argv) {

@@ -39,7 +39,7 @@ class GalCompTest : public ::testing::Test {
 // Tests that the Galcomp::Bar() method does Abc.
 TEST_F(GalCompTest, testReadCSVFile) {
     cout << "running testReadCSVFile" << endl;
-    string fileName("/Volumes/external/azuri/data/gaia/lon-lat/GaiaSource_80-90_-90--80.csv");
+    string fileName("/Volumes/external/azuri/data/gaia/lon-lat/GaiaSource_0-10_-90--80.csv");
     CSVData csvData = readCSVFile(fileName);
     cout << "csvData.header.size() = " << csvData.header.size() << ", csvData.data.size() = "
             << csvData.data.size() << ", csvData.data[0].size() = " << csvData.data[0].size() << endl;
@@ -67,6 +67,8 @@ TEST_F(GalCompTest, testConvertStringVectortoDoubleVector){
     ASSERT_EQ(dblVec[0], 0.0);
     ASSERT_EQ(dblVec[1], 1.2);
 }
+
+
 
 TEST_F(GalCompTest, testGaiaMoveStarsToXY){
     cout << "running gaiaMoveStars" << endl;

@@ -48,6 +48,9 @@ struct LonLatXY{
 vector<LonLatXY> _OuterLimits;
 vector<XY> _OuterLimitsXY(2);
 
+int _NPixX = 320;
+int _NPixY = 160;
+
 /**
  * @brief Convert degrees to radians
  * @param deg Degrees to convert to radians
@@ -174,8 +177,8 @@ void calcOuterLimits(){
     _OuterLimitsXY[1].x = *(max_element(outerLimitsX.begin(), outerLimitsX.end()));
     _OuterLimitsXY[0].y = *(min_element(outerLimitsY.begin(), outerLimitsY.end()));
     _OuterLimitsXY[1].y = *(max_element(outerLimitsY.begin(), outerLimitsY.end()));
-    cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
-         << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
+//    cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
+//         << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
 #ifdef __PLOT__
     string plotName("/Volumes/external/azuri/data/limits.png");
     mglGraph gr;
@@ -244,6 +247,39 @@ void plotGrid(string plotName=""){
     }
     plot(out, gr, plotName);
     return;
+}
+
+/**
+ * @brief return pixels within outer Hammer sphere limits
+ */
+vector<Pixel> getPixels(){
+//    cout << "getPixels: running calcOuterLimits()" << endl;
+    calcOuterLimits();
+    vector<Pixel> pixels(0);
+    pixels.reserve(320*160);
+    Pixel pix;
+    double xStep = (_OuterLimitsXY[1].x-_OuterLimitsXY[0].x)/_NPixX;
+    double yStep = (_OuterLimitsXY[1].y-_OuterLimitsXY[0].y)/_NPixY;
+//    cout << "getPixels: xStep = " << xStep << ", yStep = " << yStep << endl;
+//    cout << "getPixels: starting for loop" << endl;
+    for (double xPosLeft=_OuterLimitsXY[0].x; xPosLeft<_OuterLimitsXY[1].x; xPosLeft+=xStep){
+//        cout << "xPosLeft = " << xPosLeft << endl;
+        for (double yPosBottom=_OuterLimitsXY[0].y; yPosBottom<_OuterLimitsXY[1].y; yPosBottom+=yStep){
+//            cout << "yPosBottom =  " << yPosBottom << endl;
+            pix.xLow = xPosLeft;
+            pix.xHigh = xPosLeft + xStep;
+            pix.yLow = yPosBottom;
+            pix.yHigh = yPosBottom + yStep;
+//            cout << "pix.xLow = " << pix.xLow << ", pix.xHigh = " << pix.xHigh << ", pix.yLow = " << pix.yLow << ", pix.yHigh = " << pix.yHigh << endl;
+            if (isInside(pix.xLow, pix.yLow) || isInside(pix.xLow, pix.yHigh) ||
+                isInside(pix.yHigh, pix.yLow) || isInside(pix.xHigh, pix.yHigh)){
+                pixels.push_back(pix);
+//                cout << "pix isInside" << endl;
+            }
+        }
+    }
+//    cout << "getPixels finished: pixels.size() = " << pixels.size() << endl;
+    return pixels;
 }
 
 #endif

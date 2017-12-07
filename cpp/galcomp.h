@@ -10,9 +10,6 @@
 
 using namespace std;
 
-int _NPixX = 320;
-int _NPixY = 160;
-
 struct CSVData{
     vector<string> header;
     vector< vector< string > > data;
@@ -48,39 +45,6 @@ struct CSVData{
     }
 };
 
-/**
- * @brief return pixels within outer Hammer sphere limits
- */
-vector<Pixel> getPixels(){
-    cout << "getPixels: running calcOuterLimits()" << endl;
-    calcOuterLimits();
-    vector<Pixel> pixels(0);
-    pixels.reserve(320*160);
-    Pixel pix;
-    double xStep = (_OuterLimitsXY[1].x-_OuterLimitsXY[0].x)/_NPixX;
-    double yStep = (_OuterLimitsXY[1].y-_OuterLimitsXY[0].y)/_NPixY;
-    cout << "getPixels: xStep = " << xStep << ", yStep = " << yStep << endl;
-    cout << "getPixels: starting for loop" << endl;
-    for (double xPosLeft=_OuterLimitsXY[0].x; xPosLeft<_OuterLimitsXY[1].x; xPosLeft+=xStep){
-        cout << "xPosLeft = " << xPosLeft << endl;
-        for (double yPosBottom=_OuterLimitsXY[0].y; yPosBottom<_OuterLimitsXY[1].y; yPosBottom+=yStep){
-            cout << "yPosBottom =  " << yPosBottom << endl;
-            pix.xLow = xPosLeft;
-            pix.xHigh = xPosLeft + xStep;
-            pix.yLow = yPosBottom;
-            pix.yHigh = yPosBottom + yStep;
-            cout << "pix.xLow = " << pix.xLow << ", pix.xHigh = " << pix.xHigh << ", pix.yLow = " << pix.yLow << ", pix.yHigh = " << pix.yHigh << endl;
-            if (isInside(pix.xLow, pix.yLow) || isInside(pix.xLow, pix.yHigh) ||
-                isInside(pix.yHigh, pix.yLow) || isInside(pix.xHigh, pix.yHigh)){
-                pixels.push_back(pix);
-                cout << "pix isInside" << endl;
-            }
-        }
-    }
-    cout << "getPixels finished: pixels.size() = " << pixels.size() << endl;
-    return pixels;
-}
-
 void countStars(string const& dir, string const& fileNameRoot, bool zeroToThreeSixty){
     vector<Pixel> pixels = getPixels();
     
@@ -97,8 +61,15 @@ vector<string> readHeader(string const& fileName){
             while(lineStream.good()){
                 getline(lineStream, substring, ',');
                 header.push_back(substring);
+//                cout << "readHeader: header[" << header.size()-1 << "] = " << header[header.size()-1] << endl;
             }
         }
+        inStream.close();
+        cout << "readHeader: inStream closed" << endl;
+    }
+    else{
+        cout << "ERROR: Could not open file <" << fileName << ">" << endl;
+        exit(EXIT_FAILURE);
     }
     return header;
 }
@@ -115,7 +86,13 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
 
 CSVData readCSVFile(string const& fileName){
     ifstream inStream(fileName);
-
+    if (inStream.is_open()){
+        cout << "file with name <" << fileName << "> is open" << endl;
+    }
+    else{
+        cout << "file with name <" << fileName << "> is not open" << endl;
+        exit(EXIT_FAILURE);
+    }
     CSVData csvData;
     int pos;
     string substring;
