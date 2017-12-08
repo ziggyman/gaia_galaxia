@@ -21,6 +21,8 @@ void gaiaMoveStarsToXY(){
     cout << "creating vector of outFiles" << endl;
     vector< std::shared_ptr< ofstream > > outFiles(0);
     outFiles.reserve(pixels.size());
+    vector<string> outFileNames(0);
+    outFileNames.reserve(pixels.size());
 
     cout << "creating vectors for longitudes and latitudes" << endl;
     vector<int> longitudes(0);
@@ -40,26 +42,25 @@ void gaiaMoveStarsToXY(){
     header.push_back("hammerY");
     
     cout << "opening outfiles and writing headers" << endl;
-    int nOpenFiles = 0;
+//    int nOpenFiles = 0;
     for (int iPix=0; iPix<pixels.size(); ++iPix){
         string outFileName = dataDirOut + (fileNameOutRoot % pixels[iPix].xLow
                                                            % pixels[iPix].xHigh
                                                            % pixels[iPix].yLow
                                                            % pixels[iPix].yHigh).str();
+        outFileNames.push_back(outFileName);
         std::shared_ptr<ofstream> outFile(new ofstream);
         outFile->exceptions(ofstream::failbit | ofstream::badbit);
         outFile->open(outFileName);
-        if (!outFile->is_open()){
-            cout << "gaiaMoveStarsToXY: ERROR: Failed to open outFile = <"
-                 << outFileName << ">, nOpenFiles = " << nOpenFiles << endl;
-            exit(EXIT_FAILURE);
-        }
         writeStrVecToFile(header, *outFile);
         outFiles.push_back(outFile);
-        ++nOpenFiles;
+        outFile->close();
+//        ++nOpenFiles;
     }
 
     cout << "reading input lon lat files" << endl;
+    vector< std::shared_ptr< ofstream > > filesOpened(0);
+    filesOpened.reserve(1000);
     for (int iLon=1; iLon<longitudes.size(); ++iLon){
         for (int iLat=1; iLat<latitudes.size(); ++iLat){
             string fileNameIn = dataDir + (fileNameRoot % longitudes[iLon-1]
@@ -79,10 +80,15 @@ void gaiaMoveStarsToXY(){
                 XY xy = lonLatToXY(lonLat);
                 csvData.data[iLine].push_back(to_string(xy.x));
                 csvData.data[iLine].push_back(to_string(xy.y));
-                cout << "lon = " << lonLat.lon << ", lat = " << lonLat.lat << ": x = " << xy.x << ", y = " << xy.y << endl;
+//                cout << "lon = " << lonLat.lon << ", lat = " << lonLat.lat << ": x = " << xy.x << ", y = " << xy.y << endl;
                 bool pixFound = false;
                 for (int iPix=0; iPix<pixels.size(); ++iPix){
                     if (isInPixel(pixels[iPix], xy)){
+                        if (!outFiles[iPix]->is_open()){
+                            outFiles[iPix]->open(outFileNames[iPix], ofstream::app);
+                            filesOpened.push_back(outFiles[iPix]);
+                            cout << "opened file <" << outFileNames[iPix] << ">" << endl;
+                        }
                         writeStrVecToFile(csvData.data[iLine], *(outFiles[iPix]));
                         pixFound = true;
                     }
@@ -92,6 +98,11 @@ void gaiaMoveStarsToXY(){
                     exit(EXIT_FAILURE);
                 }
             }
+            cout << "opened " << filesOpened.size() << " files, closing them now" << endl;
+            for (auto open=filesOpened.begin(); open!=filesOpened.end(); ++open)
+                (*open)->close();
+            filesOpened.resize(0);
+            cout << filesOpened.size() << " files still open" << endl;
         }
     }
 

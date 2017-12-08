@@ -87,7 +87,7 @@ double hammerZ(const double& x, const double& y){
  */
 XY lonLatToXY(const double& lonDeg, const double& latDeg){
     XY xy;
-    double lonRad = rad(lonDeg);
+    double lonRad = rad(lonDeg < 180.0 ? lonDeg : lonDeg - 360.0);
     double latRad = rad(latDeg);
     double temp = sqrt(1.0 + (cos(latRad) * cos(lonRad / 2.0)));
     xy.x = 2.0 * sqrt(2.0) * cos(latRad) * sin(lonRad / 2.0) / temp;

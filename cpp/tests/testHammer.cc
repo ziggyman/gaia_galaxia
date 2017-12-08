@@ -60,6 +60,25 @@ TEST_F(HammerTest, testXYAndLonLat){
             ASSERT_LT(fabs(lat - lonLat.lat), 0.0001);
         }
     }
+    XY xyA = lonLatToXY(-179.0, 89.9);
+    XY xyB = lonLatToXY(181.0, 89.9);
+    EXPECT_EQ(xyA.x, xyB.x);
+    EXPECT_EQ(xyA.y, xyB.y);
+
+    xyA = lonLatToXY(-179.0, -89.9);
+    xyB = lonLatToXY(181.0, -89.9);
+    EXPECT_EQ(xyA.x, xyB.x);
+    EXPECT_EQ(xyA.y, xyB.y);
+
+    xyA = lonLatToXY(-1.0, 89.9);
+    xyB = lonLatToXY(359.0, 89.9);
+    EXPECT_EQ(xyA.x, xyB.x);
+    EXPECT_EQ(xyA.y, xyB.y);
+
+    xyA = lonLatToXY(-1.0, -89.9);
+    xyB = lonLatToXY(359.0, -89.9);
+    EXPECT_EQ(xyA.x, xyB.x);
+    EXPECT_EQ(xyA.y, xyB.y);
 }
 
 // Tests plotGrid.
@@ -96,10 +115,6 @@ TEST_F(HammerTest, testGetPixels){
     vector<Pixel> pix = getPixels();
     for (int iPix=0; iPix<pix.size(); ++iPix){
         Pixel pixel = pix[iPix];
-        cout << "pix[" << iPix << "]: xLow = " << pixel.xLow
-                                << ", xHigh = " << pixel.xHigh
-                                << ", yLow = " << pixel.yLow
-                                << ", yHigh = " << pixel.yHigh << endl;
     }
 }
 
