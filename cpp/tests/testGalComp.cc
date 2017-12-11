@@ -60,15 +60,15 @@ TEST_F(GalCompTest, testGetData){
 
 TEST_F(GalCompTest, testConvertStringVectortoDoubleVector){
     cout << "running testConvertStringVectortoDoubleVector" << endl;
-    vector<string> strVec(2);
+    vector<string> strVec(3);
     strVec[0] = string("0");
     strVec[1] = string("1.2");
+    strVec[2] = string("");
     vector<double> dblVec = convertStringVectortoDoubleVector(strVec);
     ASSERT_EQ(dblVec[0], 0.0);
     ASSERT_EQ(dblVec[1], 1.2);
+    cout << "dblVec[2] = " << dblVec[2] << endl;
 }
-
-
 
 TEST_F(GalCompTest, testGaiaMoveStarsToXY){
     cout << "running gaiaMoveStars" << endl;

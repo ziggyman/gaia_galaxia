@@ -14,7 +14,7 @@ struct CSVData{
     vector<string> header;
     vector< vector< string > > data;
 
-    int findKeywordPos(string const& keyword){
+    int findKeywordPos(string const& keyword) const{
         int keywordPos = -1;
         for (int headerPos=0; headerPos<header.size(); ++headerPos){
             if (keyword.compare(header[headerPos]) == 0)
@@ -23,7 +23,7 @@ struct CSVData{
         return keywordPos;
     }
 
-    string getData(string const& keyword, int row){
+    string getData(string const& keyword, int row) const{
         int headerPos = findKeywordPos(keyword);
         if (headerPos < 0){
             cout << "ERROR: keyword <" << keyword << "> not found" << endl;
@@ -32,7 +32,7 @@ struct CSVData{
         return data[row][headerPos];
     }
 
-    vector<string> getData(string const& keyword){
+    vector<string> getData(string const& keyword) const{
         int headerPos = findKeywordPos(keyword);
         if (headerPos < 0){
             cout << "ERROR: keyword <" << keyword << "> not found" << endl;
@@ -44,6 +44,15 @@ struct CSVData{
         return out;
     }
 };
+
+int existsHowManyTimes(vector<string> const& inVec, string const& in){
+    int nTimes(0);
+    for (auto it=inVec.begin(); it!=inVec.end(); ++it){
+        if (it->compare(in) == 0)
+            ++nTimes;
+    }
+    return nTimes;
+}
 
 void countStars(string const& dir, string const& fileNameRoot, bool zeroToThreeSixty){
     vector<Pixel> pixels = getPixels();
@@ -81,6 +90,8 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
         strToWrite.append(strVec[iStr]);
     }
     outFile.write(strToWrite.c_str(), strlen(strToWrite.c_str()));
+    string endOfLine("\n");
+    outFile.write(endOfLine.c_str(), strlen(endOfLine.c_str()));
     return;
 }
 
@@ -151,6 +162,20 @@ vector<double> convertStringVectortoDoubleVector(const vector<string>& stringVec
         doubleVector.push_back(result);
     }
     return doubleVector;
+}
+
+vector< vector< string > > getGaiaObject(CSVData const& csvData, string const& source_id){
+    int nDataLines = csvData.data.size();
+    cout << "csvData has " << nDataLines << " data lines" << endl;
+
+    vector<string> sourceIds = csvData.getData("source_id");
+    vector< vector< string > > out(0);
+    for (int pos=0; pos!=sourceIds.size(); ++pos){
+        if (sourceIds[pos].compare(source_id) == 0){
+            out.push_back(csvData.data[pos]);
+        }
+    }
+    return out;
 }
 
 #endif

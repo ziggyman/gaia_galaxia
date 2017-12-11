@@ -14,12 +14,18 @@
 #endif
 
 using namespace std;
+
+bool Debug_isInside = false;
+
 /**
  * @brief Structure for x and y coordinates
  */
 struct XY{
     double x;
     double y;
+
+    XY() : x(0.0), y(0.0){}
+    XY(double a, double b): x(a), y(b){}
 };
 
 /**
@@ -38,6 +44,9 @@ struct Pixel{
 struct LonLat{
     double lon;
     double lat;
+    
+    LonLat() : lon(0.0), lat(0.0){}
+    LonLat(double l, double b): lon(l), lat(b){}
 };
 
 struct LonLatXY{
@@ -87,7 +96,7 @@ double hammerZ(const double& x, const double& y){
  */
 XY lonLatToXY(const double& lonDeg, const double& latDeg){
     XY xy;
-    double lonRad = rad(lonDeg < 180.0 ? lonDeg : lonDeg - 360.0);
+    double lonRad = rad(lonDeg <= 180.0 ? lonDeg : (lonDeg - 360.0));
     double latRad = rad(latDeg);
     double temp = sqrt(1.0 + (cos(latRad) * cos(lonRad / 2.0)));
     xy.x = 2.0 * sqrt(2.0) * cos(latRad) * sin(lonRad / 2.0) / temp;
@@ -154,13 +163,14 @@ void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName
 void calcOuterLimits(){
     LonLatXY lonLatXY;
     if (_OuterLimits.size() == 0){
-        _OuterLimits.reserve(2*180);
+        _OuterLimits.reserve(2*1800);
         for (double lon=-180.0; lon <= 180.0; lon += 360.0){
             for (double lat=-90.0; lat < 90.0; lat += 0.1){
                 lonLatXY.lonLat.lon = lon;
                 lonLatXY.lonLat.lat = lat;
                 lonLatXY.xy = lonLatToXY(lon, lat);
                 _OuterLimits.push_back(lonLatXY);
+//                cout << "calcOuterLimits: lon = " << lon << ", lat = " << lat << ", x = " << lonLatXY.xy.x << ", y = " << lonLatXY.xy.y << endl;
             }
         }
     }
@@ -177,8 +187,8 @@ void calcOuterLimits(){
     _OuterLimitsXY[1].x = *(max_element(outerLimitsX.begin(), outerLimitsX.end()));
     _OuterLimitsXY[0].y = *(min_element(outerLimitsY.begin(), outerLimitsY.end()));
     _OuterLimitsXY[1].y = *(max_element(outerLimitsY.begin(), outerLimitsY.end()));
-//    cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
-//         << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
+    cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
+         << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
 #ifdef __PLOT__
     string plotName("/Volumes/external/azuri/data/limits.png");
     mglGraph gr;
@@ -196,16 +206,56 @@ void calcOuterLimits(){
 bool isInside(double x, double y){
     if (_OuterLimits.size() == 0)
         calcOuterLimits();
-    if ((x < _OuterLimitsXY[0].x) || (x > _OuterLimitsXY[1].x))
+    if ((x < _OuterLimitsXY[0].x) || (x > _OuterLimitsXY[1].x)){
+        if (Debug_isInside)
+            cout << "x < _OuterLimitsXY[0].x) || (x > _OuterLimitsXY[1].x" << endl;
         return false;
-    if ((y < _OuterLimitsXY[0].y) || (y > _OuterLimitsXY[1].y))
+    }
+    if ((y < _OuterLimitsXY[0].y) || (y > _OuterLimitsXY[1].y)){
+        if (Debug_isInside)
+            cout << "(y < _OuterLimitsXY[0].y) || (y > _OuterLimitsXY[1].y)" << endl;
         return false;
-    LonLat lonLatZero = xYToLonLat(0.0, y);
-    XY xyLeft = lonLatToXY(-179.99999, lonLatZero.lat);
-    XY xyRight = lonLatToXY(179.99999, lonLatZero.lat);
-    if ((x < xyLeft.x) || (x > xyRight.x))
+    }
+/*    LonLat lonLatZero = xYToLonLat(0.0, y);
+    XY xyLeft = lonLatToXY(-179.9999999, lonLatZero.lat);
+    XY xyRight = lonLatToXY(179.9999999, lonLatZero.lat);
+    if ((x < xyLeft.x) || (x > xyRight.x)){
+        if (Debug_isInside)
+            cout << "x=" << x << ", y=" << y << ": (x < xyLeft.x(=" << xyLeft.x
+                 << ")) || (x > xyRight.x(=" << xyRight.x << "))" << endl;
         return false;
-    return true;
+    }*/
+    for (auto itPix=_OuterLimits.begin(); itPix!=_OuterLimits.end()-1; ++itPix){
+        Pixel pixel;
+        auto itNext = itPix+1;
+        pixel.xLow = itPix->xy.x < itNext->xy.x ? itPix->xy.x : itNext->xy.x;
+        pixel.xHigh = itPix->xy.x > itNext->xy.x ? itPix->xy.x : itNext->xy.x;
+        pixel.yLow = itPix->xy.y < itNext->xy.y ? itPix->xy.y : itNext->xy.y;
+        pixel.yHigh = itPix->xy.y > itNext->xy.y ? itPix->xy.y : itNext->xy.y;
+        if (((x < 0.0) && (x >= pixel.xLow)) || ((x >= 0.0) && (x <= pixel.xHigh))){
+            if (Debug_isInside){
+                cout << "x=" << x << " is inside [" << pixel.xLow << ", " << pixel.xHigh << "]" << endl;
+            }
+            if (((y < 0.0) && (y >= pixel.yLow)) || ((y >= 0.0) && (y <= pixel.yHigh))){
+                if (Debug_isInside){
+                    cout << "y=" << y << " is inside [" << pixel.yLow << ", " << pixel.yHigh << "]" << endl;
+                }
+                return true;
+            }
+            else{
+                if (Debug_isInside){
+                    cout << "y=" << y << " is outside [" << pixel.yLow << ", " << pixel.yHigh << "]" << endl;
+                }
+            }
+        }
+    }
+    if (Debug_isInside)
+        cout << "x(=" << x << "), y(=" << y << ") not found to be inside a pixel" << endl;
+    return false;
+}
+
+bool isInside(XY const& xy){
+    return isInside(xy.x, xy.y);
 }
 
 /**
