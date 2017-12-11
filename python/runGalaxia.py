@@ -104,7 +104,7 @@ def processGalaxia(lon):
                 outFileName = fileNameOut % (lonStart, lonEnd, latStart, latEnd)
                 with open(outFileName,'w') as csvFileOut:
 
-                    csvFileOut.write(keyStr)
+                    csvFileOut.write(keyStr+'\n')
 
                     data = ebf.iterate(os.path.join(outputDir, outputFile+'.ebf'), '/px+', cache)
 
