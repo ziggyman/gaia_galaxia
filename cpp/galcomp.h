@@ -38,10 +38,35 @@ struct CSVData{
             cout << "ERROR: keyword <" << keyword << "> not found" << endl;
             exit(EXIT_FAILURE);
         }
-        vector<string> out(data.size());
-        for (int iRow=0; iRow<data.size(); ++iRow)
-            out[iRow] = data[iRow][headerPos];
+        cout << "CSVData.getData(): size() = " << size() << endl;
+        vector<string> out(0);
+        out.reserve(size());
+        for (int iRow=0; iRow<size(); ++iRow){
+            if ((iRow >= size()) || (iRow < 0)){
+                cout << "getData: ERROR: iRow = " << iRow << " outside limits" << endl;
+                exit(EXIT_FAILURE);
+            }
+            if ((headerPos < 0) || (headerPos >= data[0].size())){
+                cout << "getData: ERROR: headerPos = " << headerPos << " outside limits" << endl;
+            }
+            try{
+                string outStr((data[iRow])[headerPos]);
+                out.push_back(outStr);
+            }
+            catch(...){
+                cout << "getData: ERROR thrown: iRow = " << iRow << ", headerPos = " << headerPos << ", data.size() = " << data.size() << ", data[" << iRow << "].size() = " << data[iRow].size() << endl;
+                for (int i=0; i<data[iRow].size(); ++i)
+                    cout << "data[" << iRow << "][" << i << "] = " << data[iRow][i] << endl;
+                exit(EXIT_FAILURE);
+            }
+//            cout << "CSVData.getData(): setting out[ = " << out.size() << "] to " << outStr << endl;
+        }
+        cout << "CSVData.getData(): out.size() = " << out.size() << endl;
         return out;
+    }
+
+    int size() const{
+        return data.size();
     }
 };
 
@@ -113,8 +138,10 @@ CSVData readCSVFile(string const& fileName){
 
     if (inStream.is_open()){
         int iLine = 0;
-        string line;
+        string line, previousLine;
         while (getline(inStream, line)){
+            int nKommas = count(line.begin(), line.end(), ',');
+//            cout << "line contains " << nKommas << " kommas" << endl;
             if (iLine == 0){
                 stringstream lineStream(line.c_str());
                 pos = 0;
@@ -126,7 +153,14 @@ CSVData readCSVFile(string const& fileName){
                     pos++;
                 }
                 iLine = 1;
+                previousLine = line;
                 continue;
+            }
+            if (nKommas != csvData.header.size()-1){
+                cout << "readCSVFile: ERROR: nKommas = " << nKommas << " != csvData.header.size() = " << csvData.header.size() << endl;
+                cout << "previousLine = " << previousLine << endl;
+                cout << "line = " << line << endl;
+                exit(EXIT_FAILURE);
             }
             stringstream lineStream(line.c_str());
             pos = 0;
@@ -137,7 +171,15 @@ CSVData readCSVFile(string const& fileName){
                 dataLine.push_back(substring);
                 pos++;
             }
+            if (dataLine.size() != csvData.header.size()){
+                cout << "readCSVFile: ERROR: dataLine.size() = " << dataLine.size() << " != csvData.header.size() = " << csvData.header.size() << endl;
+                cout << "line = " << line << endl;
+                for (int i=0; i<dataLine.size(); ++i)
+                    cout << "dataLine[" << i << "] = " << dataLine[i] << endl;
+                exit(EXIT_FAILURE);
+            }
             csvData.data.push_back(dataLine);
+            previousLine = line;
         }
         inStream.close();
         gettimeofday(&end, NULL);

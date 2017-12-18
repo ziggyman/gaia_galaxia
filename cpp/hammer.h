@@ -60,6 +60,9 @@ vector<XY> _OuterLimitsXY(2);
 int _NPixX = 320;
 int _NPixY = 160;
 
+double _LonLimit = 179.99999;
+double _LatLimit = 89.99999;
+
 /**
  * @brief Convert degrees to radians
  * @param deg Degrees to convert to radians
@@ -96,11 +99,32 @@ double hammerZ(const double& x, const double& y){
  */
 XY lonLatToXY(const double& lonDeg, const double& latDeg){
     XY xy;
-    double lonRad = rad(lonDeg <= 180.0 ? lonDeg : (lonDeg - 360.0));
-    double latRad = rad(latDeg);
+
+    /// The exact outer limits are not supported by the Hammer transformation,
+    /// so if lonDeg or latDeg are exactly at the outer limits, we push them inside
+    double lon(lonDeg);
+    if ((lon > _LonLimit) && (lon <= 180.0))
+        lon = _LonLimit;
+    else if ((lon < 0.0-_LonLimit) && (lon >= -180.0))
+        lon = 0.0-_LonLimit;
+    else if (lon > 180.0)
+        lon -= 360.0;
+
+    double lat(latDeg);
+    if ((lat > _LatLimit) && (lat <= 90.0))
+        lat = _LatLimit;
+    else if ((lat < 0.0-_LatLimit) && (lat >= -90.0))
+        lat = 0.0-_LatLimit;
+
+    /// convert lonDeg and latDeg to radians
+    double lonRad = rad(lon);
+    double latRad = rad(lat);
+
+    /// do the Hammer transformation
     double temp = sqrt(1.0 + (cos(latRad) * cos(lonRad / 2.0)));
     xy.x = 2.0 * sqrt(2.0) * cos(latRad) * sin(lonRad / 2.0) / temp;
     xy.y = sqrt(2.0) * sin(latRad) / temp;
+    
     return xy;
 }
 
@@ -165,7 +189,7 @@ void calcOuterLimits(){
     if (_OuterLimits.size() == 0){
         _OuterLimits.reserve(2*1800);
         for (double lon=-180.0; lon <= 180.0; lon += 360.0){
-            for (double lat=-90.0; lat < 90.0; lat += 0.1){
+            for (double lat=-90.0; lat <= 90.0; lat += 0.1){
                 lonLatXY.lonLat.lon = lon;
                 lonLatXY.lonLat.lat = lat;
                 lonLatXY.xy = lonLatToXY(lon, lat);
@@ -216,15 +240,6 @@ bool isInside(double x, double y){
             cout << "(y < _OuterLimitsXY[0].y) || (y > _OuterLimitsXY[1].y)" << endl;
         return false;
     }
-/*    LonLat lonLatZero = xYToLonLat(0.0, y);
-    XY xyLeft = lonLatToXY(-179.9999999, lonLatZero.lat);
-    XY xyRight = lonLatToXY(179.9999999, lonLatZero.lat);
-    if ((x < xyLeft.x) || (x > xyRight.x)){
-        if (Debug_isInside)
-            cout << "x=" << x << ", y=" << y << ": (x < xyLeft.x(=" << xyLeft.x
-                 << ")) || (x > xyRight.x(=" << xyRight.x << "))" << endl;
-        return false;
-    }*/
     for (auto itPix=_OuterLimits.begin(); itPix!=_OuterLimits.end()-1; ++itPix){
         Pixel pixel;
         auto itNext = itPix+1;
@@ -303,32 +318,26 @@ void plotGrid(string plotName=""){
  * @brief return pixels within outer Hammer sphere limits
  */
 vector<Pixel> getPixels(){
-//    cout << "getPixels: running calcOuterLimits()" << endl;
+    /// running calcOuterLimits()
     calcOuterLimits();
+
     vector<Pixel> pixels(0);
-    pixels.reserve(320*160);
+    pixels.reserve(_NPixX*_NPixY);
     Pixel pix;
     double xStep = (_OuterLimitsXY[1].x-_OuterLimitsXY[0].x)/_NPixX;
     double yStep = (_OuterLimitsXY[1].y-_OuterLimitsXY[0].y)/_NPixY;
-//    cout << "getPixels: xStep = " << xStep << ", yStep = " << yStep << endl;
-//    cout << "getPixels: starting for loop" << endl;
     for (double xPosLeft=_OuterLimitsXY[0].x; xPosLeft<_OuterLimitsXY[1].x; xPosLeft+=xStep){
-//        cout << "xPosLeft = " << xPosLeft << endl;
         for (double yPosBottom=_OuterLimitsXY[0].y; yPosBottom<_OuterLimitsXY[1].y; yPosBottom+=yStep){
-//            cout << "yPosBottom =  " << yPosBottom << endl;
             pix.xLow = xPosLeft;
             pix.xHigh = xPosLeft + xStep;
             pix.yLow = yPosBottom;
             pix.yHigh = yPosBottom + yStep;
-//            cout << "pix.xLow = " << pix.xLow << ", pix.xHigh = " << pix.xHigh << ", pix.yLow = " << pix.yLow << ", pix.yHigh = " << pix.yHigh << endl;
             if (isInside(pix.xLow, pix.yLow) || isInside(pix.xLow, pix.yHigh) ||
                 isInside(pix.yHigh, pix.yLow) || isInside(pix.xHigh, pix.yHigh)){
                 pixels.push_back(pix);
-//                cout << "pix isInside" << endl;
             }
         }
     }
-//    cout << "getPixels finished: pixels.size() = " << pixels.size() << endl;
     return pixels;
 }
 

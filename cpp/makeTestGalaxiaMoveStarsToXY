@@ -1,0 +1,1 @@
+g++ -isystem ../../cpp/googletest/googletest/include -pthread tests/testGalaxiaMoveStarsToXY.cc ../../cpp/googletest/googletest/make/libgtest.a -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -o testGalaxiaMoveStarsToXY -l mgl -Wno-c++11-extensions
