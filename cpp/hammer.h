@@ -15,8 +15,6 @@
 
 using namespace std;
 
-bool Debug_isInside = false;
-
 /**
  * @brief Structure for x and y coordinates
  */
@@ -36,6 +34,13 @@ struct Pixel{
     double xHigh;
     double yLow;
     double yHigh;
+
+    /**
+     * @brief Check if xy is inside pixel
+     * @param pixel Pixel to check if xy position is inside
+     * @param xy    XY position to check if it is inside pixel
+     */
+    bool isInside(XY const& xy);
 };
 
 /**
@@ -54,291 +59,114 @@ struct LonLatXY{
     XY xy;
 };
 
-vector<LonLatXY> _OuterLimits;
-vector<XY> _OuterLimitsXY(2);
+class Hammer{
+public:
+    /**
+     * @brief Standard Constructor
+     * @param deg
+     * @return 
+     */
+    Hammer()
+      : _OuterLimits(2*1800),
+        _OuterLimitsXY(2),
+        _NPixX(320),
+        _NPixY(160),
+        _LonLimit(179.99999),
+        _LatLimit(89.99999),
+        Debug_isInside(false)
+    {}
 
-int _NPixX = 320;
-int _NPixY = 160;
+    ~Hammer(){}
 
-double _LonLimit = 179.99999;
-double _LatLimit = 89.99999;
+    /**
+     * @brief Helper function for Hammer projection
+     * @param x Hammer x
+     * @param y Hammer y
+     * @return Hammer z
+     */
+    double hammerZ(const double& x, const double& y){
+        return sqrt(1.0 - (x*x / 16.0) - (y*y / 4.0));
+    }
 
-/**
- * @brief Convert degrees to radians
- * @param deg Degrees to convert to radians
- * @return deg in radians
- */
-double rad(const double& deg){
-    return deg * PI / 180.0;
-}
+    /**
+     * @brief Calculate the outer limits in x and y of the Hammer projection
+     * @return Vector containing the outer limits (lon=-180, lon=180)
+     */
+    void calcOuterLimits();
 
-/**
- * @brief Convert radians to degrees
- * @param rad Radians to convert to degrees
- * @return rad in degrees
- */
-double deg(const double& rad){
-    return rad * 180.0 / PI;
-}
+    /**
+     * @brief Check if a x-y coordinate is inside the outer limits
+     * @param x x-coordinate
+     * @param y y-coordinate
+     */
+    bool isInside(double x, double y);
 
-/**
- * @brief Helper function for Hammer projection
- * @param x Hammer x
- * @param y Hammer y
- * @return Hammer z
- */
-double hammerZ(const double& x, const double& y){
-    return sqrt(1.0 - (x*x / 16.0) - (y*y / 4.0));
-}
+    bool isInside(XY const& xy){
+        return isInside(xy.x, xy.y);
+    }
 
-/**
- * @brief Convert longitude and latitude to the Hammer Projection x and y
- * @param lon Galactic Longitude in degrees to convert to Hammer x and y
- * @param lat Galactic Latitude in degrees to convert to Hammer x and y
- * @return Hammer x and y
- */
-XY lonLatToXY(const double& lonDeg, const double& latDeg){
-    XY xy;
+    /**
+     * @brief Plot the grid of longitudes and latitudes in Hammer projection
+     * @param plotName Name for the file to write
+     */
+    void plotGrid(string plotName="");
 
-    /// The exact outer limits are not supported by the Hammer transformation,
-    /// so if lonDeg or latDeg are exactly at the outer limits, we push them inside
-    double lon(lonDeg);
-    if ((lon > _LonLimit) && (lon <= 180.0))
-        lon = _LonLimit;
-    else if ((lon < 0.0-_LonLimit) && (lon >= -180.0))
-        lon = 0.0-_LonLimit;
-    else if (lon > 180.0)
-        lon -= 360.0;
+    /**
+     * @brief return pixels within outer Hammer sphere limits
+     */
+    vector<Pixel> getPixels();
 
-    double lat(latDeg);
-    if ((lat > _LatLimit) && (lat <= 90.0))
-        lat = _LatLimit;
-    else if ((lat < 0.0-_LatLimit) && (lat >= -90.0))
-        lat = 0.0-_LatLimit;
+    /**
+     * @brief Convert longitude and latitude to the Hammer Projection x and y
+     * @param lon Galactic Longitude in degrees to convert to Hammer x and y
+     * @param lat Galactic Latitude in degrees to convert to Hammer x and y
+     * @return Hammer x and y
+     */
+    XY lonLatToXY(const double& lonDeg, const double& latDeg);
+    XY lonLatToXY(const LonLat& lonLat){
+        return lonLatToXY(lonLat.lon, lonLat.lat);
+    }
 
-    /// convert lonDeg and latDeg to radians
-    double lonRad = rad(lon);
-    double latRad = rad(lat);
+    /**
+     * @brief Convert the Hammer Projection x and y to longitude and latitude
+     * @param x Hammer x
+     * @param y Hammer y
+     * @return Galactic Longitude and Galactic Latitude in degrees
+     */
+    LonLat xYToLonLat(const double& x, const double& y);
 
-    /// do the Hammer transformation
-    double temp = sqrt(1.0 + (cos(latRad) * cos(lonRad / 2.0)));
-    xy.x = 2.0 * sqrt(2.0) * cos(latRad) * sin(lonRad / 2.0) / temp;
-    xy.y = sqrt(2.0) * sin(latRad) / temp;
+    void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName="");
+
+    /**
+     * @brief Convert degrees to radians
+     * @param deg Degrees to convert to radians
+     * @return deg in radians
+     */
+    double rad(const double& deg){
+        return deg * PI / 180.0;
+    }
+
+    /**
+     * @brief Convert radians to degrees
+     * @param rad Radians to convert to degrees
+     * @return rad in degrees
+     */
+    double deg(const double& rad){
+        return rad * 180.0 / PI;
+    }
+
+private:
+    vector<LonLatXY> _OuterLimits;
+    vector<XY> _OuterLimitsXY;
+
+    const int _NPixX;
+    const int _NPixY;
+
+    const double _LonLimit;
+    const double _LatLimit;
     
-    return xy;
-}
+    const bool Debug_isInside;
 
-XY lonLatToXY(const LonLat& lonLat){
-    return lonLatToXY(lonLat.lon, lonLat.lat);
-}
-
-/**
- * @brief Convert Hammer x and y back to Galactic longitude and latitude in degrees
- * @param x Hammer x
- * @param x Hammer y
- * @return LonLat in degrees
- */
-LonLat xYToLonLat(const double& x, const double& y){
-    LonLat lonLat;
-    double z = hammerZ(x, y);
-    lonLat.lon = deg(2.0 * atan(z * x / (2.0 * (2.0 * z * z - 1.0))));
-    lonLat.lat = deg(asin(z * y));
-    return lonLat;
-}
-
-
-void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName=""){
-    gr.Title("Hammer sphere");
-    gr.Box();
-    vector<double> xs(0);
-    xs.reserve(lonLatXY.size());
-    vector<double> ys(0);
-    ys.reserve(lonLatXY.size());
-    for (int i=0; i<lonLatXY.size(); ++i){
-        xs.push_back(lonLatXY[i].xy.x);
-        ys.push_back(lonLatXY[i].xy.y);
-    }
-    mglData MGLData_X;
-    MGLData_X.Link(xs.data(), xs.size(), 0, 0);
-    mglData MGLData_Y;
-    MGLData_Y.Link(ys.data(), ys.size(), 0, 0);
-    double minX = *(min_element(xs.begin(), xs.end()));
-    double maxX = *(max_element(xs.begin(), xs.end()));
-    double minY = *(min_element(ys.begin(), ys.end()));
-    double maxY = *(max_element(ys.begin(), ys.end()));
-    gr.SetRanges(minX,
-                 maxX,
-                 minY,
-                 maxY);
-    gr.Axis();
-    gr.Label('x',"",0);
-    gr.Label('y',"",0);
-    gr.SetSize(4096, 2024);
-    gr.Plot(MGLData_X, MGLData_Y, " *");
-    if (plotName.compare("") != 0)
-        gr.WriteFrame(plotName.c_str());
-    return;
-}
-
-/**
- * @brief Calculate the outer limits in x and y of the Hammer projection
- * @return Vector containing the outer limits (lon=-180, lon=180)
- */
-void calcOuterLimits(){
-    LonLatXY lonLatXY;
-    if (_OuterLimits.size() == 0){
-        _OuterLimits.reserve(2*1800);
-        for (double lon=-180.0; lon <= 180.0; lon += 360.0){
-            for (double lat=-90.0; lat <= 90.0; lat += 0.1){
-                lonLatXY.lonLat.lon = lon;
-                lonLatXY.lonLat.lat = lat;
-                lonLatXY.xy = lonLatToXY(lon, lat);
-                _OuterLimits.push_back(lonLatXY);
-//                cout << "calcOuterLimits: lon = " << lon << ", lat = " << lat << ", x = " << lonLatXY.xy.x << ", y = " << lonLatXY.xy.y << endl;
-            }
-        }
-    }
-    int size = _OuterLimits.size();
-    vector<double> outerLimitsX(0);
-    vector<double> outerLimitsY(0);
-    outerLimitsX.reserve(size);
-    outerLimitsY.reserve(size);
-    for (int i=0; i<size; ++i){
-        outerLimitsX.push_back(_OuterLimits[i].xy.x);
-        outerLimitsY.push_back(_OuterLimits[i].xy.y);
-    }
-    _OuterLimitsXY[0].x = *(min_element(outerLimitsX.begin(), outerLimitsX.end()));
-    _OuterLimitsXY[1].x = *(max_element(outerLimitsX.begin(), outerLimitsX.end()));
-    _OuterLimitsXY[0].y = *(min_element(outerLimitsY.begin(), outerLimitsY.end()));
-    _OuterLimitsXY[1].y = *(max_element(outerLimitsY.begin(), outerLimitsY.end()));
-    cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
-         << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
-#ifdef __PLOT__
-    string plotName("/Volumes/external/azuri/data/limits.png");
-    mglGraph gr;
-    gr.SetMarkSize(0.00001);
-    plot(_OuterLimits, gr, plotName);
-#endif
-    return;
-}
-
-/**
- * @brief Check if a x-y coordinate is inside the outer limits
- * @param x x-coordinate
- * @param y y-coordinate
- */
-bool isInside(double x, double y){
-    if (_OuterLimits.size() == 0)
-        calcOuterLimits();
-    if ((x < _OuterLimitsXY[0].x) || (x > _OuterLimitsXY[1].x)){
-        if (Debug_isInside)
-            cout << "x < _OuterLimitsXY[0].x) || (x > _OuterLimitsXY[1].x" << endl;
-        return false;
-    }
-    if ((y < _OuterLimitsXY[0].y) || (y > _OuterLimitsXY[1].y)){
-        if (Debug_isInside)
-            cout << "(y < _OuterLimitsXY[0].y) || (y > _OuterLimitsXY[1].y)" << endl;
-        return false;
-    }
-    for (auto itPix=_OuterLimits.begin(); itPix!=_OuterLimits.end()-1; ++itPix){
-        Pixel pixel;
-        auto itNext = itPix+1;
-        pixel.xLow = itPix->xy.x < itNext->xy.x ? itPix->xy.x : itNext->xy.x;
-        pixel.xHigh = itPix->xy.x > itNext->xy.x ? itPix->xy.x : itNext->xy.x;
-        pixel.yLow = itPix->xy.y < itNext->xy.y ? itPix->xy.y : itNext->xy.y;
-        pixel.yHigh = itPix->xy.y > itNext->xy.y ? itPix->xy.y : itNext->xy.y;
-        if (((x < 0.0) && (x >= pixel.xLow)) || ((x >= 0.0) && (x <= pixel.xHigh))){
-            if (Debug_isInside){
-                cout << "x=" << x << " is inside [" << pixel.xLow << ", " << pixel.xHigh << "]" << endl;
-            }
-            if (((y < 0.0) && (y >= pixel.yLow)) || ((y >= 0.0) && (y <= pixel.yHigh))){
-                if (Debug_isInside){
-                    cout << "y=" << y << " is inside [" << pixel.yLow << ", " << pixel.yHigh << "]" << endl;
-                }
-                return true;
-            }
-            else{
-                if (Debug_isInside){
-                    cout << "y=" << y << " is outside [" << pixel.yLow << ", " << pixel.yHigh << "]" << endl;
-                }
-            }
-        }
-    }
-    if (Debug_isInside)
-        cout << "x(=" << x << "), y(=" << y << ") not found to be inside a pixel" << endl;
-    return false;
-}
-
-bool isInside(XY const& xy){
-    return isInside(xy.x, xy.y);
-}
-
-/**
- * @brief Check if xy is inside pixel
- * @param pixel Pixel to check if xy position is inside
- * @param xy    XY position to check if it is inside pixel
- */
-bool isInPixel(Pixel const& pixel, XY const& xy){
-    if ((xy.x >= pixel.xLow) && (xy.x < pixel.xHigh) && (xy.y >= pixel.yLow) && (xy.y < pixel.yHigh))
-        return true;
-    return false;
-}
-
-/**
- * @brief Plot the grid of longitudes and latitudes in Hammer projection
- * @param plotName Name for the file to write
- */
-void plotGrid(string plotName=""){
-    mglGraph gr;
-    gr.SetMarkSize(0.00001);
-    LonLatXY lonLatXY;
-    vector<LonLatXY> out;
-    out.reserve(180*180);
-    for (double lon=-180.0; lon <= 180.0; lon += 10.0){
-        for (double lat=-90.0; lat < 90.0; lat += 0.1){
-            lonLatXY.lonLat.lon = lon;
-            lonLatXY.lonLat.lat = lat;
-            lonLatXY.xy = lonLatToXY(lon, lat);
-            out.push_back(lonLatXY);
-        }
-    }
-    for (double lon=-180.0; lon <= 180.0; lon += 0.1){
-        for (double lat=-90.0; lat < 90.0; lat += 10.0){
-            lonLatXY.lonLat.lon = lon;
-            lonLatXY.lonLat.lat = lat;
-            lonLatXY.xy = lonLatToXY(lon, lat);
-            out.push_back(lonLatXY);
-        }
-    }
-    plot(out, gr, plotName);
-    return;
-}
-
-/**
- * @brief return pixels within outer Hammer sphere limits
- */
-vector<Pixel> getPixels(){
-    /// running calcOuterLimits()
-    calcOuterLimits();
-
-    vector<Pixel> pixels(0);
-    pixels.reserve(_NPixX*_NPixY);
-    Pixel pix;
-    double xStep = (_OuterLimitsXY[1].x-_OuterLimitsXY[0].x)/_NPixX;
-    double yStep = (_OuterLimitsXY[1].y-_OuterLimitsXY[0].y)/_NPixY;
-    for (double xPosLeft=_OuterLimitsXY[0].x; xPosLeft<_OuterLimitsXY[1].x; xPosLeft+=xStep){
-        for (double yPosBottom=_OuterLimitsXY[0].y; yPosBottom<_OuterLimitsXY[1].y; yPosBottom+=yStep){
-            pix.xLow = xPosLeft;
-            pix.xHigh = xPosLeft + xStep;
-            pix.yLow = yPosBottom;
-            pix.yHigh = yPosBottom + yStep;
-            if (isInside(pix.xLow, pix.yLow) || isInside(pix.xLow, pix.yHigh) ||
-                isInside(pix.yHigh, pix.yLow) || isInside(pix.xHigh, pix.yHigh)){
-                pixels.push_back(pix);
-            }
-        }
-    }
-    return pixels;
-}
+};
 
 #endif
