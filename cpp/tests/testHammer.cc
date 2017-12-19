@@ -35,15 +35,16 @@ class HammerTest : public ::testing::Test {
 
 // Tests that the Hammer::Bar() method does Abc.
 TEST_F(HammerTest, testCalcOuterLimits) {
-  calcOuterLimits();
-  double xMinExpected = -2.82843;
-  double xMaxExpected = 2.82843;
-  double yMinExpected = -1.41421;
-  double yMaxExpected = 1.41421;
-  EXPECT_LT(fabs(xMinExpected - _OuterLimitsXY[0].x), 0.00001);
-  EXPECT_LT(fabs(xMaxExpected - _OuterLimitsXY[1].x), 0.00001);
-  EXPECT_LT(fabs(yMinExpected - _OuterLimitsXY[0].y), 0.00001);
-  EXPECT_LT(fabs(yMaxExpected - _OuterLimitsXY[1].y), 0.00001);
+    Hammer hammer;
+    hammer.calcOuterLimits();
+    double xMinExpected = -2.82843;
+    double xMaxExpected = 2.82843;
+    double yMinExpected = -1.41421;
+    double yMaxExpected = 1.41421;
+    EXPECT_LT(fabs(xMinExpected - hammer.getOuterLimitsXY()[0].x), 0.00001);
+    EXPECT_LT(fabs(xMaxExpected - hammer.getOuterLimitsXY()[1].x), 0.00001);
+    EXPECT_LT(fabs(yMinExpected - hammer.getOuterLimitsXY()[0].y), 0.00001);
+    EXPECT_LT(fabs(yMaxExpected - hammer.getOuterLimitsXY()[1].y), 0.00001);
 }
 
 TEST_F(HammerTest, testXYAndLonLat){
@@ -53,12 +54,13 @@ TEST_F(HammerTest, testXYAndLonLat){
     vector<double> lonHighLimit(2);
     lonHighLimit[0] = 180.0;
     lonHighLimit[1] = 360.0;
+    Hammer hammer;
 
     for (int iRun = 0; iRun < 2; ++iRun){
         for (double lon=lonLowLimit[iRun]; lon<lonHighLimit[iRun]; lon+=0.1){
             for (double lat=-89.9; lat<89.99; lat+=0.1){
-                XY xy = lonLatToXY(lon, lat);
-                LonLat lonLat = xYToLonLat(xy.x, xy.y);
+                XY xy = hammer.lonLatToXY(lon, lat);
+                LonLat lonLat = hammer.xYToLonLat(xy.x, xy.y);
     /*            cout << "lon = " << lon
                      << ", lat = " << lat
                      << ": x = " << xy.x
@@ -75,23 +77,23 @@ TEST_F(HammerTest, testXYAndLonLat){
             }
         }
     }
-    XY xyA = lonLatToXY(-179.0, 89.9);
-    XY xyB = lonLatToXY(181.0, 89.9);
+    XY xyA = hammer.lonLatToXY(-179.0, 89.9);
+    XY xyB = hammer.lonLatToXY(181.0, 89.9);
     EXPECT_EQ(xyA.x, xyB.x);
     EXPECT_EQ(xyA.y, xyB.y);
 
-    xyA = lonLatToXY(-179.0, -89.9);
-    xyB = lonLatToXY(181.0, -89.9);
+    xyA = hammer.lonLatToXY(-179.0, -89.9);
+    xyB = hammer.lonLatToXY(181.0, -89.9);
     EXPECT_EQ(xyA.x, xyB.x);
     EXPECT_EQ(xyA.y, xyB.y);
 
-    xyA = lonLatToXY(-1.0, 89.9);
-    xyB = lonLatToXY(359.0, 89.9);
+    xyA = hammer.lonLatToXY(-1.0, 89.9);
+    xyB = hammer.lonLatToXY(359.0, 89.9);
     EXPECT_EQ(xyA.x, xyB.x);
     EXPECT_EQ(xyA.y, xyB.y);
 
-    xyA = lonLatToXY(-1.0, -89.9);
-    xyB = lonLatToXY(359.0, -89.9);
+    xyA = hammer.lonLatToXY(-1.0, -89.9);
+    xyB = hammer.lonLatToXY(359.0, -89.9);
     EXPECT_EQ(xyA.x, xyB.x);
     EXPECT_EQ(xyA.y, xyB.y);
 }
@@ -99,40 +101,54 @@ TEST_F(HammerTest, testXYAndLonLat){
 // Tests plotGrid.
 TEST_F(HammerTest, testPlotGrid) {
     string plotName("/Volumes/external/azuri/data/grid.png");
-    plotGrid(plotName);
+    Hammer hammer;
+    hammer.plotGrid(plotName);
 }
 
 // Tests isInside
 TEST_F(HammerTest, testIsInside) {
     double x = 0.0;
     double y = 0.0;
-    ASSERT_TRUE(isInside(x,y));
+    Hammer hammer;
+    vector<XY> outerLimitsXY = hammer.getOuterLimitsXY();
+    EXPECT_TRUE(hammer.isInside(x,y));
 
-    x = _OuterLimitsXY[0].x + 0.1;
-    y = _OuterLimitsXY[0].y + 0.1;
-    ASSERT_FALSE(isInside(x,y));
+    x = outerLimitsXY[0].x + 0.1;
+    y = outerLimitsXY[0].y + 0.1;
+    EXPECT_FALSE(hammer.isInside(x,y));
 
-    x = _OuterLimitsXY[0].x + 0.1;
-    y = _OuterLimitsXY[1].y - 0.1;
-    ASSERT_FALSE(isInside(x,y));
+    x = outerLimitsXY[0].x + 0.1;
+    y = outerLimitsXY[1].y - 0.1;
+    EXPECT_FALSE(hammer.isInside(x,y));
 
-    x = _OuterLimitsXY[1].x - 0.1;
-    y = _OuterLimitsXY[0].y + 0.1;
-    ASSERT_FALSE(isInside(x,y));
+    x = outerLimitsXY[1].x - 0.1;
+    y = outerLimitsXY[0].y + 0.1;
+    EXPECT_FALSE(hammer.isInside(x,y));
 
-    x = _OuterLimitsXY[1].x - 0.1;
-    y = _OuterLimitsXY[1].y - 0.1;
-    ASSERT_FALSE(isInside(x,y));
+    x = outerLimitsXY[1].x - 0.1;
+    y = outerLimitsXY[1].y - 0.1;
+    EXPECT_FALSE(hammer.isInside(x,y));
 
     LonLat lonLat(99.9492, -88.0949);
-    XY xy = lonLatToXY(lonLat);
-    Debug_isInside = true;
-    ASSERT_TRUE(isInside(xy.x,xy.y));
-    Debug_isInside = false;
+    XY xy = hammer.lonLatToXY(lonLat);
+    hammer.setDebug_isInside(true);
+    EXPECT_TRUE(hammer.isInside(xy.x,xy.y));
+    hammer.setDebug_isInside(false);
+
+    lonLat.lon = 180.716;
+    lonLat.lat = 71.9804;
+    xy = hammer.lonLatToXY(lonLat);
+    cout << "xy.x = " << xy.x << ", xy.y = " << xy.y << endl;
+    cout << "_OuterLimitsXY[0]: x=" << outerLimitsXY[0].x << ", y=" << outerLimitsXY[0].y << endl;;
+    cout << "_OuterLimitsXY[1]: x=" << outerLimitsXY[1].x << ", y=" << outerLimitsXY[1].y << endl;;
+    hammer.setDebug_isInside(true);
+    EXPECT_TRUE(hammer.isInside(xy.x,xy.y));
+    hammer.setDebug_isInside(false);
+
 }
 
 // Tests isInPixel
-TEST_F(HammerTest, testIsInPixel) {
+TEST_F(HammerTest, testPixelIsInside) {
     Pixel pixel;
     pixel.xLow = 1.0;
     pixel.xHigh = 1.5;
@@ -141,36 +157,41 @@ TEST_F(HammerTest, testIsInPixel) {
     XY xy;
     xy.x = 0.0;
     xy.y = 0.0;
-    ASSERT_FALSE(isInPixel(pixel,xy));
+    ASSERT_FALSE(pixel.isInside(xy));
     xy.x = 1.1;
-    ASSERT_FALSE(isInPixel(pixel,xy));
+    ASSERT_FALSE(pixel.isInside(xy));
     xy.y = 1.1;
-    ASSERT_TRUE(isInPixel(pixel,xy));
+    ASSERT_TRUE(pixel.isInside(xy));
 }
 
 TEST_F(HammerTest, testGetPixels){
-    vector<Pixel> pix = getPixels();
-    double lon = 0.00555304;
-    double lat = -80.8856;
+    Hammer hammer;
+    vector<Pixel> pix = hammer.getPixels();
+    double lon = 180.716;
+    double lat = 71.9804;
     LonLat lonLat;
     lonLat.lon = lon;
     lonLat.lat = lat;
-    XY xy = lonLatToXY(lonLat);
+    XY xy = hammer.lonLatToXY(lonLat);
     cout << "lon = " << lon << ", lat = " << lat << ": x = " << xy.x << ", y = " << xy.y << endl;
-    if (isInside(xy))
+    if (hammer.isInside(xy))
         cout << "lonLat is inside" << endl;
     else{
         cout << "lonLat is NOT inside" << endl;
         exit(EXIT_FAILURE);
     }
     bool lonLatFound = false;
-    for (int iPix=0; iPix<pix.size(); ++iPix){
-        Pixel pixel = pix[iPix];
-        if (isInPixel(pixel, xy)){
-            cout << "lonLat found in pixel[" << pixel.xLow << ", " << pixel.xHigh << ", " << pixel.yLow << ", " << pixel.yHigh << "]" << endl;
+    hammer.setDebug_isInside(true);
+    for (auto itPix=pix.begin(); itPix!=pix.end(); ++itPix){
+        if (itPix->isInside(xy)){
+            cout << "lonLat found in pixel[" << itPix->xLow << ", " << itPix->xHigh << ", " << itPix->yLow << ", " << itPix->yHigh << "]" << endl;
             lonLatFound = true;
         }
+        else{
+            cout << "lonLat NOT found in pixel[" << itPix->xLow << ", " << itPix->xHigh << ", " << itPix->yLow << ", " << itPix->yHigh << "]" << endl;
+        }
     }
+    hammer.setDebug_isInside(false);
     if (!lonLatFound){
         cout << "ERROR: lonLat not found in any pixel" << endl;
         exit(EXIT_FAILURE);

@@ -4,14 +4,12 @@
 #include <algorithm>
 #include <iostream>
 #include <math.h>
+#include <mgl2/mgl.h>
 #include <vector>
 
 #define PI 3.14159265
-#define __PLOT__
+//#define __PLOT__
 
-#ifdef __PLOT__
-#include <mgl2/mgl.h>
-#endif
 
 using namespace std;
 
@@ -40,7 +38,22 @@ struct Pixel{
      * @param pixel Pixel to check if xy position is inside
      * @param xy    XY position to check if it is inside pixel
      */
-    bool isInside(XY const& xy);
+    bool isInside(XY const& xy) const{
+//        classInvariant();
+        if ((xy.x >= xLow) && (xy.x < xHigh) && (xy.y >= yLow) && (xy.y < yHigh))
+            return true;
+        return false;
+    }
+
+    bool classInvariant() const{
+        if (xLow >= xHigh)
+            throw std::invalid_argument( "Pixel::classInvariant: ERROR: xLow(="
+                    + to_string(xLow) + ") >= xHigh(=" + to_string(xHigh) + ")" );
+        if (yLow >= yHigh)
+            throw std::invalid_argument( "Pixel::classInvariant: ERROR: yLow(="
+                    + to_string(yLow) + ") >= yHigh(=" + to_string(yHigh) + ")" );
+        return true;
+    }
 };
 
 /**
@@ -67,7 +80,7 @@ public:
      * @return 
      */
     Hammer()
-      : _OuterLimits(2*1800),
+      : _OuterLimits(2*1800+2),
         _OuterLimitsXY(2),
         _NPixX(320),
         _NPixY(160),
@@ -84,7 +97,7 @@ public:
      * @param y Hammer y
      * @return Hammer z
      */
-    double hammerZ(const double& x, const double& y){
+    double hammerZ(const double& x, const double& y) const{
         return sqrt(1.0 - (x*x / 16.0) - (y*y / 4.0));
     }
 
@@ -109,7 +122,7 @@ public:
      * @brief Plot the grid of longitudes and latitudes in Hammer projection
      * @param plotName Name for the file to write
      */
-    void plotGrid(string plotName="");
+    void plotGrid(string plotName="") const;
 
     /**
      * @brief return pixels within outer Hammer sphere limits
@@ -122,8 +135,8 @@ public:
      * @param lat Galactic Latitude in degrees to convert to Hammer x and y
      * @return Hammer x and y
      */
-    XY lonLatToXY(const double& lonDeg, const double& latDeg);
-    XY lonLatToXY(const LonLat& lonLat){
+    XY lonLatToXY(const double& lonDeg, const double& latDeg) const;
+    XY lonLatToXY(const LonLat& lonLat) const{
         return lonLatToXY(lonLat.lon, lonLat.lat);
     }
 
@@ -133,16 +146,16 @@ public:
      * @param y Hammer y
      * @return Galactic Longitude and Galactic Latitude in degrees
      */
-    LonLat xYToLonLat(const double& x, const double& y);
+    LonLat xYToLonLat(const double& x, const double& y) const;
 
-    void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName="");
+    void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName="") const;
 
     /**
      * @brief Convert degrees to radians
      * @param deg Degrees to convert to radians
      * @return deg in radians
      */
-    double rad(const double& deg){
+    double rad(const double& deg) const{
         return deg * PI / 180.0;
     }
 
@@ -151,9 +164,15 @@ public:
      * @param rad Radians to convert to degrees
      * @return rad in degrees
      */
-    double deg(const double& rad){
+    double deg(const double& rad) const{
         return rad * 180.0 / PI;
     }
+
+    vector<LonLatXY> getOuterLimits();
+    vector<XY> getOuterLimitsXY();
+    bool getDebug_isInside() const{return Debug_isInside;}
+
+    void setDebug_isInside(bool const setDebug){Debug_isInside = setDebug;}
 
 private:
     vector<LonLatXY> _OuterLimits;
@@ -165,7 +184,7 @@ private:
     const double _LonLimit;
     const double _LatLimit;
     
-    const bool Debug_isInside;
+    bool Debug_isInside;
 
 };
 

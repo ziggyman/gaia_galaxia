@@ -1,6 +1,6 @@
 #include "hammer.h"
 
-XY Hammer::lonLatToXY(const double& lonDeg, const double& latDeg){
+XY Hammer::lonLatToXY(const double& lonDeg, const double& latDeg) const{
     XY xy;
 
     /// The exact outer limits are not supported by the Hammer transformation,
@@ -31,7 +31,7 @@ XY Hammer::lonLatToXY(const double& lonDeg, const double& latDeg){
     return xy;
 }
 
-LonLat Hammer::xYToLonLat(const double& x, const double& y){
+LonLat Hammer::xYToLonLat(const double& x, const double& y) const{
     LonLat lonLat;
     double z = hammerZ(x, y);
     lonLat.lon = deg(2.0 * atan(z * x / (2.0 * (2.0 * z * z - 1.0))));
@@ -40,7 +40,7 @@ LonLat Hammer::xYToLonLat(const double& x, const double& y){
 }
 
 
-void Hammer::plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName){
+void Hammer::plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName) const{
     gr.Title("Hammer sphere");
     gr.Box();
     vector<double> xs(0);
@@ -81,46 +81,59 @@ void Hammer::calcOuterLimits(){
     LonLatXY lonLatXY;
     if (_OuterLimits[0].lonLat.lon == 0.0){
         int pos=0;
+        auto it = _OuterLimits.begin();
         for (double lon=-180.0; lon <= 180.0; lon += 360.0){
-            for (double lat=-90.0; lat <= 90.0; lat += 0.1){
+            for (double lat=-90.0; lat <= 90.0; lat += 0.1, ++it, ++pos){
                 lonLatXY.lonLat.lon = lon;
                 lonLatXY.lonLat.lat = lat;
                 lonLatXY.xy = lonLatToXY(lon, lat);
-                _OuterLimits[pos] = lonLatXY;
-//                cout << "calcOuterLimits: lon = " << lon << ", lat = " << lat << ", x = " << lonLatXY.xy.x << ", y = " << lonLatXY.xy.y << endl;
-                ++pos;
+//                if (pos >= _OuterLimits.size()){
+//                    throw std::out_of_range ("calcOuterLimits: ERROR: pos=" + to_string(pos)
+//                            + " >= _OuterLimits.size()=" + to_string(_OuterLimits.size()));
+//                }
+                *it = lonLatXY;
             }
         }
+        int size = _OuterLimits.size();
+        cout << "calcOuterLimits: size = " << size << endl;
+        vector<double> outerLimitsX(size);
+        vector<double> outerLimitsY(size);
+        it = _OuterLimits.begin();
+        for (auto itX=outerLimitsX.begin(),
+                  itY=outerLimitsY.begin();
+             itX!=outerLimitsX.end();
+             ++itX, ++itY, ++it){
+            *itX = it->xy.x;
+            *itY = it->xy.y;
+        }
+        _OuterLimitsXY[0].x = *(min_element(outerLimitsX.begin(), outerLimitsX.end()));
+        _OuterLimitsXY[1].x = *(max_element(outerLimitsX.begin(), outerLimitsX.end()));
+        _OuterLimitsXY[0].y = *(min_element(outerLimitsY.begin(), outerLimitsY.end()));
+        _OuterLimitsXY[1].y = *(max_element(outerLimitsY.begin(), outerLimitsY.end()));
+        cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
+             << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
+    #ifdef __PLOT__
+        string plotName("/Volumes/external/azuri/data/limits.png");
+        mglGraph gr;
+        gr.SetMarkSize(0.00001);
+        plot(_OuterLimits, gr, plotName);
+    #endif
     }
-    int size = _OuterLimits.size();
-    vector<double> outerLimitsX(0);
-    vector<double> outerLimitsY(0);
-    outerLimitsX.reserve(size);
-    outerLimitsY.reserve(size);
-    for (int i=0; i<size; ++i){
-        outerLimitsX.push_back(_OuterLimits[i].xy.x);
-        outerLimitsY.push_back(_OuterLimits[i].xy.y);
-    }
-    _OuterLimitsXY[0].x = *(min_element(outerLimitsX.begin(), outerLimitsX.end()));
-    _OuterLimitsXY[1].x = *(max_element(outerLimitsX.begin(), outerLimitsX.end()));
-    _OuterLimitsXY[0].y = *(min_element(outerLimitsY.begin(), outerLimitsY.end()));
-    _OuterLimitsXY[1].y = *(max_element(outerLimitsY.begin(), outerLimitsY.end()));
-    cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
-         << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
-#ifdef __PLOT__
-    string plotName("/Volumes/external/azuri/data/limits.png");
-    mglGraph gr;
-    gr.SetMarkSize(0.00001);
-    plot(_OuterLimits, gr, plotName);
-#endif
     return;
 }
 
-/**
- * @brief Check if a x-y coordinate is inside the outer limits
- * @param x x-coordinate
- * @param y y-coordinate
- */
+vector<LonLatXY> Hammer::getOuterLimits(){
+    if (_OuterLimits[0].lonLat.lon == 0.0)
+        calcOuterLimits();
+    return _OuterLimits;
+}
+
+vector<XY> Hammer::getOuterLimitsXY(){
+    if (_OuterLimitsXY[0].x == 0.0)
+        calcOuterLimits();
+    return _OuterLimitsXY;
+}
+
 bool Hammer::isInside(double x, double y){
     if (_OuterLimits.size() == 0)
         calcOuterLimits();
@@ -147,7 +160,7 @@ bool Hammer::isInside(double x, double y){
             }
             if (((y < 0.0) && (y >= pixel.yLow)) || ((y >= 0.0) && (y <= pixel.yHigh))){
                 if (Debug_isInside){
-                    cout << "y=" << y << " is inside [" << pixel.yLow << ", " << pixel.yHigh << "]" << endl;
+                    cout << "y=" << y << " is inside [" << pixel.yLow << ", " << pixel.yHigh << "] => returning true" << endl;
                 }
                 return true;
             }
@@ -163,13 +176,7 @@ bool Hammer::isInside(double x, double y){
     return false;
 }
 
-bool Pixel::isInside(XY const& xy){
-    if ((xy.x >= xLow) && (xy.x < xHigh) && (xy.y >= yLow) && (xy.y < yHigh))
-        return true;
-    return false;
-}
-
-void Hammer::plotGrid(string plotName){
+void Hammer::plotGrid(string plotName) const{
     mglGraph gr;
     gr.SetMarkSize(0.00001);
     LonLatXY lonLatXY;
@@ -211,7 +218,7 @@ vector<Pixel> Hammer::getPixels(){
             pix.yLow = yPosBottom;
             pix.yHigh = yPosBottom + yStep;
             if (isInside(pix.xLow, pix.yLow) || isInside(pix.xLow, pix.yHigh) ||
-                isInside(pix.yHigh, pix.yLow) || isInside(pix.xHigh, pix.yHigh)){
+                isInside(pix.xHigh, pix.yLow) || isInside(pix.xHigh, pix.yHigh)){
                 pixels.push_back(pix);
             }
         }
