@@ -1,0 +1,2 @@
+g++ -O3 moveStarsToXY.cc galcomp.cc hammer.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -l mgl -Wno-c++11-extensions
+./a.out > debugMoveStars.log

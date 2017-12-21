@@ -1,0 +1,3 @@
+#rm moveStarsGalaxia
+g++ -O3 -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` moveStarsToXY.cc galcomp.cc hammer.cc ../python/hammer.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -l mgl -Wno-c++11-extensions -o moveStarsGalaxia.so
+#./moveStarsGalaxia

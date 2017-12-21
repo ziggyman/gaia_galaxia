@@ -1,64 +1,80 @@
 #include "moveStarsToXY.h"
 
 void gaiaMoveStarsToXY(){
-    string dataDir;
-    boost::format fileNameRoot;
-    string fileNameHeader;
-
-}
-
-void moveStarsToXY(string const& dataDir, boost::format const& fileNameRoot, string const& fileNameHeader){
-    bool append = false;
-    bool doWrite = true;
-    string startWithFileName = "";///Only this file will be checked for already existing entries!
-    bool moveFromLonLatToXY = false;
-
-    string dataDir;
-    boost::format fileNameRoot;
-    string fileNameHeader;
+    string dataDir("/Volumes/external/azuri/data/gaia/cdn.gea.esac.esa.int/Gaia/gaia_source/csv/");
+    string dataDirOut("/Volumes/external/azuri/data/gaia/xy/");
+    boost::format fileNameRoot = boost::format("GaiaSource_%03i-%03i-%03i.csv");//% (release, tract, patch);
+    boost::format fileNameOutRoot = boost::format("GaiaSource_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
     vector<string> inputFileNames(0);
-
-    if (moveFromLonLatToXY){
-        dataDir = "/Volumes/external/azuri/data/gaia/lon-lat/";
-        fileNameRoot = boost::format("GaiaSource_%i-%i_%i-%i.csv");// % (int(minLongitude), int(maxLongitude), int(minLatitude), int(maxLatitude))
-
-        cout << "creating vectors for longitudes and latitudes" << endl;
-        for (int lon=10; lon<=360; lon+=10){
-            for (int lat=-80; lat<=90; lat+=10){
-                inputFileNames.push_back(dataDir + (fileNameRoot % (lon-10)
-                                                          % lon
-                                                          % (lat-10)
-                                                          % lat).str());
-            }
-        }
-
-        fileNameHeader = dataDir + (fileNameRoot % 0
-                                           % 10
-                                           % -90
-                                           % -80).str();
-
-    }
-    else{
-        dataDir = "/Volumes/external/azuri/data/gaia/cdn.gea.esac.esa.int/Gaia/gaia_source/csv/";
-        fileNameRoot = boost::format("GaiaSource_%03i-%03i-%03i.csv");//% (release, tract, patch)
-
-        fileNameHeader = dataDir + (fileNameRoot % 0
-                                                 % 0
-                                                 % 0).str();
-        for (int iRelease=0; iRelease<3; ++iRelease){
-            for (int iTract=0; iTract<1000; ++iTract){
-                for (int iPatch=0; iPatch<1000; ++iPatch){
-                    std::string fileName = dataDir + (fileNameRoot % iRelease % iTract % iPatch).str();
-                    if (ifstream(fileName)){/// File exists
-                        inputFileNames.push_back(fileName);
-                    }
+    for (int iRelease=0; iRelease<3; ++iRelease){
+        for (int iTract=0; iTract<1000; ++iTract){
+            for (int iPatch=0; iPatch<1000; ++iPatch){
+                std::string fileName = dataDir + (fileNameRoot % iRelease
+                                                               % iTract
+                                                               % iPatch).str();
+                if (ifstream(fileName)){/// File exists
+                    inputFileNames.push_back(fileName);
                 }
             }
         }
     }
+    moveStarsToXY(dataDir, dataDirOut, inputFileNames, fileNameOutRoot);
+}
 
+void gaiaMoveStarsFromLonLatToXY(){
+    string dataDir("/Volumes/external/azuri/data/gaia/lon-lat/");
     string dataDirOut("/Volumes/external/azuri/data/gaia/xy/");
+    boost::format fileNameRoot = boost::format("GaiaSource_%i-%i_%i-%i.csv");// % (int(minLongitude), int(maxLongitude), int(minLatitude), int(maxLatitude))
     boost::format fileNameOutRoot = boost::format("GaiaSource_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+    vector<string> inputFileNames(0);
+    for (int lon=10; lon<=360; lon+=10){
+        for (int lat=-80; lat<=90; lat+=10){
+            inputFileNames.push_back(dataDir + (fileNameRoot % (lon-10)
+                                                             % lon
+                                                             % (lat-10)
+                                                             % lat).str());
+        }
+    }
+    moveStarsToXY(dataDir, dataDirOut, inputFileNames, fileNameOutRoot);
+}
+
+void galaxiaMoveStarsFromLonLatToXY(){
+    string dataDir("/Volumes/yoda/azuri/data/galaxia/lon-lat/");
+    string dataDirOut("/Volumes/yoda/azuri/data/galaxia/xy/");
+    boost::format fileNameRoot = boost::format("galaxia_%i-%i_%i-%i.csv");// % (int(minLongitude), int(maxLongitude), int(minLatitude), int(maxLatitude))
+    boost::format fileNameOutRoot = boost::format("galaxia_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+    vector<string> inputFileNames(0);
+    for (int lon=-80; lon<=180; lon+=10){
+        for (int lat=-80; lat<=90; lat+=10){
+            inputFileNames.push_back(dataDir + (fileNameRoot % (lon-10)
+                                                             % lon
+                                                             % (lat-10)
+                                                             % lat).str());
+        }
+    }
+    moveStarsToXY(dataDir, dataDirOut, inputFileNames, fileNameOutRoot);
+}
+
+void galaxiaMoveStarsFromEBFToXY(){
+    string dataDir("/Volumes/yoda/azuri/data/galaxia/lon-lat/");
+    string dataDirOut("/Volumes/yoda/azuri/data/galaxia/xy/");
+    boost::format fileNameRoot = boost::format("galaxia_%i-%i_%i-%i.csv");// % (int(minLongitude), int(maxLongitude), int(minLatitude), int(maxLatitude))
+    boost::format fileNameOutRoot = boost::format("galaxia_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+    vector<string> inputFileNames(0);
+    for (int lon=-80; lon<=180; lon+=10){
+        for (int lat=-80; lat<=90; lat+=10){
+            inputFileNames.push_back(dataDir + (fileNameRoot % (lon-10)
+                                                             % lon
+                                                             % (lat-10)
+                                                             % lat).str());
+        }
+    }
+    moveStarsToXY(dataDir, dataDirOut, inputFileNames, fileNameOutRoot);
+}
+void moveStarsToXY(string const& dataDir, string const& dataDirOut, vector<string> const& inputFileNames, boost::format & fileNameOutRoot){
+    bool append = false;
+    bool doWrite = true;
+    string startWithFileName = "";///Only this file will be checked for already existing entries!
 
     cout << "running calcOuterLimits" << endl;
     Hammer hammer;
@@ -83,8 +99,7 @@ void moveStarsToXY(string const& dataDir, boost::format const& fileNameRoot, str
     }
 
     /// open all outFiles and write header
-    cout << "running readHeader for " << fileNameHeader << endl;
-    vector<string> header = readHeader(fileNameHeader);
+    vector<string> header = readHeader(inputFileNames[0]);
     header.push_back("hammerX");
     header.push_back("hammerY");
 
@@ -238,7 +253,8 @@ void checkGaiaInputFiles(){
 }
 
 int main(){
-    gaiaMoveStarsToXY();
+//    galaxiaMoveStarsFromEBFToXY();
+    //gaiaMoveStarsToXY();
     return 0;
 }
 

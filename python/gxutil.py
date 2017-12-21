@@ -113,9 +113,3 @@ def _vlbr2xyz(l,b,r,vl,vb,vr):
 def xyz2lbr(x,y,z):
     rc2=x*x+y*y
     return [np.degrees(np.arctan2(y,x)),np.degrees(np.arctan(z/np.sqrt(rc2))),np.sqrt(rc2+z*z)]
-
-
-
-
-
-

@@ -9,6 +9,12 @@
 using namespace std;
 
 void gaiaMoveStarsToXY();
+void gaiaMoveStarsFromLonLatToXY();
+void galaxiaMoveStarsFromLonLatToXY();
+void moveStarsToXY(string const& dataDir,
+                   string const& dataDirOut,
+                   vector<string> const& inputFileNames,
+                   boost::format & fileNameOutRoot);
 
 vector<string> galaxiaGetLonLatFileNames();
 
