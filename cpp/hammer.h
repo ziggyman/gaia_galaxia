@@ -21,6 +21,12 @@ struct XY{
 
     XY() : x(0.0), y(0.0){}
     XY(double a, double b): x(a), y(b){}
+
+//    double getX() const {return x;}
+//    double getY() const {return y;}
+
+//    void setX(double xIn){x=xIn;}
+//    void setY(double yIn){y=yIn;}
 };
 
 /**
@@ -138,6 +144,7 @@ public:
     XY lonLatToXY(const LonLat& lonLat) const{
         return lonLatToXY(lonLat.lon, lonLat.lat);
     }
+    vector< vector< double > > lonLatToXY(vector<double> & lonDeg, vector<double> & latDeg) const;
 
     /**
      * @brief Convert the Hammer Projection x and y to longitude and latitude

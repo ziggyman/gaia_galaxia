@@ -31,6 +31,30 @@ XY Hammer::lonLatToXY(const double& lonDeg, const double& latDeg) const{
     return xy;
 }
 
+vector< vector< double > > Hammer::lonLatToXY(vector<double> & lonDeg, vector<double> & latDeg) const{
+    int size = lonDeg.size();
+    if (size != latDeg.size()){
+        throw std::out_of_range ("lonLatToXY: ERROR: size=" + to_string(size)
+                            + " != latDeg.size()=" + to_string(latDeg.size()));
+    }
+    vector< vector < double > > out(2);
+    out[0].resize(size);
+    out[1].resize(size);
+    XY xy;
+    for (auto itLon = lonDeg.begin(),
+              itLat = latDeg.begin(),
+              itX = out[0].begin(),
+              itY = out[1].begin();
+         itLon != lonDeg.end();
+         ++itLon, ++itLat, ++itX, ++itY)
+    {
+        xy = lonLatToXY(*itLon, *itLat);
+        *itX = xy.x;
+        *itY = xy.y;
+    }
+    return out;
+}
+
 LonLat Hammer::xYToLonLat(const double& x, const double& y) const{
     LonLat lonLat;
     double z = hammerZ(x, y);
