@@ -173,7 +173,7 @@ class Galaxia(object):
                             if not pixFound:
                                 print 'ERROR: no pixel found for star (iStar) = ',iStar
                                 STOP
-                    print nStarsWritten,' stars written'
+                print nStarsWritten,' stars written'
                 print 'opened ',len(openFiles),' files, closing them now'
                 for file in openFiles:
                     file.close()

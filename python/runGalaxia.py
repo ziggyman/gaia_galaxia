@@ -37,7 +37,7 @@ def processGalaxia(lon):
     doCSV = False
 
 #    for lat in np.arange(-85, 90, 10):
-    for lat in np.arange(5, 90, 10):
+    for lat in np.arange(15, 90, 10):
         outputFile = 'galaxia_%d_%d' % (lon, lat)
         print "outputFile = <", outputFile, ">"
 #        globallock.acquire()
@@ -98,9 +98,9 @@ def processGalaxia(lon):
             if (os.path.isfile(os.path.join(outputDir, outputFile+'.ebf'))
                 and len(tmpFiles) == 0):
                 print "galaxia output file ",os.path.join(outputDir, outputFile+'.ebf')," found and no temp files => not running galaxia"
-        if not os.path.isfile(os.path.join(outputDir, outputFile+'.ebf')):
-            print "ERROR: file <",os.path.join(outputDir, outputFile+'.ebf'),"> not found"
-            STOP
+#        if not os.path.isfile(os.path.join(outputDir, outputFile+'.ebf')):
+#            print "ERROR: file <",os.path.join(outputDir, outputFile+'.ebf'),"> not found"
+#            STOP
         if doCSV:
             lonStart = lon-5
             lonEnd = lon+5
