@@ -91,6 +91,8 @@ public:
         _NPixY(160),
         _LonLimit(179.99999),
         _LatLimit(89.99999),
+        _KeyWordHammerX("hammerX"),
+        _KeyWordHammerY("hammerY"),
         Debug_isInside(false)
     {}
 
@@ -180,6 +182,9 @@ public:
 
     void setDebug_isInside(bool const setDebug){Debug_isInside = setDebug;}
 
+    string getKeyWordHammerX() const{return _KeyWordHammerX;}
+    string getKeyWordHammerY() const{return _KeyWordHammerY;}
+
 private:
     vector<LonLatXY> _OuterLimits;
     vector<XY> _OuterLimitsXY;
@@ -189,6 +194,9 @@ private:
 
     const double _LonLimit;
     const double _LatLimit;
+
+    const string _KeyWordHammerX;
+    const string _KeyWordHammerY;
     
     bool Debug_isInside;
 

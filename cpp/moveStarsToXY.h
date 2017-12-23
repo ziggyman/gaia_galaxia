@@ -8,13 +8,41 @@
 
 using namespace std;
 
+boost::format galaxiaGetFileNameOutRoot();
+boost::format gaiaGetFileNameOutRoot();
+
+string galaxiaGetDataDirOut();
+string gaiaGetDataDirOut();
+
+vector<string> galaxiaGetInputFileNames();
+vector<string> gaiaGetInputFileNames();
+vector<string> gaiaGetInputFileNamesFromLonLat();
+
+vector< std::shared_ptr< ofstream > > getOutFiles(vector<Pixel> const& pixels);
+
+vector<string> getOutFileNames(vector<Pixel> const& pixels,
+                               string const& whichOne);
+
+void writeHeaderToOutFiles(vector<string> const& header,
+                           vector<Pixel> const& pixels,
+                           string const& whichOne,
+                           bool const& append);
+//                           vector<string> const& outFileNames,
+//                           vector< std::shared_ptr< ofstream > > const& outFiles);
+
+void appendCSVDataToXYFiles(CSVData const& csvData,
+                            vector<Pixel> const& pixels,
+                            string const& whichOne);
+//                            vector< std::shared_ptr< ofstream > > const& outFiles,
+//                            vector<string> const& outFileNames);
+
 void gaiaMoveStarsToXY();
+
 void gaiaMoveStarsFromLonLatToXY();
+
 void galaxiaMoveStarsFromLonLatToXY();
-void moveStarsToXY(string const& dataDir,
-                   string const& dataDirOut,
-                   vector<string> const& inputFileNames,
-                   boost::format & fileNameOutRoot);
+
+void moveStarsToXY(string const& whichOne);
 
 vector<string> galaxiaGetLonLatFileNames();
 

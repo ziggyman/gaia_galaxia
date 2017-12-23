@@ -65,9 +65,28 @@ struct CSVData{
         return out;
     }
 
+    void setData(vector< vector< string > > & dataIn){
+        int nStars = dataIn.size();
+        data.resize(nStars);
+        int nCols = dataIn[0].size();
+        for (auto itIn=dataIn.begin(), it=data.begin();
+             itIn!= dataIn.end();
+             ++itIn, ++it){
+            it->resize(nCols);
+            *it = *itIn;
+        }
+    }
+
     int size() const{
         return data.size();
     }
+
+/*    void setDataSize(int nCols, int nStars){
+        data.resize(nCols);
+        for (auto itDat=data.begin(); itDat!=data.end(); ++itDat)
+            itDat->resize(nStars);
+        return;
+    }*/
 };
 
 int existsHowManyTimes(vector<string> const& inVec, string const& in);

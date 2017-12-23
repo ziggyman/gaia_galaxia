@@ -22,7 +22,9 @@ PYBIND11_MODULE(galcomp, m) {
         .def_readwrite("data", &CSVData::data)
         .def("getData", (string (CSVData::*)(string const&, int) const) &CSVData::getData)
         .def("getData", (vector<string> (CSVData::*)(string const&) const) &CSVData::getData)
+        .def("setData", (void (CSVData::*)(vector< vector< string > > &)) &CSVData::setData)
         .def("size", (int (CSVData::*)() const) &CSVData::size)
+//        .def("setDataSize", (bool (CSVData::*)(int, int)) &CSVData::setDataSize)
     ;
 
 

@@ -51,5 +51,7 @@ PYBIND11_MODULE(hammer, m) {
         .def("getPixels", &Hammer::getPixels)
         .def("lonLatToXY", (XY (Hammer::*)(const double &, const double &) const) &Hammer::lonLatToXY)
         .def("lonLatToXY", (vector< vector< double > > (Hammer::*)(vector<double> &, vector<double> &) const) &Hammer::lonLatToXY)
+        .def("getKeyWordHammerX", (string (Hammer::*)() const) &Hammer::getKeyWordHammerX)
+        .def("getKeyWordHammerY", (string (Hammer::*)() const) &Hammer::getKeyWordHammerY)
     ;
 }
