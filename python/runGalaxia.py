@@ -32,12 +32,12 @@ def processGalaxia(lon):
     parameterFileIn = os.path.join(dir, 'parameterfile')
     outputFile = ''
     fileNameOut = os.path.join(dir,'galaxia_%d-%d_%d-%d.csv')
-    overwrite = False
+    overwrite = True
     doIt = True
     doCSV = False
 
 #    for lat in np.arange(-85, 90, 10):
-    for lat in np.arange(15, 90, 10):
+    for lat in np.arange(15, 50, 10):
         outputFile = 'galaxia_%d_%d' % (lon, lat)
         print "outputFile = <", outputFile, ">"
 #        globallock.acquire()
@@ -57,6 +57,8 @@ def processGalaxia(lon):
                             parameterValue = words[len(words)-1]
                             if parameterName == 'outputFile':
                                 parameterValue = outputFile+'\n'
+                            elif parameterName == 'outputDir':
+                                parameterValue = outputDir+'\n'
                             elif parameterName == 'longitude':
                                 parameterValue = '%d\n' % lon
                             elif parameterName == 'latitude':
@@ -194,7 +196,7 @@ def main(argv):
     argv -- command line arguments
     """
     p = Pool(processes=1)
-    lon = [5]#np.arange(-175, 178, 10)
+    lon = [-5]#np.arange(-175, 178, 10)
 #    lon = np.arange(5, 360, 10)
     print 'lon = ',lon
     p.map(processGalaxia, lon)

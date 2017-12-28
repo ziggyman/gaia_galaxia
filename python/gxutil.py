@@ -64,7 +64,7 @@ def abs2app(data,noext=False,dered=False,corr=False):
     for temp in data.keys():
         temp1=temp.lower()
         if temp1 in aebv:
-            print temp
+#            print temp
             if noext==1:
                 data[temp]=data[temp]+dmod
             else:

@@ -1,5 +1,55 @@
 #include "moveStarsToXY.h"
 
+int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
+                    vector<string> const& outFileNames,
+                    vector< std::shared_ptr< ofstream > > & filesOpened,
+                    vector<string> & locks,
+                    int iPix){
+    string lockName("/var/lock/lock_");
+    lockName += to_string(iPix);
+    /// if lock file exists, close all open files and remove their locks,
+    /// and wait until lock file is deleted
+    if (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
+        time_t start, end;
+        cout << "waiting for file <" << outFileNames[iPix] << "> to become available" << endl;
+        time (&start); // note time before execution
+        closeFilesAndDeleteLocks(filesOpened, locks);
+
+        /// keep trying until lock is deleted
+        while (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
+            sleep(5);
+        }
+        time (&end); // note time before execution
+        cout << "waited " << end-start << "s to get a lock on file <" << outFileNames[iPix] << ">" << endl;
+    }
+    locks.push_back(lockName);
+    outFiles[iPix]->open(outFileNames[iPix], ofstream::app);
+    filesOpened.push_back(outFiles[iPix]);
+//    cout << "opened file <" << outFileNames[iPix] << ">" << endl;
+
+    return 1;
+}
+
+void closeFileAndDeleteLock(ofstream & file,
+                            string const& lockName){
+    file.close();
+    deleteLock(lockName);
+}
+
+void closeFilesAndDeleteLocks(vector< std::shared_ptr< ofstream > > & filesOpened,
+                              vector<string> & locks){
+    auto lockName = locks.begin();
+    for (auto open=filesOpened.begin(); open!=filesOpened.end(); ++open, ++lockName){
+        closeFileAndDeleteLock(*(*open), *lockName);
+    }
+    filesOpened.resize(0);
+    locks.resize(0);
+}
+
+void deleteLock(string const& lockName){
+    remove(lockName.c_str());
+}
+
 boost::format galaxiaGetFileNameOutRoot(){
     return boost::format("galaxia_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 }
@@ -145,8 +195,13 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
     vector< std::shared_ptr< ofstream > > const& outFiles = getOutFiles(pixels);
     vector<string> const& outFileNames = getOutFileNames(pixels, whichOne);
 
+    vector< string > locks(0);
     vector< std::shared_ptr< ofstream > > filesOpened(0);
+    locks.reserve(1000);
     filesOpened.reserve(1000);
+
+    time_t start, end;
+    time (&start); // note time before execution
 
     int nStarsWritten = 0;
     for (int iStar=0; iStar<csvData.size(); ++iStar){
@@ -174,9 +229,11 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                     }
                 }*/
                 if (!outFiles[iPix]->is_open()){
-                    outFiles[iPix]->open(outFileNames[iPix], ofstream::app);
-                    filesOpened.push_back(outFiles[iPix]);
-                    cout << "opened file <" << outFileNames[iPix] << ">" << endl;
+                    openAndLockFile(outFiles,
+                                    outFileNames,
+                                    filesOpened,
+                                    locks,
+                                    iPix);
                 }
 //                if (!alreadyThere){
                 if (doWrite){
@@ -197,9 +254,12 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
     }
     cout << "wrote " << nStarsWritten << " stars" << endl;
     cout << "opened " << filesOpened.size() << " files, closing them now" << endl;
-    for (auto open=filesOpened.begin(); open!=filesOpened.end(); ++open)
-        (*open)->close();
-    filesOpened.resize(0);
+    closeFilesAndDeleteLocks(filesOpened,
+                             locks);
+    time (&end); // note time after execution
+
+    cout << "time taken for appendCSVDataToXYFiles(): " << end-start << " s" << endl;
+
 }
 
 void moveStarsToXY(string const& whichOne){
@@ -229,11 +289,11 @@ void moveStarsToXY(string const& whichOne){
         cout << "moveStarsToXY: ERROR: whichOne(=<" << whichOne << ">) is neither equal to <galaxia> nor to <gaia>" << endl;
         exit(EXIT_FAILURE);
     }
-    cout << "running calcOuterLimits" << endl;
+//    cout << "running calcOuterLimits" << endl;
     Hammer hammer;
     hammer.calcOuterLimits();
 
-    cout << "running getPixels" << endl;
+//    cout << "running getPixels" << endl;
     vector<Pixel> pixels=hammer.getPixels();
 
     ///create vectors of outFileNames and outFiles
@@ -247,7 +307,7 @@ void moveStarsToXY(string const& whichOne){
 
     writeHeaderToOutFiles(header, pixels, whichOne, append);
 
-    cout << "reading input files" << endl;
+//    cout << "reading input files" << endl;
     bool runFile = false;
     for (auto itInputFileName=inputFileNames.begin(); itInputFileName!=inputFileNames.end(); ++itInputFileName){
         if (!runFile &&
@@ -258,7 +318,7 @@ void moveStarsToXY(string const& whichOne){
             runFile = true;
         }
         if (runFile){
-            cout << "reading fileName <" << *itInputFileName << ">" << endl;
+//            cout << "reading fileName <" << *itInputFileName << ">" << endl;
             CSVData csvData = readCSVFile(*itInputFileName);
             vector<string> lonStr = csvData.getData(string("l"));
             vector<string> latStr = csvData.getData(string("b"));
@@ -321,7 +381,6 @@ void checkGaiaInputFiles(){
     boost::format fileNameRoot = boost::format("GaiaSource_%03i-%03i-%03i.csv");//% (release, tract, patch)
 
     float lon, lat;
-    struct timeval start, end;
     for (int iRelease=0; iRelease<3; ++iRelease){
         for (int iTract=0; iTract<1000; ++iTract){
             for (int iPatch=0; iPatch<1000; ++iPatch){

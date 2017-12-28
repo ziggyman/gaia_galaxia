@@ -14,24 +14,65 @@ import moveStarsToXY
 
 #globallock = Lock()
 
+
 class Galaxia(object):
     ham = hammer.Hammer()
-    outFileNames = []
+    inFileNames = []
     keys = []
     keyStr = ''
+    lonLatCombinations = []
+    fileWorking = None
+    fileFinished = None
 
     def __init__(self):
         dir = '/Volumes/yoda/azuri/data/galaxia/sdss/'
-        self.outputDir = '/Volumes/yoda/azuri/data/galaxia/xy/'
         self.fileNameIn = os.path.join(dir, 'galaxia_%d_%d.ebf')
-        self.fileNameOut = os.path.join(self.outputDir,'galaxia_%0.6f-%0.6f_%0.6f-%0.6f.csv')
         self.headerFile = self.fileNameIn % (-85, -85)
+
+    def openFileWorking(self, flag='a'):
+        Galaxia.fileWorking = open('/Volumes/yoda/azuri/data/galaxia/workinOnFiles.txt', flag)
+
+    def openFileFinished(self, flag='a'):
+        Galaxia.fileFinished = open('/Volumes/yoda/azuri/data/galaxia/finishedFiles.txt', flag)
+
+    def closeFileWorking(self):
+        Galaxia.fileWorking.close()
+
+    def closeFileFinished(self):
+        Galaxia.fileFinished.close()
+
+    def writeToFileWorking(self, text):
+        self.openFileWorking()
+        Galaxia.fileWorking.write(text+'\n')
+        self.closeFileWorking()
+
+    def writeToFileFinished(self, text):
+        self.openFileFinished()
+        Galaxia.fileFinished.write(text+'\n')
+        self.closeFileFinished()
+
+    def getLonLatCombinations(self):
+        if len(Galaxia.lonLatCombinations) == 0:
+            for lon in np.arange(-175, 180, 10):
+                for lat in np.arange(-85, 90, 10):
+                    Galaxia.lonLatCombinations.append([lon, lat])
+#                    print ('lon = Galaxia.lonLatCombinations[',len(Galaxia.lonLatCombinations)-1,'][0] = ',
+#                           Galaxia.lonLatCombinations[len(Galaxia.lonLatCombinations)-1][0],', ',
+#                           'lat = Galaxia.lonLatCombinations[',len(Galaxia.lonLatCombinations)-1,'][1] = ',
+#                           Galaxia.lonLatCombinations[len(Galaxia.lonLatCombinations)-1][1])
+
+    def getInFileNames(self):
+        if len(Galaxia.lonLatCombinations) == 0:
+            print 'ERROR: run Galaxia.getLonLatCombinations() first'
+            STOP
+        for combo in Galaxia.lonLatCombinations:
+            Galaxia.inFileNames.append(self.fileNameIn % (combo[0], combo[1]))
 
     def getHeader(self):
 
-        print 'ebf.info(',self.headerFile,')'
-        ebf.info(self.headerFile)
-        print ' '
+#        print 'ebf.info(',self.headerFile,')'
+#        ebf.info(self.headerFile)
+#        print ' '
 
         data = ebf.iterate(self.headerFile, '/px+', 1)
         for it in data:
@@ -49,17 +90,17 @@ class Galaxia(object):
             gxutil.abs2app(it,corr=True)
 
             Galaxia.keys = list(it.keys())
-            print 'Galaxia.keys = ',Galaxia.keys
+#            print 'Galaxia.keys = ',Galaxia.keys
             break
 
         Galaxia.keyStr = Galaxia.keys[0]
         for key in Galaxia.keys[1:]:
             Galaxia.keyStr += ','+key
         Galaxia.keyStr += '\n'
-        print 'Galaxia.keyStr = ',Galaxia.keyStr
+#        print 'Galaxia.keyStr = ',Galaxia.keyStr
         return Galaxia.keys
 
-    def getCSVData(self, data, window):
+    def getCSVData(self, data, window, inputFile, iIt):
         csvData = galcomp.CSVData()
 
         """create CSVData.header"""
@@ -74,7 +115,7 @@ class Galaxia(object):
 
         dataArr = []
 
-        print 'Galaxia.keys = ',len(Galaxia.keys),': ',Galaxia.keys
+#        print 'Galaxia.keys = ',len(Galaxia.keys),': ',Galaxia.keys
         nStarsOut = 0
         for iStar in range(len(data['px'])):
             lon = lons[iStar]
@@ -97,7 +138,7 @@ class Galaxia(object):
                 dataArr.append(outVec)
                 nStarsOut += 1
 
-        print 'nStarsOut = ',nStarsOut
+        print 'file <',inputFile,'>: window: [',window.xLow,', ',window.xHigh,' : ',window.yLow,', ',window.yHigh,']: iIt = ',iIt,': nStarsOut = ',nStarsOut
         csvData.setData(dataArr)
 
         if csvData.size() != nStarsOut:
@@ -132,36 +173,17 @@ class Galaxia(object):
         if len(Galaxia.keys) == 0:
             self.getHeader()
 
-#        Galaxia.keyStr = Galaxia.keys[0]
-#        for key in Galaxia.keys[1:]:
-#            Galaxia.keyStr += ','+key
-#        Galaxia.keyStr += '\n'
-#        print 'Galaxia.keyStr = ',Galaxia.keyStr
-
         pixels = Galaxia.ham.getPixels()
-#        nPix = len(pixels)
-#        Galaxia.outFileNames = [None] * nPix
-#        for iPix in range(nPix):
-#            Galaxia.outFileNames[iPix] = self.fileNameOut % (pixels[iPix].xLow,
-#                                                             pixels[iPix].xHigh,
-#                                                             pixels[iPix].yLow,
-#                                                             pixels[iPix].yHigh)
-#    #        print 'Galaxia.outFileNames[',iPix,'] = ',Galaxia.outFileNames[iPix]
-#            """write headers"""
-#            with open(Galaxia.outFileNames[iPix],'w') as csvFileOut:
-#                csvFileOut.write(Galaxia.keyStr)
         moveStarsToXY.writeHeaderToOutFiles(Galaxia.keys,
                                             pixels,
                                             'galaxia',
                                             False)
 
-    def processGalaxia(self):
-        print 'processGalaxia started'
-        print 'Galaxia.outFileNames = ',Galaxia.outFileNames
-        print 'Galaxia.keys = ',Galaxia.keys
-        print 'Galaxia.keyStr = ',Galaxia.keyStr
-        print 'self.fileNameIn = ',self.fileNameIn
-        print 'self.fileNameOut = ',self.fileNameOut
+    def processGalaxia(self, iCombo):
+#        print 'processGalaxia started'
+#        print 'Galaxia.keys = ',Galaxia.keys
+#        print 'Galaxia.keyStr = ',Galaxia.keyStr
+#        print 'self.fileNameIn = ',self.fileNameIn
         doIt = True
         inputFile = ''
 
@@ -169,107 +191,85 @@ class Galaxia(object):
 #        nPix = len(pixels)
 
         if doIt:
-            cache = 10000000
-            for lon in np.arange(-175, 178, 10):
-                for lat in np.arange(-85, 90, 10):
-                    timeStart = time.time()
-                    inputFile = self.fileNameIn % (lon, lat)
-                    print "inputFile = <", inputFile, ">"
-                    if os.path.isfile(inputFile):
-                        print "galaxia input file ",inputFile," found => moving stars to xy"
-                    else:
-                        print "ERROR: galaxia input file ",inputFile," not found"
-                        STOP
+            cache = 1000000
+            lon = Galaxia.lonLatCombinations[iCombo][0]
+            lat = Galaxia.lonLatCombinations[iCombo][1]
+#            print 'lon = ',lon,', lat = ',lat
+            timeStart = time.time()
+            inputFile = self.fileNameIn % (lon, lat)
+            self.writeToFileWorking(inputFile)
+#            print "inputFile = <", inputFile, ">"
+            if not os.path.isfile(inputFile):
+#                print "galaxia input file ",inputFile," found => moving stars to xy"
+#            else:
+                print "ERROR: galaxia input file ",inputFile," not found"
+                STOP
 
-                    lonStart = lon-5
-                    lonEnd = lon+5
-                    if (lon < 0):
-                        lonStart += 360.0
-                        lonEnd += 360.0
-                    latStart = lat-5
-                    latEnd = lat+5
-        #               print 'lonStart = ',lonStart,', lonEnd = ',lonEnd,', latStart = ',latStart,', latEnd = ',latEnd
+            lonStart = lon-5
+            lonEnd = lon+5
+            if (lon < 0):
+                lonStart += 360.0
+                lonEnd += 360.0
+            latStart = lat-5
+            latEnd = lat+5
+#               print 'lonStart = ',lonStart,', lonEnd = ',lonEnd,', latStart = ',latStart,', latEnd = ',latEnd
 
-    #                openFiles = []
-    #                openFileNames = []
+#                openFiles = []
+#                openFileNames = []
 
-                    data = ebf.iterate(inputFile, '/px+', cache)
-    #                nStarsWritten = 0
+            data = ebf.iterate(inputFile, '/px+', cache)
+#                nStarsWritten = 0
 
-                    for it in data:
+            iIt = 0
+            for it in data:
+                timeStartIt = time.time()
 
-    #                    long = it['glon']
-    #                    ind=np.where(long < 0.0)[0]
-    #                    long[ind]=long[ind] + 360.0
-    #
-    #                    lati = it['glat']
+#                    long = it['glon']
+#                    ind=np.where(long < 0.0)[0]
+#                    long[ind]=long[ind] + 360.0
+#
+#                    lati = it['glat']
 
-                        self.addXYandPMandAbs2App(it)
+                self.addXYandPMandAbs2App(it)
 
-                        keys = list(it.keys())
+                keys = list(it.keys())
 
-                        keyStrTemp = keys[0]
-                        for key in keys[1:]:
-                            keyStrTemp += ','+key
-                        keyStrTemp += '\n'
-        #                    print 'keyStrTemp = ',keyStrTemp
-                        if Galaxia.keyStr != keyStrTemp:
-                            print 'Galaxia.keyStr = ',Galaxia.keyStr
-                            print 'keyStrTemp = ',keyStrTemp
-                            print "ERROR: keyStrings don't match!"
-                            STOP
+                keyStrTemp = keys[0]
+                for key in keys[1:]:
+                    keyStrTemp += ','+key
+                keyStrTemp += '\n'
+#                    print 'keyStrTemp = ',keyStrTemp
+                if Galaxia.keyStr != keyStrTemp:
+                    print 'Galaxia.keyStr = ',Galaxia.keyStr
+                    print 'keyStrTemp = ',keyStrTemp
+                    print "ERROR: keyStrings don't match!"
+                    STOP
 
-                        window = hammer.Pixel()
-                        window.xLow = lonStart
-                        window.xHigh = lonEnd
-                        window.yLow = latStart
-                        window.yHigh = latEnd
+                window = hammer.Pixel()
+                window.xLow = lonStart
+                window.xHigh = lonEnd
+                window.yLow = latStart
+                window.yHigh = latEnd
 
-                        csvData = self.getCSVData(it, window)
-                        moveStarsToXY.appendCSVDataToXYFiles(csvData,
-                                                             pixels,
-                                                             'galaxia')
-    #                    for iStar in range(len(it['px'])):
-    #                        longi = long[iStar]
-    #                        latit = lati[iStar]
-    #    #                        print 'iStar = ',iStar,': longi = ',longi,', latit = ',latit
-    #                        if (longi >= lonStart) and (longi < lonEnd) and (latit >= latStart) and (latit < latEnd):
-    #                            pixFound = False
-    #                            xy = hammer.XY(it[Galaxia.ham.getKeyWordHammerX()][iStar],
-    #                                           it[Galaxia.ham.getKeyWordHammerY()][iStar])
-    ##                            print 'iStar = ',iStar,': xy = ',xy
-    #                            for iPix in range(len(pixels)):
-    #                                if pixels[iPix].isInside(xy):
-    #                                    outFileName = Galaxia.outFileNames[iPix]
-    #                                    pixFound = True
-    #
-    #                                    if outFileName not in openFileNames:
-    #                                        openFileNames.append(outFileName)
-    #                                        fn = open(outFileName,'a')
-    #                                        print 'opened file name <',outFileName,'>'
-    #                                        openFiles.append(fn)
-    #
-    #                                    outString = str(it[keys[0]][iStar])
-    #                                    for key in Galaxia.keys[1:]:
-    #                                        outString += ','+str(it[key][iStar])
-    #                                    #print 'outString = <',outString,'>'
-    #                                    openFiles[openFileNames.index(outFileName)].write(outString+'\n')
-    #                                    nStarsWritten += 1
-    #                            if not pixFound:
-    #                                print 'ERROR: no pixel found for star (iStar) = ',iStar
-    #                                STOP
-    #                print nStarsWritten,' stars written'
-    #                print 'opened ',len(openFiles),' files, closing them now'
-    #                for file in openFiles:
-    #                    file.close()
-                    timeEnd = time.time()
-                    print 'ran file <',inputFile,'> in ',timeEnd-timeStart,' s'
+                csvData = self.getCSVData(it, window, inputFile, iIt)
+                moveStarsToXY.appendCSVDataToXYFiles(csvData,
+                                                     pixels,
+                                                     'galaxia')
+                timeEndIt = time.time()
+                print 'ran iIt = ',iIt,' for file <', inputFile,'> in ',timeEndIt-timeStartIt,' seconds'
+
+                iIt += 1
+            timeEnd = time.time()
+            duration = timeEnd-timeStart
+            print 'ran file <',inputFile,'> in ',duration,' s'
+            self.writeToFileFinished(inputFile+' done in '+str(duration)+'s')
+
 #                STOP
 
     #        globallock.release()
-#def processGalaxia(lon):
-#    gal = Galaxia()
-#    gal.processGalaxia(lon)
+def processGalaxia(iCombo):
+    gal = Galaxia()
+    gal.processGalaxia(iCombo)
 
 def main(argv):
     """Main program.
@@ -278,17 +278,24 @@ def main(argv):
     argv -- command line arguments
     """
     gal = Galaxia()
+    gal.getLonLatCombinations()
+    gal.getInFileNames()
     gal.getHeader()
     gal.writeHeaders()
+    gal.openFileWorking('w')
+    gal.openFileFinished('w')
+    gal.closeFileWorking()
+    gal.closeFileFinished()
 
-#    p = Pool(processes=1)
+    p = Pool(processes=16)
 #    lon = np.arange(-175, 178, 10)
-#    lon = np.arange(5, 360, 10)
-#    print 'lon = ',lon
-#    p.map(processGalaxia, lon)
+    iCombo = np.arange(len(Galaxia.lonLatCombinations))
+    p.map(processGalaxia, iCombo)
 #    print 'starting processGalaxia '
-    gal.processGalaxia()
-#    p.close()
+    #gal.processGalaxia(combo[0])
+    p.close()
+    gal.closeFileWorking()
+    gal.closeFileFinished()
 
 if __name__ == '__main__':
     main(sys.argv)

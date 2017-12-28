@@ -103,4 +103,8 @@ vector<double> convertStringVectortoDoubleVector(const vector<string>& stringVec
 
 vector< vector< string > > getGaiaObject(CSVData const& csvData, string const& source_id);
 
+CSVData getStarsInXYWindow(Pixel const& window, string const& whichOne);
+
+void comparePixel(Pixel const& pix);
+
 #endif

@@ -3,10 +3,47 @@
 
 #include <algorithm>
 #include <boost/format.hpp>
+#include <cstdio>
+#include <ctime> // time_t
+#include <fcntl.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <vector>
 #include "galcomp.h"
-
 using namespace std;
+
+/**
+ * @brief : if lock file exists, close all open files and remove their locks,
+ *          and wait until lock file is deleted
+ * @return
+ */
+int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
+                    vector<string> const& outFileNames,
+                    vector< std::shared_ptr< ofstream > > & filesOpened,
+                    vector<string> & locks,
+                    int iPix);
+
+/**
+ * @brief : close file and remove lockName
+ * @return
+ */
+void closeFileAndDeleteLock(ofstream & file,
+                            string const& lockName);
+
+/**
+ * @brief : close all files in filesOpened and remove the locks
+ */
+void closeFilesAndDeleteLocks(vector< std::shared_ptr< ofstream > > & filesOpened,
+                              vector<string> & locks);
+
+/**
+ * @brief : remove lock called lockName
+ *          This method has been added because of reports on the internet that
+ *          calling this method instead of directly removing the lock prevents
+ *          Threads to try and create the same lock file
+ */
+void deleteLock(string const& lockName);
 
 boost::format galaxiaGetFileNameOutRoot();
 boost::format gaiaGetFileNameOutRoot();
