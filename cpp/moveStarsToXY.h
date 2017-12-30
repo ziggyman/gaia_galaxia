@@ -13,6 +13,10 @@
 #include "galcomp.h"
 using namespace std;
 
+int lockFile(string const& fileName,
+             string & lockName,
+             ios_base::openmode const& mode=ofstream::in);
+
 /**
  * @brief : if lock file exists, close all open files and remove their locks,
  *          and wait until lock file is deleted
@@ -69,7 +73,9 @@ void writeHeaderToOutFiles(vector<string> const& header,
 
 void appendCSVDataToXYFiles(CSVData const& csvData,
                             vector<Pixel> const& pixels,
-                            string const& whichOne);
+                            string const& whichOne,
+                            vector<string> const& ids,
+                            bool const& doFind=false);
 //                            vector< std::shared_ptr< ofstream > > const& outFiles,
 //                            vector<string> const& outFileNames);
 

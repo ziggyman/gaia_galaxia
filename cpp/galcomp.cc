@@ -52,10 +52,7 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
 
 CSVData readCSVFile(string const& fileName){
     ifstream inStream(fileName);
-    if (inStream.is_open()){
-        cout << "file with name <" << fileName << "> is open" << endl;
-    }
-    else{
+    if (!inStream.is_open()){
         cout << "file with name <" << fileName << "> is not open" << endl;
         exit(EXIT_FAILURE);
     }

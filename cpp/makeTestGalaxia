@@ -1,1 +1,1 @@
-g++ -isystem ../../cpp/googletest/googletest/include -pthread tests/testGalaxia.cc galaxia.cc ../../cpp/googletest/googletest/make/libgtest.a -I/opt/local/include -L/usr/local/lib -o testGalaxia -Wno-c++11-extensions
+g++ -std=c++11 -isystem ../../cpp/googletest/googletest/include -pthread tests/testGalaxia.cc galaxia.cc ../../cpp/googletest/googletest/make/libgtest.a -I/opt/local/include -L/usr/local/lib -o testGalaxia -Wno-c++11-extensions

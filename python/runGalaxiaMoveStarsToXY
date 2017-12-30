@@ -1,0 +1,4 @@
+rm /var/lock/*
+rm /Volumes/yoda/azuri/data/galaxia/finishedFiles.txt
+rm /Volumes/yoda/azuri/data/galaxia/workinOnFiles.txt
+python galaxiaMoveToXY.py > /Volumes/yoda/azuri/data/galaxia/galaxiaMoveToXY.log

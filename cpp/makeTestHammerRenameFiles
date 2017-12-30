@@ -1,1 +1,1 @@
-g++ -isystem ../../cpp/googletest/googletest/include -pthread tests/testHammerRenameFiles.cc ../../cpp/googletest/googletest/make/libgtest.a -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -o testHammerRenameFiles -l mgl -Wno-c++11-extensions
+g++ -std=c++11 -isystem ../../cpp/googletest/googletest/include -pthread tests/testHammerRenameFiles.cc ../../cpp/googletest/googletest/make/libgtest.a -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -o testHammerRenameFiles -l mgl -Wno-c++11-extensions

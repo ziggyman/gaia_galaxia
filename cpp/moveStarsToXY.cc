@@ -1,12 +1,31 @@
 #include "moveStarsToXY.h"
 
+int lockFile(string const& fileName,
+             string & lockName,
+             ios_base::openmode const& mode){
+    if (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
+        time_t start, end;
+        cout << "waiting for file <" << fileName << "> to become available" << endl;
+        time (&start); // note time before execution
+
+        /// keep trying until lock is deleted
+        while (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
+            sleep(5);
+        }
+        time (&end); // note time before execution
+        cout << "waited " << end-start << "s to get a lock on file <" << fileName << ">" << endl;
+    }
+    cout << "locked " << fileName << " for reading" << endl;
+
+    return 1;
+}
+
 int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
                     vector<string> const& outFileNames,
                     vector< std::shared_ptr< ofstream > > & filesOpened,
                     vector<string> & locks,
                     int iPix){
-    string lockName("/var/lock/lock_");
-    lockName += to_string(iPix);
+    string lockName = "/var/lock/lock_" + to_string(iPix);
     /// if lock file exists, close all open files and remove their locks,
     /// and wait until lock file is deleted
     if (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
@@ -188,7 +207,9 @@ void galaxiaMoveStarsFromLonLatToXY(){
 
 void appendCSVDataToXYFiles(CSVData const& csvData,
                             vector<Pixel> const& pixels,
-                            string const& whichOne){
+                            string const& whichOne,
+                            vector<string> const& ids,
+                            bool const& doFind){
     bool doWrite = true;
     Hammer ham;
 
@@ -201,49 +222,89 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
     filesOpened.reserve(1000);
 
     time_t start, end;
+    time_t findsStart, findsEnd;
     time (&start); // note time before execution
 
     int nStarsWritten = 0;
+    bool lastEntryFound = true;
+    bool alreadyThere = false;
+    vector<bool> starFoundInIds(ids.size());
+    if (doFind){
+        time (&findsStart); // note time before execution
+    }
     for (int iStar=0; iStar<csvData.size(); ++iStar){
         XY xy(stod(csvData.getData(ham.getKeyWordHammerX(), iStar)),
               stod(csvData.getData(ham.getKeyWordHammerY(), iStar)));
         bool pixFound = false;
         for (int iPix=0; iPix<pixels.size(); ++iPix){
             if (pixels[iPix].isInside(xy)){
-                // if lon==startWithLon && lat==startWithLat: Check if star is already in outFiles[iPix]
-/*                if (append && lastEntryFound &&
-                        (itInputFileName->compare(startWithFileName) == 0)){
-                    CSVData csvDataOutFile = readCSVFile(outFileNames[iPix]);
-                    cout << "csvDataOutFile.size() = " << csvDataOutFile.size() << ", reading source_ids" << endl;
-                    vector<string> ids = csvDataOutFile.getData("source_id");
-                    cout << "ids.size() = " << ids.size() << endl;
-                    string source_id = csvData.getData("source_id", iStar);
-                    cout << "checking for source_id = " << source_id << " in source_ids" << endl;
-                    if (std::find(ids.begin(), ids.end(), source_id) != ids.end()){
-                        alreadyThere = true;
-                        cout << "source_id <" << source_id << "> found in " << outFileNames[iPix] << endl;
+                // Check if star is already in outFiles[iPix]
+                if (lastEntryFound && doFind){
+                    time_t findStart, findEnd;
+                    time (&findStart); // note time before execution
+
+                    string lockName = "/var/lock/lock_" + to_string(iPix);
+                    if (outFiles[iPix]->is_open())
+                        closeFilesAndDeleteLocks(filesOpened,
+                                                 locks);
+                    if (lockFile(outFileNames[iPix], lockName) == 1){
+                        CSVData csvDataOutFile = readCSVFile(outFileNames[iPix]);
+                        closeFileAndDeleteLock(*(outFiles[iPix]),
+                                               lockName);
+                        int iId = -1;
+                        for (auto itId=ids.begin(); itId!=ids.end(); ++itId){
+                            ++iId;
+                            cout << "iStar = " << iStar << ": csvDataOutFile.size() = " << csvDataOutFile.size() << ", reading id <" << *itId << ">" << endl;
+                            vector<string> idsTemp = csvDataOutFile.getData(*itId);
+                            cout << "iStar = " << iStar << ": idsTemp.size() = " << idsTemp.size() << endl;
+                            string id = csvData.getData(*itId, iStar);
+                            cout << "iStar = " << iStar << ": checking for " << *itId << " = " << id << " in file " << outFileNames[iPix] << endl;
+                            if (std::find(idsTemp.begin(), idsTemp.end(), id) != idsTemp.end()){
+                                starFoundInIds[iId] = true;
+                                cout << "iStar = " << iStar << ": id <" << id << "> found in " << outFileNames[iPix] << endl;
+                            }
+                            else{
+                                starFoundInIds[iId] = false;
+                                cout << "iStar = " << iStar << ": id <" << id << "> NOT found in " << outFileNames[iPix] << endl;
+                                break;
+                            }
+                        }
+                        alreadyThere = starFoundInIds[0];
+                        for (int iIId = 1; iIId<=iId; ++iIId){
+                            alreadyThere = alreadyThere && starFoundInIds[iIId];
+                        }
+                        if (!alreadyThere){
+                            lastEntryFound = false;
+                            cout << "iStar = " << iStar << ": star not found in " << outFileNames[iPix] << " => stopping search" << endl;
+                        }
+                        else{
+                            cout << "iStar = " << iStar << ": alreadyThere == true" << endl;
+                            lastEntryFound = true;
+                        }
                     }
-                    else{
-                        lastEntryFound = false;
-                        cout << "source_id <" << source_id << "> not found in " << outFileNames[iPix] << " => stopping search" << endl;
+                    time (&findEnd); // note time after execution
+                    cout << "iStar = " << iStar << ": time taken to search for star: " << findEnd-findStart << " s" << endl;
+                }
+                if (!alreadyThere){
+                    if (doFind){
+                        time (&findsEnd);
+                        cout << "time taken to search for stars: " << findsEnd-findsStart << " s" << endl;
                     }
-                }*/
-                if (!outFiles[iPix]->is_open()){
-                    openAndLockFile(outFiles,
-                                    outFileNames,
-                                    filesOpened,
-                                    locks,
-                                    iPix);
+                    if (!outFiles[iPix]->is_open()){
+                        openAndLockFile(outFiles,
+                                        outFileNames,
+                                        filesOpened,
+                                        locks,
+                                        iPix);
+                    }
+                    if (doWrite){
+                        writeStrVecToFile(csvData.data[iStar], *(outFiles[iPix]));
+                        ++nStarsWritten;
+                    }
+                    else
+                        cout << "would write csvData.data[" << iStar << "] to <"
+                                << outFileNames[iPix] << "> but not going to as doWrite is false" << endl;
                 }
-//                if (!alreadyThere){
-                if (doWrite){
-                    writeStrVecToFile(csvData.data[iStar], *(outFiles[iPix]));
-                    ++nStarsWritten;
-                }
-                else
-                    cout << "would write csvData.data[" << iStar << "] to <"
-                            << outFileNames[iPix] << "> but not going to as doWrite is false" << endl;
-//                }
                 pixFound = true;
             }
         }
@@ -268,22 +329,29 @@ void moveStarsToXY(string const& whichOne){
 
     string dataDirOut;
     vector<string> inputFileNames;
+    vector<string> ids(0);
 
     boost::format fileNameOutRoot;
     if (whichOne.compare("galaxia") == 0){
         dataDirOut = galaxiaGetDataDirOut();
         inputFileNames = galaxiaGetInputFileNames();
         fileNameOutRoot = galaxiaGetFileNameOutRoot();
+        ids.push_back("rad");
+        ids.push_back("hammerX");
+        ids.push_back("hammerY");
+        ids.push_back("exbv_solar");
     }
     else if (whichOne.compare("gaia") == 0){
         dataDirOut = gaiaGetDataDirOut();
         inputFileNames = gaiaGetInputFileNames();
         fileNameOutRoot = gaiaGetFileNameOutRoot();
+        ids.push_back("source_id");
     }
     else if (whichOne.compare("gaiaFromLonLat") == 0){
         dataDirOut = gaiaGetDataDirOut();
         inputFileNames = gaiaGetInputFileNamesFromLonLat();
         fileNameOutRoot = gaiaGetFileNameOutRoot();
+        ids.push_back("source_id");
     }
     else{
         cout << "moveStarsToXY: ERROR: whichOne(=<" << whichOne << ">) is neither equal to <galaxia> nor to <gaia>" << endl;
@@ -295,10 +363,6 @@ void moveStarsToXY(string const& whichOne){
 
 //    cout << "running getPixels" << endl;
     vector<Pixel> pixels=hammer.getPixels();
-
-    ///create vectors of outFileNames and outFiles
-    vector< std::shared_ptr< ofstream > > outFiles = getOutFiles(pixels);
-    vector<string> outFileNames = getOutFileNames(pixels, whichOne);
 
     /// open all outFiles and write header
     vector<string> header = readHeader(inputFileNames[0]);
@@ -332,7 +396,7 @@ void moveStarsToXY(string const& whichOne){
                 csvData.data[iLine].push_back(to_string(xy.x));
                 csvData.data[iLine].push_back(to_string(xy.y));
             }
-            appendCSVDataToXYFiles(csvData, pixels, whichOne);
+            appendCSVDataToXYFiles(csvData, pixels, whichOne, ids);
         }
         else{
             cout << "skipping file " << *itInputFileName << endl;
