@@ -24,6 +24,7 @@ vector<string> gaiaDR2GetInputFileNames();
 vector<string> gaiaTgasGetInputFileNames();
 vector<string> gaiaGetInputFileNamesFromLonLat();
 vector<string> gaiaXSimbadGetInputFileName();
+vector<string> gaiaXSDSSGetInputFileName();
 
 vector< std::shared_ptr< ofstream > > getOutFiles(vector<Pixel> const& pixels);
 

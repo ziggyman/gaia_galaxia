@@ -19,11 +19,13 @@ from myUtils import hmsToDeg,dmsToDeg,raDecToLonLat,getPixel,angularDistance
 #os.system("/Users/azuri/entwicklung/python/myUtils.py")# import getDate, findClosestDate,...
 
 #parameters
+maxAngularDistance = 3.0
 path = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/'
 fnameList = path+'xyfiles.list'
+keywordsToFind = []
 
 fnameGaiaRoot = '/Volumes/obiwan/azuri/data/gaia/dr2/xy/GaiaSource_'
-fNameXMatchRoot = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_'
+fNameXMatchRoot = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_R_phot_rp_mean_mag_rv_template_logg.csv'
 
 nStarsDone = 0
 

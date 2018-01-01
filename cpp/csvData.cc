@@ -1,12 +1,12 @@
 #include "csvData.h"
 
 int CSVData::findKeywordPos(string const& keyword) const{
-    int keywordPos = -1;
-    for (int headerPos=0; headerPos<header.size(); ++headerPos){
-        if (keyword.compare(header[headerPos]) == 0)
-            keywordPos = headerPos;
+    int keywordPos = 0;
+    for (auto itHeader=header.begin(); itHeader != header.end(); ++itHeader, ++keywordPos){
+        if (itHeader->compare(keyword) == 0)//{
+            return keywordPos;
     }
-    return keywordPos;
+    return -1;
 }
 
 vector<string> CSVData::getData(unsigned row) const{
@@ -39,7 +39,15 @@ vector< vector< string > > CSVData::getData(vector<unsigned> const& rows) const{
     return outCSVData;
 }
 
-string CSVData::getData(string const& keyword, int row) const{
+vector< vector< string > > CSVData::getData(vector<int> const& rows) const{
+    vector< vector< string > > outCSVData(0);
+    for (int i = 0; i < rows.size(); ++i){
+        outCSVData.push_back(getData(rows[i]));
+    }
+    return outCSVData;
+}
+
+string CSVData::getData(string const& keyword, unsigned row) const{
     int headerPos = findKeywordPos(keyword);
     if (headerPos < 0){
         /// mayge it's the G color...
@@ -106,6 +114,34 @@ vector<string> CSVData::getData(string const& keyword) const{
     return out;
 }
 
+vector<string> CSVData::getData(string const& keyword, vector<unsigned> const& rows) const{
+    vector< string > out(0);
+    int pos = findKeywordPos(keyword);
+    if (pos < 0){
+        throw std::runtime_error("getData: ERROR: keyword <"+keyword+"> not found in header\n");
+    }
+    for (auto it=rows.begin(); it!=rows.end(); ++it){
+        if (*it >= size())
+            throw std::runtime_error("getData: ERROR: row "+to_string(*it)+" > size(="+to_string(size())+")\n");
+        out.push_back(data[*it][pos]);
+    }
+    return out;
+}
+
+vector<string> CSVData::getData(string const& keyword, vector<int> const& rows) const{
+    vector< string > out(0);
+    int pos = findKeywordPos(keyword);
+    if (pos < 0){
+        throw std::runtime_error("getData: ERROR: keyword <"+keyword+"> not found in header\n");
+    }
+    for (auto it=rows.begin(); it!=rows.end(); ++it){
+        if (*it >= size())
+            throw std::runtime_error("getData: ERROR: row "+to_string(*it)+" > size(="+to_string(size())+")\n");
+        out.push_back(data[*it][pos]);
+    }
+    return out;
+}
+
 void CSVData::setData(vector< vector< string > > & dataIn){
     int nStars = dataIn.size();
     data.resize(nStars);
@@ -115,6 +151,17 @@ void CSVData::setData(vector< vector< string > > & dataIn){
          ++itIn, ++it){
         it->resize(nCols);
         *it = *itIn;
+    }
+}
+
+void CSVData::setData(string const& keyword, unsigned row, string const& value){
+    data[row][findKeywordPos(keyword)] = value;
+}
+
+void CSVData::addColumn(string const& colName){
+    header.push_back(colName);
+    for (auto itData=data.begin(); itData != data.end(); ++itData){
+        itData->push_back(string(""));
     }
 }
 
@@ -166,6 +213,195 @@ void CSVData::append(vector<string> const& newLine){
     data.push_back(newLine);
 }
 
+void CSVData::append(CSVData const& csv){
+    if (header != csv.header){
+        string message = "";
+        for (int i=0; i<header.size(); ++i){
+            if (header[i].compare(csv.header[i]) != 0){
+                message += "header[" + to_string(i) + "] = "+header[i] + " != csv.header[" + to_string(i) + "] = "+csv.header[i];
+            }
+        }
+        throw std::runtime_error("CSVData::append: ERROR: headers are not the same: "+message);
+    }
+    for (unsigned i = 0; i < csv.size(); ++i)
+        data.push_back(csv.getData(i));
+}
+
+vector<int> CSVData::find(string const& keyword, string const& value) const{
+    unsigned keywordPos = findKeywordPos(keyword);
+    vector<int> vecOut(0);
+    bool found = false;
+    int i = 0;
+    for (auto it = data.begin(); it != data.end(); ++it, ++i){
+        if ((*it)[keywordPos].compare(value) == 0){
+            vecOut.push_back(i);
+            found = true;
+        }
+    }
+    if (found)
+        return vecOut;
+    vecOut.push_back(-1);
+    return vecOut;
+}
+
+void CSVData::removeRow(unsigned row){
+    if (row >= size()){
+        throw std::runtime_error("CSVData::removeRow: ERROR: row(="+to_string(row)+") >= size(="+to_string(size())+")");
+    }
+    data.erase(data.begin()+row);
+}
+
+std::pair< vector< string >, vector< vector< unsigned > > > CSVData::findMultipleEntries(string const& key) const{
+    cout << "findMultipleEntries(key = <" << key << ">) started: this->size() = " << size() << endl;
+    std::pair< vector< string >, vector< vector< unsigned > > > out;
+    vector< vector< unsigned > > multipleEntries(0);
+    vector<string> alreadyChecked(0);
+    int pos = findKeywordPos(key);
+    cout << "findMultipleEntries: pos = " << pos << endl;
+    if (pos < 0){
+        throw std::runtime_error("CSVData::findMultipleEntries: ERROR: keyword <" + key + "> not found");
+    }
+    string value;
+    for (auto it=data.begin(); it!=data.end(); ++it){
+        value = (*it)[pos];
+        cout << "findMultipleEntries: value = " << value << endl;
+        if (!findInVector(alreadyChecked, value).first){
+            vector<int> positions = find(key, value);
+            cout << "findMultipleEntries: positions = ";
+            for (int i = 0; i < positions.size(); ++i)
+                cout << positions[i] << ", ";
+            cout << endl;
+            if (positions.size() > 1){
+                alreadyChecked.push_back(value);
+                vector<unsigned> upos(0);
+                for (auto itPos=positions.begin(); itPos!=positions.end(); ++itPos)
+                    upos.push_back((unsigned int)(*itPos));
+                cout << "findMultipleEntries: upos = ";
+                for (int i = 0; i < upos.size(); ++i)
+                    cout << upos[i] << ", ";
+                cout << endl;
+                multipleEntries.push_back(vector<unsigned>(upos));
+            }
+        }
+    }
+    out.first = alreadyChecked;
+    out.second = multipleEntries;
+    for (int i=0; i<alreadyChecked.size(); ++i){
+        cout << "findMultipleEntries: alreadyChecked[" << i << "] = " << out.first[i] << ", multipleEntries[" << i << "] = ";
+        for (int j=0; j<out.second.size(); ++j){
+            cout << out.second[i][j] << ", ";
+        }
+        cout << endl;
+    }
+    return out;
+}
+
+CSVData CSVData::combineMultipleEntries(string const& key, vector<string> const& keysToCombine, string const& filename) const{
+    cout << "combineMultipleEntries: this->size() = " << size() << endl;
+    cout << "combineMultipleEntries: this->header = ";
+    for (int i=0; i<header.size(); ++i)
+        cout << header[i] << ", ";
+    cout << endl;
+//    cout << "combineMultipleEntries: data = ";
+//    for (int i=0; i<size(); ++i){
+//        for (int j=0; j<header.size(); ++j)
+//            cout << data[i][j];
+//        cout << endl;
+//    }
+
+//    cout << "combineMultipleEntries: key = <" << key << ">" << endl;
+//    cout << "combineMultipleEntries: keysToCombine = <";
+//    for (int i=0; i<keysToCombine.size(); ++i)
+//        cout << keysToCombine[i] << ",";
+//    cout << ">" << endl;
+
+//    string tempKey = "source_id";
+//    vector<string> tempKeysToCombine(0);
+//    tempKeysToCombine.push_back("umag");
+//    tempKeysToCombine.push_back("gmag");
+//    tempKeysToCombine.push_back("rmag");
+//    tempKeysToCombine.push_back("imag");
+//    tempKeysToCombine.push_back("zmag");
+//    cout << "combineMultipleEntries: tempKey = <" << tempKey << ">" << endl;
+//    cout << "combineMultipleEntries: tempKeysToCombine = <";
+//    for (int i=0; i<tempKeysToCombine.size(); ++i)
+//        cout << tempKeysToCombine[i] << ",";
+//    cout << ">" << endl;
+
+//    std::pair< vector< string >, vector< vector< unsigned > > > multipleEntries = findMultipleEntries(key);
+    CSVData csvOut;
+    csvOut.header = header;
+    vector< string > done(0);
+    int pos = findKeywordPos(key);
+    cout << "combineMultipleEntries: keywordPos = " << pos << endl;
+
+    std::ofstream myfile;
+    myfile.open(filename);
+
+    ///write header
+    string outStr = header[0];
+    for (int i=1; i<header.size(); i++){
+        outStr += ","+header[i];
+    }
+    outStr += "\n";
+    myfile << outStr;
+
+    /// for each row in data
+    int iRow = 0;
+    for (auto it=data.begin(); it!=data.end(); ++it, ++iRow){
+        vector<int> positions = find(key, (*it)[pos]);
+        cout << "combineMultipleEntries: iRow = " << iRow << endl;
+        /// check if already done
+        if ((done.size() == 0) || (::find(done.begin(), done.end(), (*it)[pos]) == done.end())){
+            cout << "combineMultipleEntries: object not done yet" << endl;
+            csvOut.append(*it);
+
+            /// if multiple entries exist for this object
+//            std::pair< bool, int > found = findInVector(multipleEntries.first, (*it)[pos]);
+            if (positions.size() > 1){
+                /// take mean of values for keysToCombine
+                for (auto itKeyToCombine=keysToCombine.begin();
+                     itKeyToCombine!=keysToCombine.end();
+                     ++itKeyToCombine)
+                {
+                    int keyPos = findKeywordPos(*itKeyToCombine);
+                    cout << "combineMultipleEntries: calculating mean value of key " << *itKeyToCombine << endl;
+
+                    vector<string> dat = getData(*itKeyToCombine, positions);
+                    vector<double> datD(0);
+                    for (vector<string>::const_iterator iter = dat.begin(); iter != dat.end(); ++iter){
+                        if (iter->compare("") != 0){
+                            string const& element = *iter;
+                            std::istringstream is(element);
+                            double result;
+                            is >> result;
+                            datD.push_back(result);
+                            cout << "combineMultipleEntries: added " << to_string(result) << " to datD" << endl;
+                        }
+                    }
+                    if (datD.size() > 0){
+                        csvOut.data[csvOut.size()-1][keyPos] = to_string(mean(datD));
+                        cout << "combineMultipleEntries: csvOut.data[" << csvOut.size()-1 << "][" << keyPos << "] set to <" << csvOut.data[csvOut.size()-1][keyPos] << ">" << endl;
+                    }
+                }
+            }
+            done.push_back((*it)[pos]);
+
+            ///write data
+            outStr = csvOut.data[csvOut.size()-1][0];
+            for (int i=1; i<csvOut.data[csvOut.size()-1].size(); i++){
+                outStr += ","+csvOut.data[csvOut.size()-1][i];
+            }
+            outStr += "\n";
+            myfile << outStr;
+        }
+    }
+
+    myfile.close();
+    return csvOut;
+}
+
+
 void CSVData::printHeader() const{
     cout << header[0];
     for (int i=1; i<header.size(); ++i)
@@ -173,7 +409,7 @@ void CSVData::printHeader() const{
     cout << endl;
 }
 
-vector<string> readHeader(string const& fileName){
+vector<string> readHeader(string const& fileName, char const& delimiter){
     ifstream inStream(fileName);
     vector<string> header(0);
     string substring;
@@ -182,7 +418,7 @@ vector<string> readHeader(string const& fileName){
         if (getline(inStream, line)){
             stringstream lineStream(line.c_str());
             while(lineStream.good()){
-                getline(lineStream, substring, ',');
+                getline(lineStream, substring, delimiter);
                 header.push_back(substring);
 //                cout << "readHeader: header[" << header.size()-1 << "] = " << header[header.size()-1] << endl;
             }
@@ -223,7 +459,7 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
     return;
 }
 
-CSVData readCSVFile(string const& fileName, bool const& removeBadLines){
+CSVData readCSVFile(string const& fileName, char const& delimiter, bool const& removeBadLines){
     ifstream inStream(fileName);
     if (!inStream.is_open()){
         cout << "file with name <" << fileName << "> is not open" << endl;
@@ -256,13 +492,13 @@ CSVData readCSVFile(string const& fileName, bool const& removeBadLines){
                 }
             }
             else
-                nCommas = count(line.begin(), line.end(), ',');
+                nCommas = count(line.begin(), line.end(), delimiter);
 //            cout << "line contains " << nCommas << " kommas" << endl;
             if (iLine == 0){
                 stringstream lineStream(line.c_str());
                 pos = 0;
                 while(lineStream.good()){
-                    getline(lineStream, substring, ',');
+                    getline(lineStream, substring, delimiter);
 //                    cout << "header: pos = " << pos << ": substring = " << substring << endl;
                     csvData.header.push_back(substring);
 //                    cout << "pos = " << pos << ": added " << csvData.header[csvData.header.size()-1] << " to header" << endl;
@@ -292,7 +528,7 @@ CSVData readCSVFile(string const& fileName, bool const& removeBadLines){
     //                    cout << "header: substring = " << substring << endl;
                         stringstream subStream(substring);
                         while (subStream.good()){
-                            getline(subStream, substring, ',');
+                            getline(subStream, substring, delimiter);
     //                        cout << "header: pos = " << pos << ": substring = " << substring << endl;
                             dataLine.push_back(substring);
                             pos++;
@@ -303,13 +539,13 @@ CSVData readCSVFile(string const& fileName, bool const& removeBadLines){
                             dataLine.push_back(substring);
                             pos++;
                             if (lineStream.good())
-                                getline(lineStream, substring, ',');//Remove first comma after the 2nd quote
+                                getline(lineStream, substring, delimiter);//Remove first comma after the 2nd quote
                         }
                     }
                 }
                 else{
                     while(lineStream.good()){
-                        getline(lineStream, substring, ',');
+                        getline(lineStream, substring, delimiter);
         //                cout << "pos = " << pos << ": substring = " << substring << endl;
                         dataLine.push_back(substring);
                         pos++;
@@ -337,6 +573,10 @@ CSVData readCSVFile(string const& fileName, bool const& removeBadLines){
         exit(EXIT_FAILURE);
     }
     return csvData;
+}
+
+CSVData readCSVFile(string const& fileName){
+    return readCSVFile(fileName, ',', true);
 }
 
 void writeCSVFile(CSVData const& dat, string const& fileName){
@@ -414,17 +654,17 @@ vector<string> convertDoubleVectorToStringVector(vector<double> const& doubleVec
     return stringVector;
 }
 
-vector<string> splitCSVLine(string const& line){
+vector<string> splitCSVLine(string const& line, char const& delimiter){
     string tmpStr(line);
     cout << "splitCSVLine: tmpStr = " << tmpStr << endl;
     vector<string> out(0);
-    size_t kommaPos = tmpStr.find(",");
+    size_t kommaPos = tmpStr.find(to_string(delimiter));
     cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
     while (kommaPos != string::npos){
         out.push_back(tmpStr.substr(0,kommaPos));
         tmpStr = tmpStr.substr(kommaPos+1);
         cout << "splitCSVLine: tmpStr = " << tmpStr << endl;
-        kommaPos = tmpStr.find(",");
+        kommaPos = tmpStr.find(to_string(delimiter));
         cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
     }
     out.push_back(tmpStr);
@@ -540,4 +780,25 @@ vector<double> getGaiaG(CSVData const& csvData){
 
 bool isEven(int n){
     return (n % 2 == 0);
+}
+
+template < typename T >
+std::pair<bool, int> findInVector(const std::vector<T> & vecOfElements, const T& element){
+    std::pair<bool, int> result;
+    auto it = std::find(vecOfElements.begin(), vecOfElements.end(), element);
+    if (it != vecOfElements.end()){
+        result.second = distance(vecOfElements.begin(), it);
+        result.first = true;
+    }
+    else{
+        result.first = false;
+        result.second = -1;
+    }
+    return result;
+}
+template std::pair<bool, int> findInVector(const std::vector<string> &, const string &);
+
+double mean(vector< double > const& valVec){
+    double sum = std::accumulate(valVec.begin(), valVec.end(), 0.0);
+    return sum / valVec.size();
 }

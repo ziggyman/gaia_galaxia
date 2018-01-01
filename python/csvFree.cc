@@ -10,8 +10,10 @@ PYBIND11_MODULE(csvFree, m) {
 
     m.def("readHeader", (vector<string> (*)(string const&)) &readHeader);
     m.def("countCharPerLine", (vector<int> (*)(string const&, char const&)) &countCharPerLine);
-    m.def("readCSVFile", (CSVData (*)(string const&, bool const&)) &readCSVFile);
+//    m.def("readCSVFile", (CSVData (*)(string const&, bool const&)) &readCSVFile);
+    m.def("readCSVFile", (CSVData (*)(string const&, char const&, bool const&)) &readCSVFile);
     m.def("readCSVFile", (CSVData (*)(string const&)) &readCSVFile);
+//    m.def("readCSVFile", (CSVData (*)(string const&, char const&)) &readCSVFile);
     m.def("writeCSVFile", (void (*)(CSVData const&, string const&)) &writeCSVFile);
     m.def("convertStringVectorToDoubleVector", (vector<double> (*)(vector<std::string> const&)) &convertStringVectorToDoubleVector);
     m.def("convertStringVectorToUnsignedVector", (vector<unsigned> (*)(vector<std::string> const&)) &convertStringVectorToUnsignedVector);

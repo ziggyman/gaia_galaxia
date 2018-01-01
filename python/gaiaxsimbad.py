@@ -2,6 +2,7 @@
 import csv
 import csvData
 import csvFree
+import hammer
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import linear_model
@@ -9,6 +10,7 @@ from sklearn import linear_model
 #parameters
 highExtinction = False
 distRange = [0.0, 1000000.0]
+withSquares = False
 
 # high extinction fields:
 if highExtinction:
@@ -33,7 +35,10 @@ else:
 #    fnameTest = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_-0.000000-0.017678_-1.396536--1.378858.csv'
 #    fnameTest = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_0.282843-0.300520_-1.149049--1.131371.csv'
 
-fnameGaiaRoot = '/Volumes/obiwan/azuri/data/gaia/dr2/xy/GaiaSource_'
+fnameGaiaXSimbadRoot = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f'
+#fnameGaiaRoot = '/Volumes/obiwan/azuri/data/gaia/dr2/xy/GaiaSource_'
+ham = hammer.Hammer()
+pixels = ham.getPixels()
 
 def crossMatch(simbadFile, gaiaFile):
     simbadData = csvFree.readCSVFile(simbadFile)
@@ -72,7 +77,7 @@ def getGoodStarIndices(data, distRange=[0.,1000.]):
 # data: dictionary of all stars
 # indices: which stars to look at
 # distRange: range of distances
-def getXY(data, indices, xKeywords, yKeyword, distRange=[0.,1000.]):
+def getXY(data, indices, xKeywords, yKeyword, distRange=[0.,10000.]):
     x = []
     y = []
     print('len(indices) = ',len(indices))
@@ -81,10 +86,12 @@ def getXY(data, indices, xKeywords, yKeyword, distRange=[0.,1000.]):
             tmp = [1]
             for keyword in xKeywords:
                 tmp.append(float(data.getData(keyword, indices[i])))
+                if withSquares:
+                    tmp.append(float(data.getData(keyword, indices[i])) * float(data.getData(keyword, indices[i])))
             x.append(tmp)
             y.append(float(data.getData(yKeyword, indices[i])))
-    print 'len(x) = ',len(x)
-    print 'len(y) = ',len(y)
+    print('len(x) = ',len(x))
+    print('len(y) = ',len(y))
     return [x,y]
 
 #
@@ -108,53 +115,91 @@ def getGiantsAndDwarfs(data, indices):
     dwarfs = []
     giants = []
     for i in range(len(indices)):
+#        print('data.getData(rv_tempate_logg, ',indices[i],') = ',data.getData('rv_template_logg', indices[i]))
         if float(data.getData('rv_template_logg', indices[i])) < 3.5:
             giants.append(indices[i])
         else:
             dwarfs.append(indices[i])
-    print 'len(dwarfs) = ',len(dwarfs)
-    print 'len(giants) = ',len(giants)
+    print('len(dwarfs) = ',len(dwarfs))
+    print('len(giants) = ',len(giants))
     return [dwarfs,giants]
 
-"""cross-match (Simbad x Gaia) with GAIA DR2"""
-print('reading file <'+fname+'>')
-#dat = csvFree.readCSVFile(fname)
-fnameGaia = fnameGaiaRoot+getPixel(fname)+'.csv'
-dat = crossMatch(fname, fnameGaia)
-#print('dat.header = ',dat.header)
-#print dat.getData('phot_bp_mean_mag')[0:]
+#"""cross-match (Simbad x Gaia) with GAIA DR2"""
+#print('reading file <'+fname+'>')
+##dat = csvFree.readCSVFile(fname)
+#fnameGaia = fnameGaiaRoot+getPixel(fname)+'.csv'
+#dat = crossMatch(fname, fnameGaia)
+##print('dat.header = ',dat.header)
+##print dat.getData('phot_bp_mean_mag')[0:]
 
-"""get indices of stars which have data for B, V, R, and G_BP"""
-print('searching for stars with all needed parameters')
-goodStars = getGoodStarIndices(dat, distRange)
-print 'found ',len(goodStars),' good stars'
+#"""get indices of stars which have data for B, V, R, and G_BP"""
+#print('searching for stars with all needed parameters')
+#goodStars = getGoodStarIndices(dat, distRange)
+#print 'found ',len(goodStars),' good stars'
 
-"""stars we fit"""
-print('searching for dwarfs and giants')
-dwarfs, giants = getGiantsAndDwarfs(dat, goodStars)
-print('dwarfs = ',dwarfs)
-print('giants = ',giants)
-
-"""stars in the test field"""
-print('reading test field')
-fnameGaia = fnameGaiaRoot+getPixel(fnameTest)+'.csv'
-datTest = crossMatch(fnameTest, fnameGaia)
-goodStarsTest = getGoodStarIndices(datTest, distRange)
-dwarfs_test, giants_test = getGiantsAndDwarfs(datTest, goodStarsTest)
+#"""stars in the test field"""
+#print('reading test field')
+#fnameGaia = fnameGaiaRoot+getPixel(fnameTest)+'.csv'
+#datTest = crossMatch(fnameTest, fnameGaia)
+#goodStarsTest = getGoodStarIndices(datTest, distRange)
+#dwarfs_test, giants_test = getGiantsAndDwarfs(datTest, goodStarsTest)
 
 
 """fit G_BP as a function of B, V, and R"""
-xKeyWords = [['B','V','R'],['R','I'],['u','g','r'],['r','i','z']]
-yKeyWords = ['phot_bp_mean_mag', 'phot_rp_mean_mag', 'phot_bp_mean_mag', 'phot_rp_mean_mag']
+xKeyWords = [['B','V','R'],['u','g','r'],['i','z'],['R','I']]
+yKeyWords = ['phot_bp_mean_mag', 'phot_bp_mean_mag', 'phot_rp_mean_mag', 'phot_rp_mean_mag']
 with open('/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/results.txt','w') as f:
-    for iKey in len(yKeyWords):
+    for iKey in range(len(yKeyWords)):
         xKeys = xKeyWords[iKey]
         yKey = yKeyWords[iKey]
+        dat = None
+        datTest = None
+        k = 0.
+        for pixel in pixels:
+            fname = fnameGaiaXSimbadRoot % (pixel.xLow, pixel.xHigh, pixel.yLow, pixel.yHigh)
+            for key in xKeys:
+                fname = fname + '_' + key
+            fname = fname + '_' + yKey + '_rv_template_logg.csv'
+            if k / 100. == int(k/100.):#use as test data
+                if datTest == None:
+                    datTest = csvFree.readCSVFile(fname)
+                else:
+                    datTest.append(csvFree.readCSVFile(fname))
+            else:
+                if dat == None:
+                    dat = csvFree.readCSVFile(fname)
+                else:
+                    dat.append(csvFree.readCSVFile(fname))
+            k += 1.
+
+        fnameOut = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/allStars'
+        for key in xKeys:
+            fnameOut = fnameOut + '_' + key
+        fnameOut = fnameOut + '_' + yKey + '_rv_template_logg.csv'
+
+        datOut = dat
+        datOut.append(datTest)
+        csvFree.writeCSVFile(datOut, fnameOut)
+        datOut = None
+
+        """stars we fit"""
+        print('searching for dwarfs and giants')
+        dwarfs, giants = getGiantsAndDwarfs(dat, range(dat.size()))
+        dwarfs_test, giants_test = getGiantsAndDwarfs(datTest, range(datTest.size()))
+        print('len(dwarfs) = ',len(dwarfs))
+        print('len(giants) = ',len(giants))
+        print('len(dwarfs_test) = ',len(dwarfs_test))
+        print('len(giants_test) = ',len(giants_test))
+
         for stars in ['dwarfs', 'giants']:
-            if stars == 'darfs':
+            print('Calculating '+stars)
+            if stars == 'dwarfs':
                 indices = dwarfs
+                print('indices set to dwarfs')
             else:
                 indices = giants
+                print('indices set to giants')
+#            print('indices = ',indices)
             x,y = getXY(dat, indices, xKeys, yKey, distRange)
             print('len(x) = ',len(x),', len(y) = ',len(y))
 
@@ -165,18 +210,18 @@ with open('/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/results.txt','
             #print 'type(clf) = ',type(clf)
             #print 'clf = ',clf
             coeffs = clf[0]
-            print '============================== coeffs = ',coeffs
+            print('============================== coeffs = ',coeffs)
             #print 'clf.get_params = ',clf.get_params
 
             if True:
                 """check fit on our input data"""
                 yCalc = calcY(x, clf[0])
                 yDiff = np.array(y) - np.array(yCalc)
-                print 'len(yDiff) = ',len(yDiff)
-                print 'yDiff = ',yDiff
+                print('len(yDiff) = ',len(yDiff))
+                #print 'yDiff = ',yDiff
                 mean = np.mean(yDiff)
                 stdev = np.std(yDiff)
-                print 'mean = ',mean,', stdev = ',stdev
+                print('mean = ',mean,', stdev = ',stdev)
                 dist = []
                 for i in range(len(indices)):
                     dist.append(float(dat.getData('angDist', indices[i])))
@@ -192,34 +237,66 @@ with open('/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/results.txt','
                     indicesTest = dwarfs_test
                 else:
                     indicesTest = giants_test
+                print('testing '+stars+' with ',len(indicesTest),' stars')
 
-                xTest, yTest = getXY(datTest, indicesTest, distRange)
-                print 'yTest = ',yTest
+                xTest, yTest = getXY(datTest, indicesTest, xKeys, yKey, distRange)
+                #print 'yTest = ',yTest
                 yCalc = calcY(xTest, clf[0])
-                print 'yCalc = ',yCalc
+                #print 'yCalc = ',yCalc
                 yDiffTest = np.array(yTest) - np.array(yCalc)
-                print 'yDiffTest = ',yDiffTest
+                #print 'yDiffTest = ',yDiffTest
                 mean = np.mean(yDiffTest)
                 stdev = np.std(yDiffTest)
-                print 'mean = ',mean,', stdev = ',stdev
+                print('test mean = ',mean,', stdev = ',stdev)
 
                 distTest = []
                 for i in range(len(indicesTest)):
                     distTest.append(float(datTest.getData('angDist', indicesTest[i])))
                 plt.scatter(dist, yDiff, c='b')
-                print('len(distTest) = ',len(distTest))
-                print('len(yDiffTest) = ',len(yDiffTest))
+#                print('len(distTest) = ',len(distTest))
+#                print('len(yDiffTest) = ',len(yDiffTest))
                 plt.scatter(distTest, yDiffTest, c='g')
                 plt.xlabel('angular distance')
                 if yKey == 'phot_bp_mean_mag':
-                    plt.ylabel('G_BP difference')
+                    plt.ylabel('G_BP difference (measured - calcuated)')
                 elif yKey == 'phot_rp_mean_mag':
-                    plt.ylabel('G_RP difference')
+                    plt.ylabel('G_RP difference (measured - calcuated)')
                 plt.title(stars)
                 plotname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/'
                 for xKey in xKeys:
                     plotname += xKey
-                plotname += '_'+yKey+'.pdf'
+                plotname += '_'+yKey+'_'+stars
+                if withSquares:
+                    plotname += '_withSquares'
+                else:
+                    plotname += '_withoutSquares'
+                plotname += '.pdf'
+                plt.savefig(plotname, format='pdf', frameon=False, bbox_inches='tight', pad_inches=0.1)
+                plt.show()
+
+                plt.scatter(yTest, yCalc, c='b')
+                plt.plot([np.min(yTest)-0.5, np.max(yTest)+0.5],[np.min(yTest)-0.5, np.max(yTest)+0.5])
+                plt.xlim([np.min(yTest)-0.5, np.max(yTest)+0.5])
+                plt.ylim([np.min(yTest)-0.5, np.max(yTest)+0.5])
+#                print('len(distTest) = ',len(distTest))
+#                print('len(yDiffTest) = ',len(yDiffTest))
+#                plt.scatter(distTest, yDiffTest, c='g')
+                if yKey == 'phot_bp_mean_mag':
+                    plt.xlabel('G_BP measured')
+                    plt.ylabel('G_BP calcuated')
+                elif yKey == 'phot_rp_mean_mag':
+                    plt.xlabel('G_RP measured')
+                    plt.ylabel('G_RP calcuated')
+                plt.title(stars)
+                plotname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/'
+                for xKey in xKeys:
+                    plotname += xKey
+                plotname += '_'+yKey+'_'+stars
+                if withSquares:
+                    plotname += '_withSquares'
+                else:
+                    plotname += '_withoutSquares'
+                plotname += '_calc_vs_Gaia.pdf'
                 plt.savefig(plotname, format='pdf', frameon=False, bbox_inches='tight', pad_inches=0.1)
                 plt.show()
 

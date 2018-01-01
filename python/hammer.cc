@@ -60,6 +60,8 @@ PYBIND11_MODULE(hammer, m) {
         .def(py::init<>())
         .def("isInside", (bool (Hammer::*)(double, double)) &Hammer::isInside)
         .def("isInside", (bool (Hammer::*)(const XY &)) &Hammer::isInside)
+        .def("isInside", (bool (Hammer::*)(const Pixel &, const double, const double) const) &Hammer::isInside)
+        .def("isInside", (bool (Hammer::*)(const Pixel &, const XY &) const) &Hammer::isInside)
         .def("getPixels", &Hammer::getPixels)
         .def("lonLatToXY", (XY (Hammer::*)(const double &, const double &) const) &Hammer::lonLatToXY)
         .def("lonLatToXY", (vector< vector< double > > (Hammer::*)(vector<double> &, vector<double> &) const) &Hammer::lonLatToXY)

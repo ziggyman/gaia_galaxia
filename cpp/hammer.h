@@ -125,6 +125,10 @@ public:
         return isInside(xy.x, xy.y);
     }
 
+    bool isInside(Pixel const& pix, double const x, double const y) const;
+
+    bool isInside(Pixel const& pix, XY const& xy) const;
+
     /**
      * @brief Plot the grid of longitudes and latitudes in Hammer projection
      * @param plotName Name for the file to write

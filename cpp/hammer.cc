@@ -201,6 +201,15 @@ bool Hammer::isInside(double x, double y){
         cout << "x(=" << x << "), y(=" << y << ") not found to be inside a pixel" << endl;
     return false;
 }
+
+bool Hammer::isInside(Pixel const& pix, double const x, double const y) const{
+    return ((x > pix.xLow) && (x <= pix.xHigh) && (y > pix.yLow) && (y <= pix.yHigh));
+}
+
+bool Hammer::isInside(Pixel const& pix, XY const& xy) const{
+    return isInside(pix, xy.x, xy.y);
+}
+
 /**
 void Hammer::plotGrid(string plotName) const{
     mglGraph gr;

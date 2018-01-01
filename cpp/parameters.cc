@@ -29,6 +29,10 @@ boost::format gaiaXSimbadGetFileNameOutRoot(){
     return boost::format("GaiaXSimbad_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 }
 
+boost::format gaiaXSDSSGetFileNameOutRoot(){
+    return boost::format("GaiaXSDSS_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+}
+
 string modelGetDataDirOut(){
 //    return "/Volumes/yoda/azuri/data/galaxia/xy_ubv_Vlt13/";
     return "/Volumes/yoda/azuri/data/galaxia/ubv_Vlt21.5_1.0/xy/";
@@ -59,6 +63,10 @@ string gaiaTgasGetDataDirOut(){
 
 string gaiaXSimbadGetDataDirOut(){
     return "/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/";
+}
+
+string gaiaXSDSSGetDataDirOut(){
+    return "/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/xy/";
 }
 
 string obsGetFilter(){

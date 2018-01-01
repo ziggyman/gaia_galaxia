@@ -189,6 +189,13 @@ vector<string> gaiaXSimbadGetInputFileName(){
     return inputFileNames;
 }
 
+vector<string> gaiaXSDSSGetInputFileName(){
+    string dataDir("/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/");
+    vector<string> inputFileNames(0);
+    inputFileNames.push_back(dataDir + ("1552971988347A.csv"));
+    return inputFileNames;
+}
+
 vector< std::shared_ptr< ofstream > > getOutFiles(vector<Pixel> const& pixels){
     int nPix = pixels.size();
 
@@ -231,6 +238,11 @@ vector<string> getOutFileNames(vector<Pixel> const& pixels,
         fileNameOutRoot = gaiaXSimbadGetFileNameOutRoot();
         if (dirOut.compare("") == 0)
             dirOut = gaiaXSimbadGetDataDirOut();
+    }
+    else if (whichOne.compare("gaiaXSDSS") == 0){
+        fileNameOutRoot = gaiaXSDSSGetFileNameOutRoot();
+        if (dirOut.compare("") == 0)
+            dirOut = gaiaXSDSSGetDataDirOut();
     }
     else{
         cout << "getOutFileNames: ERROR: whichOne(=<" << whichOne << ">) neither equal to <galaxia> nor to <gaia> nor to <gaiaTgas>" << endl;
@@ -488,6 +500,12 @@ void moveStarsToXY(string const& whichOne){
         inputFileNames = gaiaXSimbadGetInputFileName();
         fileNameOutRoot = gaiaXSimbadGetFileNameOutRoot();
         ids.push_back("source_id");
+    }
+    else if (whichOne.compare("gaiaXSDSS") == 0){
+        dataDirOut = gaiaXSDSSGetDataDirOut();
+        inputFileNames = gaiaXSDSSGetInputFileName();
+        fileNameOutRoot = gaiaXSDSSGetFileNameOutRoot();
+        ids.push_back("id");
     }
     else{
         cout << "moveStarsToXY: ERROR: whichOne(=<" << whichOne << ">) is neither equal to <galaxia> nor to <gaia>" << endl;
