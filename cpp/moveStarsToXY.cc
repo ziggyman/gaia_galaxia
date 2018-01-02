@@ -3,70 +3,81 @@
 int lockFile(string const& fileName,
              string & lockName,
              ios_base::openmode const& mode){
-    if (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
+    int fd = open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 );
+    if (fd == -1){
         time_t start, end;
         cout << "waiting for file <" << fileName << "> to become available" << endl;
         time (&start); // note time before execution
 
         /// keep trying until lock is deleted
-        while (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
+        while (fd == -1){
             sleep(5);
+            fd = open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 );
         }
         time (&end); // note time before execution
         cout << "waited " << end-start << "s to get a lock on file <" << fileName << ">" << endl;
     }
     cout << "locked " << fileName << " for reading" << endl;
 
-    return 1;
+    return fd;
 }
 
 int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
                     vector<string> const& outFileNames,
                     vector< std::shared_ptr< ofstream > > & filesOpened,
                     vector<string> & locks,
+                    vector<int> & lockFds,
                     int iPix){
     string lockName = "/var/lock/lock_" + to_string(iPix);
     /// if lock file exists, close all open files and remove their locks,
     /// and wait until lock file is deleted
-    if (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
+    int fd = open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 );
+    if (fd == -1){
         time_t start, end;
         cout << "waiting for file <" << outFileNames[iPix] << "> to become available" << endl;
         time (&start); // note time before execution
-        closeFilesAndDeleteLocks(filesOpened, locks);
+        closeFilesAndDeleteLocks(filesOpened, locks, lockFds);
 
         /// keep trying until lock is deleted
-        while (open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 ) == -1){
+        while (fd == -1){
             sleep(5);
+            fd = open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 );
         }
         time (&end); // note time before execution
         cout << "waited " << end-start << "s to get a lock on file <" << outFileNames[iPix] << ">" << endl;
     }
     locks.push_back(lockName);
+    lockFds.push_back(fd);
     outFiles[iPix]->open(outFileNames[iPix], ofstream::app);
     filesOpened.push_back(outFiles[iPix]);
 //    cout << "opened file <" << outFileNames[iPix] << ">" << endl;
 
-    return 1;
+    return fd;
 }
 
 void closeFileAndDeleteLock(ofstream & file,
-                            string const& lockName){
+                            string const& lockName,
+                            int fd){
     file.close();
-    deleteLock(lockName);
+    deleteLock(fd, lockName);
 }
 
 void closeFilesAndDeleteLocks(vector< std::shared_ptr< ofstream > > & filesOpened,
-                              vector<string> & locks){
+                              vector<string> & locks,
+                              vector<int> & lockFds){
     auto lockName = locks.begin();
-    for (auto open=filesOpened.begin(); open!=filesOpened.end(); ++open, ++lockName){
-        closeFileAndDeleteLock(*(*open), *lockName);
+    auto fd = lockFds.begin();
+    for (auto open=filesOpened.begin(); open!=filesOpened.end(); ++open, ++lockName, ++fd){
+        closeFileAndDeleteLock(*(*open), *lockName, *fd);
     }
     filesOpened.resize(0);
     locks.resize(0);
+    lockFds.resize(0);
 }
 
-void deleteLock(string const& lockName){
+void deleteLock(int fd, string const& lockName){
     remove(lockName.c_str());
+    close(fd);
 }
 
 boost::format galaxiaGetFileNameOutRoot(){
@@ -217,8 +228,10 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
     vector<string> const& outFileNames = getOutFileNames(pixels, whichOne);
 
     vector< string > locks(0);
+    vector< int > lockFds(0);
     vector< std::shared_ptr< ofstream > > filesOpened(0);
     locks.reserve(1000);
+    lockFds.reserve(1000);
     filesOpened.reserve(1000);
 
     time_t start, end;
@@ -246,11 +259,14 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                     string lockName = "/var/lock/lock_" + to_string(iPix);
                     if (outFiles[iPix]->is_open())
                         closeFilesAndDeleteLocks(filesOpened,
-                                                 locks);
-                    if (lockFile(outFileNames[iPix], lockName) == 1){
+                                                 locks,
+                                                 lockFds);
+                    int lockFd = lockFile(outFileNames[iPix], lockName);
+                    if (lockFd >= 0){
                         CSVData csvDataOutFile = readCSVFile(outFileNames[iPix]);
                         closeFileAndDeleteLock(*(outFiles[iPix]),
-                                               lockName);
+                                               lockName,
+                                               lockFd);
                         int iId = -1;
                         for (auto itId=ids.begin(); itId!=ids.end(); ++itId){
                             ++iId;
@@ -295,6 +311,7 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                                         outFileNames,
                                         filesOpened,
                                         locks,
+                                        lockFds,
                                         iPix);
                     }
                     if (doWrite){
@@ -316,7 +333,8 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
     cout << "wrote " << nStarsWritten << " stars" << endl;
     cout << "opened " << filesOpened.size() << " files, closing them now" << endl;
     closeFilesAndDeleteLocks(filesOpened,
-                             locks);
+                             locks,
+                             lockFds);
     time (&end); // note time after execution
 
     cout << "time taken for appendCSVDataToXYFiles(): " << end-start << " s" << endl;

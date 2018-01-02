@@ -1,3 +1,5 @@
+rm -r /Volumes/yoda/azuri/data/galaxia/xy
+mkdir /Volumes/yoda/azuri/data/galaxia/xy
 rm /var/lock/*
 rm /Volumes/yoda/azuri/data/galaxia/finishedFiles.txt
 rm /Volumes/yoda/azuri/data/galaxia/workinOnFiles.txt

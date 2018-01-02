@@ -7,6 +7,7 @@ import os
 import sys
 import time
 import numpy as np
+import random
 
 import galcomp
 import hammer
@@ -289,12 +290,15 @@ class Galaxia(object):
 
     #                openFiles = []
     #                openFileNames = []
+                nLines = len(ebf.read(inputFile, '/px'))
 
                 data = ebf.iterate(inputFile, '/px+', cache)
     #                nStarsWritten = 0
 
                 iIt = 0
+                nLinesRead = 0;
                 for it in data:
+                    nLinesRead += cache
                     if iIt > iterationsDone:
                         print 'iIt = ',iIt,' > iterationsDone = ',iterationsDone
                         timeStartIt = time.time()
@@ -331,7 +335,9 @@ class Galaxia(object):
                                                              Galaxia.ids,
                                                              doFind)
                         timeEndIt = time.time()
-                        print 'ran iIt = ',iIt,' for file <', inputFile,'> in ',timeEndIt-timeStartIt,' seconds'
+                        timeEnd = time.time()
+                        duration = timeEnd-timeStart
+                        print 'ran iIt = ',iIt,' for file <', inputFile,'> in ',timeEndIt-timeStartIt,' seconds: ',nLinesRead * 100.0 / nLines,' % done in ',duration,' seconds'
 
 #                        STOP
                     else:
@@ -343,6 +349,7 @@ class Galaxia(object):
                 self.writeToFileFinished(inputFile+' done in '+str(duration)+'s')
             else:
                 print 'file <',inputFile,'> already finished'
+            ebf.clearEbfMap()
 #                STOP
 
     #        globallock.release()
@@ -373,6 +380,7 @@ def main(argv):
         p = Pool(processes=8)
     #    lon = np.arange(-175, 178, 10)
         iCombo = np.arange(len(Galaxia.lonLatCombinations))
+        random.shuffle(iCombo)
         p.map(processGalaxia, iCombo)
     #    print 'starting processGalaxia '
         p.close()

@@ -26,6 +26,7 @@ int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
                     vector<string> const& outFileNames,
                     vector< std::shared_ptr< ofstream > > & filesOpened,
                     vector<string> & locks,
+                    vector<int> & lockFds,
                     int iPix);
 
 /**
@@ -33,13 +34,15 @@ int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
  * @return
  */
 void closeFileAndDeleteLock(ofstream & file,
-                            string const& lockName);
+                            string const& lockName,
+                            int fd);
 
 /**
  * @brief : close all files in filesOpened and remove the locks
  */
 void closeFilesAndDeleteLocks(vector< std::shared_ptr< ofstream > > & filesOpened,
-                              vector<string> & locks);
+                              vector<string> & locks,
+                              vector<int> & lockFds);
 
 /**
  * @brief : remove lock called lockName
@@ -47,7 +50,7 @@ void closeFilesAndDeleteLocks(vector< std::shared_ptr< ofstream > > & filesOpene
  *          calling this method instead of directly removing the lock prevents
  *          Threads to try and create the same lock file
  */
-void deleteLock(string const& lockName);
+void deleteLock(int fd, string const& lockName);
 
 boost::format galaxiaGetFileNameOutRoot();
 boost::format gaiaGetFileNameOutRoot();
