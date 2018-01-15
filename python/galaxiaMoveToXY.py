@@ -33,7 +33,7 @@ class Galaxia(object):
     logFileName = '/Volumes/yoda/azuri/data/galaxia/galaxiaMoveToXY.log'
 
     def __init__(self):
-        dir = '/Volumes/yoda/azuri/data/galaxia/sdss/'
+        dir = '/Volumes/external/azuri/data/galaxia/sdss/'
         self.fileNameIn = os.path.join(dir, 'galaxia_%d_%d.ebf')
         self.headerFile = self.fileNameIn % (-85, -85)
 
@@ -377,7 +377,7 @@ def main(argv):
     gal.readLogFile()
 
     if True:
-        p = Pool(processes=8)
+        p = Pool(processes=12)
     #    lon = np.arange(-175, 178, 10)
         iCombo = np.arange(len(Galaxia.lonLatCombinations))
         random.shuffle(iCombo)

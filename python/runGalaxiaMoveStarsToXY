@@ -3,4 +3,5 @@ mkdir /Volumes/yoda/azuri/data/galaxia/xy
 rm /var/lock/*
 rm /Volumes/yoda/azuri/data/galaxia/finishedFiles.txt
 rm /Volumes/yoda/azuri/data/galaxia/workinOnFiles.txt
+mv /Volumes/yoda/azuri/data/galaxia/galaxiaMoveToXY.log /Volumes/yoda/azuri/data/galaxia/galaxiaMoveToXY.log.bak
 python galaxiaMoveToXY.py > /Volumes/yoda/azuri/data/galaxia/galaxiaMoveToXY.log
