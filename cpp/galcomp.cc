@@ -9,129 +9,35 @@ int existsHowManyTimes(vector<string> const& inVec, string const& in){
     return nTimes;
 }
 
-void countStars(string const& dir, string const& fileNameRoot, bool zeroToThreeSixty){
-    Hammer hammer;
-    vector<Pixel> pixels = hammer.getPixels();
-}
+void countStars(vector<Pixel> const& pixels,
+                int const& pixelId,
+                string const& outFileName){
+    string galaxiaFileName = galaxiaGetDataDirOut()
+                             + (galaxiaGetFileNameOutRoot() % pixels[pixelId].xLow
+                                                            % pixels[pixelId].xHigh
+                                                            % pixels[pixelId].yLow
+                                                            % pixels[pixelId].yHigh).str();
+    string gaiaFileName = gaiaGetDataDirOut()
+                          + (gaiaGetFileNameOutRoot() % pixels[pixelId].xLow
+                                                      % pixels[pixelId].xHigh
+                                                      % pixels[pixelId].yLow
+                                                      % pixels[pixelId].yHigh).str();
 
-vector<string> readHeader(string const& fileName){
-    ifstream inStream(fileName);
-    vector<string> header(0);
-    string substring;
-    if (inStream.is_open()){
-        string line;
-        if (getline(inStream, line)){
-            stringstream lineStream(line.c_str());
-            while(lineStream.good()){
-                getline(lineStream, substring, ',');
-                header.push_back(substring);
-//                cout << "readHeader: header[" << header.size()-1 << "] = " << header[header.size()-1] << endl;
-            }
-        }
-        inStream.close();
-        cout << "readHeader: inStream closed" << endl;
-    }
-    else{
-        cout << "ERROR: Could not open file <" << fileName << ">" << endl;
-        exit(EXIT_FAILURE);
-    }
-    return header;
-}
+    unsigned nStarsGaia = countLines(gaiaFileName);
+    unsigned nStarsGalaxia = countLines(galaxiaFileName);
+    string lockName = "/var/lock/out.lock";
+    int fd = lockFile(outFileName,
+                      lockName,
+                      0.1);
+    ofstream outFile(outFileName, ios_base::app);
 
-void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
-    string strToWrite(strVec[0]);
-    for (int iStr=1; iStr<strVec.size(); ++iStr){
-        strToWrite.append(",");
-        strToWrite.append(strVec[iStr]);
-    }
+    string strToWrite = to_string(pixelId) + " " + to_string(nStarsGalaxia) + " " + to_string(nStarsGaia);
     outFile.write(strToWrite.c_str(), strlen(strToWrite.c_str()));
     string endOfLine("\n");
     outFile.write(endOfLine.c_str(), strlen(endOfLine.c_str()));
-    return;
-}
-
-CSVData readCSVFile(string const& fileName){
-    ifstream inStream(fileName);
-    if (!inStream.is_open()){
-        cout << "file with name <" << fileName << "> is not open" << endl;
-        exit(EXIT_FAILURE);
-    }
-    CSVData csvData;
-    int pos;
-    string substring;
-    struct timeval start, end;
-
-    gettimeofday(&start, NULL);
-
-    if (inStream.is_open()){
-        int iLine = 0;
-        string line, previousLine;
-        while (getline(inStream, line)){
-            int nKommas = count(line.begin(), line.end(), ',');
-//            cout << "line contains " << nKommas << " kommas" << endl;
-            if (iLine == 0){
-                stringstream lineStream(line.c_str());
-                pos = 0;
-                while(lineStream.good()){
-                    getline(lineStream, substring, ',');
-//                    cout << "header: pos = " << pos << ": substring = " << substring << endl;
-                    csvData.header.push_back(substring);
-//                    cout << "pos = " << pos << ": added " << csvData.header[csvData.header.size()-1] << " to header" << endl;
-                    pos++;
-                }
-                iLine = 1;
-                previousLine = line;
-                cout << "readCSVFile: " << fileName << " contains " << csvData.header.size() << " columns" << endl;
-                continue;
-            }
-            if (nKommas != csvData.header.size()-1){
-                cout << "readCSVFile: ERROR: nKommas = " << nKommas << " != csvData.header.size() = " << csvData.header.size() << endl;
-                cout << "previousLine = " << previousLine << endl;
-                cout << "line = " << line << endl;
-                exit(EXIT_FAILURE);
-            }
-            stringstream lineStream(line.c_str());
-            pos = 0;
-            vector<string> dataLine(0);
-            while(lineStream.good()){
-                getline(lineStream, substring, ',');
-//                cout << "pos = " << pos << ": substring = " << substring << endl;
-                dataLine.push_back(substring);
-                pos++;
-            }
-            if (dataLine.size() != csvData.header.size()){
-                cout << "readCSVFile: ERROR: dataLine.size() = " << dataLine.size() << " != csvData.header.size() = " << csvData.header.size() << endl;
-                cout << "line = " << line << endl;
-                for (int i=0; i<dataLine.size(); ++i)
-                    cout << "dataLine[" << i << "] = " << dataLine[i] << endl;
-                exit(EXIT_FAILURE);
-            }
-            csvData.data.push_back(dataLine);
-            previousLine = line;
-        }
-        inStream.close();
-        gettimeofday(&end, NULL);
-        cout << "fileName <" << fileName << "> read in " << ((end.tv_sec * 1000000 + end.tv_usec)
-                        - (start.tv_sec * 1000000 + start.tv_usec))/1000000 << " s" << endl;
-        cout << "csvData.data.size() = " << csvData.data.size() << endl;
-    }
-    else{
-        cout << "ERROR: fileName <" << fileName << "> not open" << endl;
-        exit(EXIT_FAILURE);
-    }
-    return csvData;
-}
-
-vector<double> convertStringVectortoDoubleVector(const vector<string>& stringVector){
-    vector<double> doubleVector(0);
-    for (vector<string>::const_iterator iter = stringVector.begin(); iter != stringVector.end(); ++iter){
-        string const& element = *iter;
-        std::istringstream is(element);
-        double result;
-        is >> result;
-        doubleVector.push_back(result);
-    }
-    return doubleVector;
+    closeFileAndDeleteLock(outFile,
+                           lockName,
+                           fd);
 }
 
 vector< vector< string > > getGaiaObject(CSVData const& csvData, string const& source_id){
