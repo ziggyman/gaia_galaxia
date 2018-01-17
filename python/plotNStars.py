@@ -43,11 +43,8 @@ class Galaxia(object):
 
     def plotResult(self):
         lines = np.loadtxt(self.getOutFileName(), comments="#", delimiter=" ", unpack=False)
-        print 'lines = ',type(lines),', ',type(lines[0]),': ',type(lines[:,0])
-        print 'lines = ',len(lines),', ',len(lines[0]),': ',lines[:,0]
 
         pixelIds = lines[:,0].astype(int)
-        print 'pixelIds = ',type(pixelIds)
 
         nStarsGalaxia = lines[:,1].astype(float)
         maxNStarsGalaxia = max(nStarsGalaxia)
@@ -72,24 +69,17 @@ class Galaxia(object):
         recsGalaxia = []
         recsFac = []
         redGreen = self.getRedGreenPalette()
-        print 'redGreen[0] = ',redGreen[0]
-        print 'redGreen = ',redGreen
         edgeColor = 'None'
 
         faceColorsGaia = [redGreen[int((len(redGreen)-1) * i / maxNStarsGaia)] for i in nStarsGaia]
-        print 'faceColorsGaia = ',faceColorsGaia
 
         faceColorsGalaxia = [redGreen[int((len(redGreen)-1) * i / maxNStarsGalaxia)] for i in nStarsGalaxia]
-        print 'faceColorsGalaxia = ',faceColorsGalaxia
 
         nStarsFac = np.where(nStarsFac > 2.0, 2.0, nStarsFac)
         nStarsFac[np.isnan(nStarsFac)] = 2.0
         nStarsFac[np.isinf(nStarsFac)] = 2.0
-        print 'nStarsFac = ',nStarsFac
         colorIndex = [int((len(redGreen)-1.0) * i / 2.0) for i in nStarsFac]
-        print 'colorIndex = ',colorIndex
         faceColorsFac = [redGreen[i] for i in colorIndex]
-        print 'faceColorsFac = ',faceColorsFac
 
         for id in pixelIds:
             recsGaia.append(
@@ -97,8 +87,6 @@ class Galaxia(object):
                     (Galaxia.pixels[id].xLow, Galaxia.pixels[id].yLow),   # (x,y)
                      Galaxia.pixels[id].xHigh - Galaxia.pixels[id].xLow,          # width
                      Galaxia.pixels[id].yHigh - Galaxia.pixels[id].yLow,          # height
-                     fc=faceColorsGaia[id],
-                     ec=edgeColor,
                 )
             )
 
@@ -107,8 +95,6 @@ class Galaxia(object):
                     (Galaxia.pixels[id].xLow, Galaxia.pixels[id].yLow),   # (x,y)
                      Galaxia.pixels[id].xHigh - Galaxia.pixels[id].xLow,          # width
                      Galaxia.pixels[id].yHigh - Galaxia.pixels[id].yLow,          # height
-                     fc=faceColorsGalaxia[id],
-                     ec=edgeColor,
                 )
             )
 
@@ -117,18 +103,11 @@ class Galaxia(object):
                     (Galaxia.pixels[id].xLow, Galaxia.pixels[id].yLow),   # (x,y)
                      Galaxia.pixels[id].xHigh - Galaxia.pixels[id].xLow,          # width
                      Galaxia.pixels[id].yHigh - Galaxia.pixels[id].yLow,          # height
-                     fc=faceColorsFac[id],
-                     ec=edgeColor,
                 )
             )
-        pcGaia = PatchCollection(recsGaia, facecolors=faceColorsGaia, edgecolors='none')
-#        pcGaia.set_edgecolor('none')
-
-        pcGalaxia = PatchCollection(recsGalaxia, facecolors=faceColorsGalaxia, edgecolors='none')
-#        pcGalaxia.set_edgecolor('none')
-
-        pcFac = PatchCollection(recsFac, facecolors=faceColorsFac, edgecolors='none')
-#        pcFac.set_edgecolor('none')
+        pcGaia = PatchCollection(recsGaia, facecolors=faceColorsGaia, edgecolors=edgeColor)
+        pcGalaxia = PatchCollection(recsGalaxia, facecolors=faceColorsGalaxia, edgecolors=edgeColor)
+        pcFac = PatchCollection(recsFac, facecolors=faceColorsFac, edgecolors=edgeColor)
 
         xMin = self.ham.lonLatToXY(-179.999, 0).x
         yMin = self.ham.lonLatToXY(0, -89.999).y
@@ -136,22 +115,16 @@ class Galaxia(object):
         if True:
             fig, ax = plt.subplots(3, sharex=True, sharey=True, figsize=(7, 9.5))
 
-            print 'len(ax) = ',len(ax)
             ax[0].add_collection(pcGaia)
-#            ax[0].set_axis([xMin, -xMin, yMin, -yMin])
-            ax[0].set_title = 'Gaia'
-#            plt.show()
+            ax[0].set_title('Gaia')
 
-#            fig, ax = plt.subplots(1)
             ax[1].add_collection(pcGalaxia)
-#            plt.axis([xMin, -xMin, yMin, -yMin])
-            ax[1].set_title = 'Galaxia'
-#            plt.show()
+            ax[1].set_title('Galaxia')
 
-#            fig, ax = plt.subplots(1)
             ax[2].add_collection(pcFac)
+            ax[2].set_title('nStarsGalaxia / nStarsGaia < 2.0')
+
             plt.axis([xMin, -xMin, yMin, -yMin])
-            ax[2].set_title = 'Fac'
             plt.show()
 
 def processGalaxia(iPix):
