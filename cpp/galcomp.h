@@ -15,7 +15,7 @@ using namespace std;
 
 int existsHowManyTimes(vector<string> const& inVec, string const& in);
 
-void countStars(vector<Pixel> const& pixels, int const& pixelId, string const& outFileName);
+void countStars(vector<Pixel> const& pixels, int const& pixelId, string const& outFileName, string const& whichOne="gaia");
 
 vector< vector< string > > getGaiaObject(CSVData const& csvData, string const& source_id);
 

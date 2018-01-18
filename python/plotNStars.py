@@ -17,16 +17,23 @@ import hammer
 class Galaxia(object):
     ham = hammer.Hammer()
     pixels = []
+    whichOne = 'gaiaTgas'
 
     def __init__(self):
         """ do nothing """
 
     def getOutFileName(self):
-        return '/Volumes/yoda/azuri/data/gaia-galaxia/nStarsPerPixel.dat'
+        if Galaxia.whichOne == "gaiaTgas":
+            return '/Volumes/yoda/azuri/data/gaiaTgas-galaxia/nStarsPerPixel.dat'
+        elif Galaxia.whichOne == "gaia":
+            return '/Volumes/yoda/azuri/data/gaia-galaxia/nStarsPerPixel.dat'
+        else:
+            print 'Galaxia.getOutFileName: ERROR: Galaxia.whichOne(=',Galaxia.whichOne,') not found in [gaia, gaiaTgas]'
+            STOP
 
     def countStars(self, iPixel):
         print 'iPixel = ',iPixel
-        galcomp.countStars(Galaxia.pixels, iPixel, self.getOutFileName())
+        galcomp.countStars(Galaxia.pixels, iPixel, self.getOutFileName(), Galaxia.whichOne)
 
     def getRedGreenPalette(self):
         colors = []
@@ -75,10 +82,11 @@ class Galaxia(object):
 
         faceColorsGalaxia = [redGreen[int((len(redGreen)-1) * i / maxNStarsGalaxia)] for i in nStarsGalaxia]
 
-        nStarsFac = np.where(nStarsFac > 2.0, 2.0, nStarsFac)
-        nStarsFac[np.isnan(nStarsFac)] = 2.0
-        nStarsFac[np.isinf(nStarsFac)] = 2.0
-        colorIndex = [int((len(redGreen)-1.0) * i / 2.0) for i in nStarsFac]
+#        maxNStarsFac = 2.0
+#        nStarsFac = np.where(nStarsFac > maxNStarsFac, maxNStarsFac, nStarsFac)
+        nStarsFac[np.isnan(nStarsFac)] = maxNStarsFac
+        nStarsFac[np.isinf(nStarsFac)] = maxNStarsFac
+        colorIndex = [int((len(redGreen)-1.0) * i / maxNStarsFac) for i in nStarsFac]
         faceColorsFac = [redGreen[i] for i in colorIndex]
 
         for id in pixelIds:
@@ -142,6 +150,7 @@ def main(argv):
 
     ham = hammer.Hammer()
     Galaxia.pixels = ham.getPixels()
+    Galaxia.whichOne = 'gaiaTgas'
 
     # remove existing lock files
     for f in glob('/var/lock/*.lock'):

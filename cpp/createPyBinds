@@ -1,3 +1,5 @@
 ./createPyBindGalcomp
 ./createPyBindHammer
+./createPyBindCsvData
 ./createPyBindMoveStarsToXY
+./createPyBindParameters

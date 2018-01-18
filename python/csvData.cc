@@ -9,11 +9,17 @@ PYBIND11_MODULE(csvData, m) {
 
     py::class_<CSVData>(m, "CSVData")
         .def(py::init<>())
-        .def_readwrite("header", &CSVData::header)
-        .def_readwrite("data", &CSVData::data)
+        .def_readwrite("header", &CSVData::_header)
+        .def_readwrite("data", &CSVData::_data)
         .def("getData", (string (CSVData::*)(string const&, int) const) &CSVData::getData)
         .def("getData", (vector<string> (CSVData::*)(string const&) const) &CSVData::getData)
         .def("setData", (void (CSVData::*)(vector< vector< string > > &)) &CSVData::setData)
+        .def("addColumn", (void (CSVData::*)(string const&, vector< string > const&)) &CSVData::addColumn)
+        .def("addColumn", (void (CSVData::*)(string const&, vector< double > const&)) &CSVData::addColumn)
         .def("size", (int (CSVData::*)() const) &CSVData::size)
     ;
+
+//    m.def("readHeader", (vector<string> (*)(string const&)) &readHeader);
+//    m.def("readCSVFile", (CSVData (*)(string const&)) &readCSVFile);
+//    m.def("convertStringVectortoDoubleVector", (vector<double> (*)(vector<string> const&)) &convertStringVectortoDoubleVector);
 }

@@ -34,6 +34,25 @@ vector<string> gaiaGetInputFileNames(){
     return inputFileNames;
 }
 
+vector<string> gaiaTgasGetInputFileNames(){
+    string dataDir("/Volumes/yoda/azuri/data/gaia-tgas/");
+    boost::format fileNameRoot = boost::format("TgasSource_%03i-%03i-%03i.csv");//% (release, tract, patch);
+    vector<string> inputFileNames(0);
+    for (int iRelease=0; iRelease<1; ++iRelease){
+        for (int iTract=0; iTract<1; ++iTract){
+            for (int iPatch=0; iPatch<16; ++iPatch){
+                std::string fileName = dataDir + (fileNameRoot % iRelease
+                                                               % iTract
+                                                               % iPatch).str();
+                if (ifstream(fileName)){/// File exists
+                    inputFileNames.push_back(fileName);
+                }
+            }
+        }
+    }
+    return inputFileNames;
+}
+
 vector<string> gaiaGetInputFileNamesFromLonLat(){
     string dataDir("/Volumes/external/azuri/data/gaia/lon-lat/");
     boost::format fileNameRoot = boost::format("GaiaSource_%i-%i_%i-%i.csv");// % (int(minLongitude), int(maxLongitude), int(minLatitude), int(maxLatitude))
@@ -74,8 +93,12 @@ vector<string> getOutFileNames(vector<Pixel> const& pixels,
         fileNameOutRoot = gaiaGetFileNameOutRoot();
         dataDirOut = gaiaGetDataDirOut();
     }
+    else if (whichOne.compare("gaiaTgas") == 0){
+        fileNameOutRoot = gaiaTgasGetFileNameOutRoot();
+        dataDirOut = gaiaTgasGetDataDirOut();
+    }
     else{
-        cout << "getOutFileNames: ERROR: whichOne(=<" << whichOne << ">) neither equal to <galaxia> nor to <gaia>" << endl;
+        cout << "getOutFileNames: ERROR: whichOne(=<" << whichOne << ">) neither equal to <galaxia> nor to <gaia> nor to <gaiaTgas>" << endl;
         exit(EXIT_FAILURE);
     }
     outFileNames.reserve(pixels.size());
@@ -110,6 +133,10 @@ void writeHeaderToOutFiles(vector<string> const& header,
 
 void gaiaMoveStarsToXY(){
     moveStarsToXY("gaia");
+}
+
+void gaiaTgasMoveStarsToXY(){
+    moveStarsToXY("gaiaTgas");
 }
 
 void gaiaMoveStarsFromLonLatToXY(){
@@ -149,89 +176,108 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
     if (doFind){
         time (&findsStart); // note time before execution
     }
-    for (int iStar=0; iStar<csvData.size(); ++iStar){
-        XY xy(stod(csvData.getData(ham.getKeyWordHammerX(), iStar)),
-              stod(csvData.getData(ham.getKeyWordHammerY(), iStar)));
-        bool pixFound = false;
-        for (int iPix=0; iPix<pixels.size(); ++iPix){
-            if (pixels[iPix].isInside(xy)){
-                // Check if star is already in outFiles[iPix]
-                if (lastEntryFound && doFind){
-                    time_t findStart, findEnd;
-                    time (&findStart); // note time before execution
 
-                    string lockName = "/var/lock/lock_" + to_string(iPix);
-                    if (outFiles[iPix]->is_open())
-                        closeFilesAndDeleteLocks(filesOpened,
-                                                 locks,
-                                                 lockFds);
-                    int lockFd = lockFile(outFileNames[iPix], lockName);
-                    if (lockFd >= 0){
-                        CSVData csvDataOutFile = readCSVFile(outFileNames[iPix]);
-                        closeFileAndDeleteLock(*(outFiles[iPix]),
-                                               lockName,
-                                               lockFd);
-                        int iId = -1;
-                        for (auto itId=ids.begin(); itId!=ids.end(); ++itId){
-                            ++iId;
-                            cout << "iStar = " << iStar << ": csvDataOutFile.size() = " << csvDataOutFile.size() << ", reading id <" << *itId << ">" << endl;
-                            vector<string> idsTemp = csvDataOutFile.getData(*itId);
-                            cout << "iStar = " << iStar << ": idsTemp.size() = " << idsTemp.size() << endl;
-                            string id = csvData.getData(*itId, iStar);
-                            cout << "iStar = " << iStar << ": checking for " << *itId << " = " << id << " in file " << outFileNames[iPix] << endl;
-                            if (std::find(idsTemp.begin(), idsTemp.end(), id) != idsTemp.end()){
-                                starFoundInIds[iId] = true;
-                                cout << "iStar = " << iStar << ": id <" << id << "> found in " << outFileNames[iPix] << endl;
+    string keyWordHammerX = ham.getKeyWordHammerX();
+    string keyWordHammerY = ham.getKeyWordHammerY();
+    for (int iStar=0; iStar<csvData.size(); ++iStar){
+        try{
+//            cout << "moveStarsToXY::appendCSVDataToXYFiles: csvData.size() = " << csvData.size() << endl;
+//            cout << "moveStarsToXY::appendCSVDataToXYFiles: keyWordHammerX = " << keyWordHammerX << endl;
+//            cout << "moveStarsToXY::appendCSVDataToXYFiles: csvData.getData(keyWordHammerX) = "
+//                    << csvData.getData(keyWordHammerX) << endl;
+//            cout << "moveStarsToXY::appendCSVDataToXYFiles: csvData.getData(keyWordHammerY) = "
+//                    << csvData.getData(keyWordHammerY) << endl;
+//            cout << "moveStarsToXY::appendCSVDataToXYFiles: csvData.getData(keyWordHammerX, "
+//                    << iStar << ") = " << csvData.getData(keyWordHammerX, iStar) << endl;
+//            cout << "moveStarsToXY::appendCSVDataToXYFiles: csvData.getData(keyWordHammerY, "
+//                    << iStar << ") = " << csvData.getData(keyWordHammerY, iStar) << endl;
+            XY xy(stod(csvData.getData(keyWordHammerX, iStar)),
+                  stod(csvData.getData(keyWordHammerY, iStar)));
+            bool pixFound = false;
+            for (int iPix=0; iPix<pixels.size(); ++iPix){
+                if (pixels[iPix].isInside(xy)){
+                    // Check if star is already in outFiles[iPix]
+                    if (lastEntryFound && doFind){
+                        time_t findStart, findEnd;
+                        time (&findStart); // note time before execution
+
+                        string lockName = "/var/lock/lock_" + to_string(iPix);
+                        if (outFiles[iPix]->is_open())
+                            closeFilesAndDeleteLocks(filesOpened,
+                                                     locks,
+                                                     lockFds);
+                        int lockFd = lockFile(outFileNames[iPix], lockName);
+                        if (lockFd >= 0){
+                            CSVData csvDataOutFile = readCSVFile(outFileNames[iPix]);
+                            closeFileAndDeleteLock(*(outFiles[iPix]),
+                                                   lockName,
+                                                   lockFd);
+                            int iId = -1;
+                            for (auto itId=ids.begin(); itId!=ids.end(); ++itId){
+                                ++iId;
+                                cout << "iStar = " << iStar << ": csvDataOutFile.size() = " << csvDataOutFile.size() << ", reading id <" << *itId << ">" << endl;
+                                vector<string> idsTemp = csvDataOutFile.getData(*itId);
+                                cout << "iStar = " << iStar << ": idsTemp.size() = " << idsTemp.size() << endl;
+                                string id = csvData.getData(*itId, iStar);
+                                cout << "iStar = " << iStar << ": checking for " << *itId << " = " << id << " in file " << outFileNames[iPix] << endl;
+                                if (std::find(idsTemp.begin(), idsTemp.end(), id) != idsTemp.end()){
+                                    starFoundInIds[iId] = true;
+                                    cout << "iStar = " << iStar << ": id <" << id << "> found in " << outFileNames[iPix] << endl;
+                                }
+                                else{
+                                    starFoundInIds[iId] = false;
+                                    cout << "iStar = " << iStar << ": id <" << id << "> NOT found in " << outFileNames[iPix] << endl;
+                                    break;
+                                }
+                            }
+                            alreadyThere = starFoundInIds[0];
+                            for (int iIId = 1; iIId<=iId; ++iIId){
+                                alreadyThere = alreadyThere && starFoundInIds[iIId];
+                            }
+                            if (!alreadyThere){
+                                lastEntryFound = false;
+                                cout << "iStar = " << iStar << ": star not found in " << outFileNames[iPix] << " => stopping search" << endl;
                             }
                             else{
-                                starFoundInIds[iId] = false;
-                                cout << "iStar = " << iStar << ": id <" << id << "> NOT found in " << outFileNames[iPix] << endl;
-                                break;
+                                cout << "iStar = " << iStar << ": alreadyThere == true" << endl;
+                                lastEntryFound = true;
                             }
                         }
-                        alreadyThere = starFoundInIds[0];
-                        for (int iIId = 1; iIId<=iId; ++iIId){
-                            alreadyThere = alreadyThere && starFoundInIds[iIId];
-                        }
-                        if (!alreadyThere){
-                            lastEntryFound = false;
-                            cout << "iStar = " << iStar << ": star not found in " << outFileNames[iPix] << " => stopping search" << endl;
-                        }
-                        else{
-                            cout << "iStar = " << iStar << ": alreadyThere == true" << endl;
-                            lastEntryFound = true;
-                        }
+                        time (&findEnd); // note time after execution
+                        cout << "iStar = " << iStar << ": time taken to search for star: " << findEnd-findStart << " s" << endl;
                     }
-                    time (&findEnd); // note time after execution
-                    cout << "iStar = " << iStar << ": time taken to search for star: " << findEnd-findStart << " s" << endl;
+                    if (!alreadyThere){
+                        if (doFind){
+                            time (&findsEnd);
+                            cout << "time taken to search for stars: " << findsEnd-findsStart << " s" << endl;
+                        }
+                        if (!outFiles[iPix]->is_open()){
+                            openAndLockFile(outFiles,
+                                            outFileNames,
+                                            filesOpened,
+                                            locks,
+                                            lockFds,
+                                            iPix);
+                        }
+                        if (doWrite){
+                            writeStrVecToFile(csvData._data[iStar], *(outFiles[iPix]));
+                            ++nStarsWritten;
+                        }
+                        else
+                            cout << "would write csvData._data[" << iStar << "] to <"
+                                    << outFileNames[iPix] << "> but not going to as doWrite is false" << endl;
+                    }
+                    pixFound = true;
                 }
-                if (!alreadyThere){
-                    if (doFind){
-                        time (&findsEnd);
-                        cout << "time taken to search for stars: " << findsEnd-findsStart << " s" << endl;
-                    }
-                    if (!outFiles[iPix]->is_open()){
-                        openAndLockFile(outFiles,
-                                        outFileNames,
-                                        filesOpened,
-                                        locks,
-                                        lockFds,
-                                        iPix);
-                    }
-                    if (doWrite){
-                        writeStrVecToFile(csvData.data[iStar], *(outFiles[iPix]));
-                        ++nStarsWritten;
-                    }
-                    else
-                        cout << "would write csvData.data[" << iStar << "] to <"
-                                << outFileNames[iPix] << "> but not going to as doWrite is false" << endl;
-                }
-                pixFound = true;
+            }
+            if (!pixFound){
+                cout << "ERROR: no pixel found for x = " << xy.x << ", y = " << xy.y << endl;
+                exit(EXIT_FAILURE);
             }
         }
-        if (!pixFound){
-            cout << "ERROR: no pixel found for x = " << xy.x << ", y = " << xy.y << endl;
-            exit(EXIT_FAILURE);
+        catch (const std::exception& e) { // reference to the base of a polymorphic object
+            std::cout << e.what(); // information from length_error printed
+            throw;
         }
     }
     cout << "wrote " << nStarsWritten << " stars" << endl;
@@ -267,6 +313,12 @@ void moveStarsToXY(string const& whichOne){
         dataDirOut = gaiaGetDataDirOut();
         inputFileNames = gaiaGetInputFileNames();
         fileNameOutRoot = gaiaGetFileNameOutRoot();
+        ids.push_back("source_id");
+    }
+    else if (whichOne.compare("gaiaTgas") == 0){
+        dataDirOut = gaiaTgasGetDataDirOut();
+        inputFileNames = gaiaTgasGetInputFileNames();
+        fileNameOutRoot = gaiaTgasGetFileNameOutRoot();
         ids.push_back("source_id");
     }
     else if (whichOne.compare("gaiaFromLonLat") == 0){
@@ -308,15 +360,15 @@ void moveStarsToXY(string const& whichOne){
             CSVData csvData = readCSVFile(*itInputFileName);
             vector<string> lonStr = csvData.getData(string("l"));
             vector<string> latStr = csvData.getData(string("b"));
-            vector<double> lonDbl = convertStringVectortoDoubleVector(lonStr);
-            vector<double> latDbl = convertStringVectortoDoubleVector(latStr);
+            vector<double> lonDbl = convertStringVectorToDoubleVector(lonStr);
+            vector<double> latDbl = convertStringVectorToDoubleVector(latStr);
             for (int iLine=0; iLine<lonDbl.size(); ++iLine){
                 LonLat lonLat;
                 lonLat.lon=lonDbl[iLine];
                 lonLat.lat=latDbl[iLine];
                 XY xy = hammer.lonLatToXY(lonLat);
-                csvData.data[iLine].push_back(to_string(xy.x));
-                csvData.data[iLine].push_back(to_string(xy.y));
+                csvData._data[iLine].push_back(to_string(xy.x));
+                csvData._data[iLine].push_back(to_string(xy.y));
             }
             appendCSVDataToXYFiles(csvData, pixels, whichOne, ids);
         }
@@ -353,10 +405,10 @@ void galaxiaFixHeaderLineEnd(){
     for (auto itFileName=lonLatFileNames.begin(); itFileName!=lonLatFileNames.begin()+1; ++itFileName){//lonLatFileNames.end(); ++itFileName){
         cout << "reading <" << *itFileName << ">" << endl;
         CSVData csvData = readCSVFile(*itFileName);
-        cout << "csvData.header.size() = " << csvData.header.size() << ", csvData.data.size() = "
-                << csvData.data.size() << ", csvData.data[0].size() = " << csvData.data[0].size() << endl;
-        if (csvData.header.size() != csvData.data[0].size()){
-            cout << "header size and data size differ, gonna fix that..." << endl;
+        cout << "csvData._header.size() = " << csvData._header.size() << ", csvData._data.size() = "
+                << csvData._data.size() << ", csvData._data[0].size() = " << csvData._data[0].size() << endl;
+        if (csvData._header.size() != csvData._data[0].size()){
+            cout << "_header size and _data size differ, gonna fix that..." << endl;
         }
     }
     return;
@@ -382,7 +434,7 @@ void checkGaiaInputFiles(){
 
 int main(){
 //    galaxiaMoveStarsFromEBFToXY();
-    //gaiaMoveStarsToXY();
+    gaiaTgasMoveStarsToXY();
     return 0;
 }
 

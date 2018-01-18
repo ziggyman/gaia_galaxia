@@ -61,17 +61,17 @@ CSVData readCSVFile(string const& fileName){
                 while(lineStream.good()){
                     getline(lineStream, substring, ',');
 //                    cout << "header: pos = " << pos << ": substring = " << substring << endl;
-                    csvData.header.push_back(substring);
-//                    cout << "pos = " << pos << ": added " << csvData.header[csvData.header.size()-1] << " to header" << endl;
+                    csvData._header.push_back(substring);
+//                    cout << "pos = " << pos << ": added " << csvData._header[csvData._header.size()-1] << " to header" << endl;
                     pos++;
                 }
                 iLine = 1;
                 previousLine = line;
-                cout << "readCSVFile: " << fileName << " contains " << csvData.header.size() << " columns" << endl;
+                cout << "readCSVFile: " << fileName << " contains " << csvData._header.size() << " columns" << endl;
                 continue;
             }
-            if (nKommas != csvData.header.size()-1){
-                cout << "readCSVFile: ERROR: nKommas = " << nKommas << " != csvData.header.size() = " << csvData.header.size() << endl;
+            if (nKommas != csvData._header.size()-1){
+                cout << "readCSVFile: ERROR: nKommas = " << nKommas << " != csvData._header.size() = " << csvData._header.size() << endl;
                 cout << "previousLine = " << previousLine << endl;
                 cout << "line = " << line << endl;
                 exit(EXIT_FAILURE);
@@ -85,21 +85,21 @@ CSVData readCSVFile(string const& fileName){
                 dataLine.push_back(substring);
                 pos++;
             }
-            if (dataLine.size() != csvData.header.size()){
-                cout << "readCSVFile: ERROR: dataLine.size() = " << dataLine.size() << " != csvData.header.size() = " << csvData.header.size() << endl;
+            if (dataLine.size() != csvData._header.size()){
+                cout << "readCSVFile: ERROR: dataLine.size() = " << dataLine.size() << " != csvData._header.size() = " << csvData._header.size() << endl;
                 cout << "line = " << line << endl;
                 for (int i=0; i<dataLine.size(); ++i)
                     cout << "dataLine[" << i << "] = " << dataLine[i] << endl;
                 exit(EXIT_FAILURE);
             }
-            csvData.data.push_back(dataLine);
+            csvData._data.push_back(dataLine);
             previousLine = line;
         }
         inStream.close();
         gettimeofday(&end, NULL);
         cout << "fileName <" << fileName << "> read in " << ((end.tv_sec * 1000000 + end.tv_usec)
                         - (start.tv_sec * 1000000 + start.tv_usec))/1000000 << " s" << endl;
-        cout << "csvData.data.size() = " << csvData.data.size() << endl;
+        cout << "csvData._data.size() = " << csvData._data.size() << endl;
     }
     else{
         cout << "ERROR: fileName <" << fileName << "> not open" << endl;
@@ -108,7 +108,7 @@ CSVData readCSVFile(string const& fileName){
     return csvData;
 }
 
-vector<double> convertStringVectortoDoubleVector(const vector<string>& stringVector){
+vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVector){
     vector<double> doubleVector(0);
     for (vector<string>::const_iterator iter = stringVector.begin(); iter != stringVector.end(); ++iter){
         string const& element = *iter;
@@ -118,4 +118,15 @@ vector<double> convertStringVectortoDoubleVector(const vector<string>& stringVec
         doubleVector.push_back(result);
     }
     return doubleVector;
+}
+
+vector<string> convertDoubleVectorToStringVector(vector<double> const& doubleVector){
+    vector<string> stringVector(0);
+    stringVector.reserve(doubleVector.size());
+    for (vector<double>::const_iterator iter = doubleVector.begin(); iter != doubleVector.end(); ++iter){
+        stringVector.push_back(to_string(*iter));
+        cout << "convertDoubleVectorToStringVector: *iter = " << *iter << ": stringVector["
+                << stringVector.size()-1 << "] = " << stringVector[stringVector.size()-1] << endl;
+    }
+    return stringVector;
 }

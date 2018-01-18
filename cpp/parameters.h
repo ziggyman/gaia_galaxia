@@ -10,8 +10,12 @@ boost::format galaxiaGetFileNameOutRoot();
 
 boost::format gaiaGetFileNameOutRoot();
 
+boost::format gaiaTgasGetFileNameOutRoot();
+
 string galaxiaGetDataDirOut();
 
 string gaiaGetDataDirOut();
+
+string gaiaTgasGetDataDirOut();
 
 #endif

@@ -1,0 +1,4 @@
+rm parameters.so
+rm ../python/parameters.so
+g++ -O3 -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` parameters.cc ../python/parameters.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o parameters.so
+cp parameters.so ../python/
