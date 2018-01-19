@@ -11,10 +11,12 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 
+import csvData
+import csvFree
 import galcomp
 import hammer
 
-class Galaxia(object):
+class CountStars(object):
     ham = hammer.Hammer()
     pixels = []
     whichOne = 'gaiaTgas'
@@ -22,18 +24,22 @@ class Galaxia(object):
     def __init__(self):
         """ do nothing """
 
-    def getOutFileName(self):
-        if Galaxia.whichOne == "gaiaTgas":
-            return '/Volumes/yoda/azuri/data/gaiaTgas-galaxia/nStarsPerPixel.dat'
-        elif Galaxia.whichOne == "gaia":
-            return '/Volumes/yoda/azuri/data/gaia-galaxia/nStarsPerPixel.dat'
+    def getOutFileNameGaia(self):
+        if CountStars.whichOne == "gaiaTgas":
+            return '/Volumes/yoda/azuri/data/gaia-tgas/nStarsPerPixel.dat'
+        elif CountStars.whichOne == "gaia":
+            return '/Volumes/yoda/azuri/data/gaia/nStarsPerPixel.dat'
         else:
-            print 'Galaxia.getOutFileName: ERROR: Galaxia.whichOne(=',Galaxia.whichOne,') not found in [gaia, gaiaTgas]'
+            print 'CountStars.getOutFileName: ERROR: CountStars.whichOne(=',CountStars.whichOne,') not found in [gaia, gaiaTgas]'
             STOP
+
+    def getOutFileNameGalaxia(self):
+        return '/Volumes/yoda/azuri/data/galaxia/nStarsPerPixel.dat'
 
     def countStars(self, iPixel):
         print 'iPixel = ',iPixel
-        galcomp.countStars(Galaxia.pixels, iPixel, self.getOutFileName(), Galaxia.whichOne)
+        galcomp.countStars(CountStars.pixels, iPixel, self.getOutFileNameGaia(), CountStars.whichOne)
+        galcomp.countStars(CountStars.pixels, iPixel, self.getOutFileNameGalaxia(), 'galaxia')
 
     def getRedGreenPalette(self):
         colors = []
@@ -49,28 +55,32 @@ class Galaxia(object):
         return colors
 
     def plotResult(self):
-        lines = np.loadtxt(self.getOutFileName(), comments="#", delimiter=" ", unpack=False)
+        dataGaia = csvFree.readCSVFile(self.getOutFileNameGaia())
+        print 'dataGaia.header = ',dataGaia.header
+        dataGalaxia = csvFree.readCSVFile(self.getOutFileNameGalaxia())
 
-        pixelIds = lines[:,0].astype(int)
+        pixelIds = csvFree.convertStringVectorToUnsignedVector(dataGaia.getData('PixelId'))
 
-        nStarsGalaxia = lines[:,1].astype(float)
+        nStarsGalaxia = csvFree.convertStringVectorToDoubleVector(dataGalaxia.getData('Galaxia'))
         maxNStarsGalaxia = max(nStarsGalaxia)
         minNStarsGalaxia = min(nStarsGalaxia)
 
-        nStarsGaia = lines[:,2].astype(float)
+        nStarsGaia = csvFree.convertStringVectorToDoubleVector(dataGaia.getData('Gaia'))
         maxNStarsGaia = max(nStarsGaia)
         minNStarsGaia = min(nStarsGaia)
 
-        nStarsFac = nStarsGalaxia / nStarsGaia
-        maxNStarsFac = max(nStarsFac)
+        nStarsFac = np.asarray(nStarsGalaxia) / np.asarray(nStarsGaia)
+        maxNStarsFac = max(nStarsFac[np.isfinite(nStarsFac)])
         minNStarsFac = min(nStarsFac)
+        nStarsFac[np.isnan(nStarsFac)] = maxNStarsFac
+        nStarsFac[np.isinf(nStarsFac)] = maxNStarsFac
 
         print 'min(nStarsGaia) = ',minNStarsGaia, ', max(nStarsGaia) = ',maxNStarsGaia
         print 'min(nStarsGalaxia) = ',minNStarsGalaxia, ', max(nStarsGalaxia) = ',maxNStarsGalaxia
         print 'min(nStarsFac) = ',minNStarsFac, ', max(nStarsFac) = ',maxNStarsFac
 
-        if len(Galaxia.pixels) != len(nStarsGaia):
-            print 'ERROR: lengths of pixels(=',len(Galaxia.pixels),') != length of nStarsGaia(=',len(nStarsGaia),')'
+        if len(CountStars.pixels) != len(nStarsGaia):
+            print 'ERROR: lengths of pixels(=',len(CountStars.pixels),') != length of nStarsGaia(=',len(nStarsGaia),')'
 
         recsGaia = []
         recsGalaxia = []
@@ -84,33 +94,31 @@ class Galaxia(object):
 
 #        maxNStarsFac = 2.0
 #        nStarsFac = np.where(nStarsFac > maxNStarsFac, maxNStarsFac, nStarsFac)
-        nStarsFac[np.isnan(nStarsFac)] = maxNStarsFac
-        nStarsFac[np.isinf(nStarsFac)] = maxNStarsFac
         colorIndex = [int((len(redGreen)-1.0) * i / maxNStarsFac) for i in nStarsFac]
         faceColorsFac = [redGreen[i] for i in colorIndex]
 
         for id in pixelIds:
             recsGaia.append(
                 Rectangle(
-                    (Galaxia.pixels[id].xLow, Galaxia.pixels[id].yLow),   # (x,y)
-                     Galaxia.pixels[id].xHigh - Galaxia.pixels[id].xLow,          # width
-                     Galaxia.pixels[id].yHigh - Galaxia.pixels[id].yLow,          # height
+                    (CountStars.pixels[id].xLow, CountStars.pixels[id].yLow),   # (x,y)
+                     CountStars.pixels[id].xHigh - CountStars.pixels[id].xLow,          # width
+                     CountStars.pixels[id].yHigh - CountStars.pixels[id].yLow,          # height
                 )
             )
 
             recsGalaxia.append(
                 Rectangle(
-                    (Galaxia.pixels[id].xLow, Galaxia.pixels[id].yLow),   # (x,y)
-                     Galaxia.pixels[id].xHigh - Galaxia.pixels[id].xLow,          # width
-                     Galaxia.pixels[id].yHigh - Galaxia.pixels[id].yLow,          # height
+                    (CountStars.pixels[id].xLow, CountStars.pixels[id].yLow),   # (x,y)
+                     CountStars.pixels[id].xHigh - CountStars.pixels[id].xLow,          # width
+                     CountStars.pixels[id].yHigh - CountStars.pixels[id].yLow,          # height
                 )
             )
 
             recsFac.append(
                 Rectangle(
-                    (Galaxia.pixels[id].xLow, Galaxia.pixels[id].yLow),   # (x,y)
-                     Galaxia.pixels[id].xHigh - Galaxia.pixels[id].xLow,          # width
-                     Galaxia.pixels[id].yHigh - Galaxia.pixels[id].yLow,          # height
+                    (CountStars.pixels[id].xLow, CountStars.pixels[id].yLow),   # (x,y)
+                     CountStars.pixels[id].xHigh - CountStars.pixels[id].xLow,          # width
+                     CountStars.pixels[id].yHigh - CountStars.pixels[id].yLow,          # height
                 )
             )
         pcGaia = PatchCollection(recsGaia, facecolors=faceColorsGaia, edgecolors=edgeColor)
@@ -135,8 +143,8 @@ class Galaxia(object):
             plt.axis([xMin, -xMin, yMin, -yMin])
             plt.show()
 
-def processGalaxia(iPix):
-    gal = Galaxia()
+def processCountStars(iPix):
+    gal = CountStars()
     gal.countStars(iPix)
 
 def main(argv):
@@ -146,11 +154,11 @@ def main(argv):
     argv -- command line arguments
     """
 
-    gal = Galaxia()
+    gal = CountStars()
 
     ham = hammer.Hammer()
-    Galaxia.pixels = ham.getPixels()
-    Galaxia.whichOne = 'gaiaTgas'
+    CountStars.pixels = ham.getPixels()
+    CountStars.whichOne = 'gaiaTgas'
 
     # remove existing lock files
     for f in glob('/var/lock/*.lock'):
@@ -158,15 +166,19 @@ def main(argv):
 
     if False:
         # rename existing outFile
-        if os.path.isfile(gal.getOutFileName()):
+        if os.path.isfile(gal.getOutFileNameGaia()):
+            shutil.move(gal.getOutFileName(), gal.getOutFileName()+'.bak')
+        if os.path.isfile(gal.getOutFileNameGalaxia()):
             shutil.move(gal.getOutFileName(), gal.getOutFileName()+'.bak')
 
-        with open(gal.getOutFileName(), 'w') as f:
-            f.write('#PixelId Galaxia Gaia\n')
+        with open(gal.getOutFileNameGaia(), 'w') as f:
+            f.write('PixelId,nStars\n')
+        with open(gal.getOutFileNameGalaxia(), 'w') as f:
+            f.write('PixelId,nStars\n')
 
         p = Pool(processes=12)
-        pix = range(len(Galaxia.pixels))
-        p.map(processGalaxia, pix)
+        pix = range(len(CountStars.pixels))
+        p.map(processCountStars, pix)
         p.close()
 
     gal.plotResult()

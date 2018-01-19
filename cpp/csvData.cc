@@ -120,6 +120,18 @@ vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVec
     return doubleVector;
 }
 
+vector<unsigned> convertStringVectorToUnsignedVector(vector<string> const& stringVector){
+    vector<unsigned> outVector(0);
+    for (vector<string>::const_iterator iter = stringVector.begin(); iter != stringVector.end(); ++iter){
+        string const& element = *iter;
+        std::istringstream is(element);
+        unsigned result;
+        is >> result;
+        outVector.push_back(result);
+    }
+    return outVector;
+}
+
 vector<string> convertDoubleVectorToStringVector(vector<double> const& doubleVector){
     vector<string> stringVector(0);
     stringVector.reserve(doubleVector.size());

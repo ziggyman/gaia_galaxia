@@ -130,6 +130,7 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile);
 CSVData readCSVFile(string const& fileName);
 
 vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVector);
+vector<unsigned> convertStringVectorToUnsignedVector(vector<string> const& stringVector);
 vector<string> convertDoubleVectorToStringVector(vector<double> const& doubleVector);
 
 #endif

@@ -11,5 +11,6 @@ PYBIND11_MODULE(csvFree, m) {
     m.def("readHeader", (vector<string> (*)(string const&)) &readHeader);
     m.def("readCSVFile", (CSVData (*)(string const&)) &readCSVFile);
     m.def("convertStringVectorToDoubleVector", (vector<double> (*)(vector<std::string> const&)) &convertStringVectorToDoubleVector);
+    m.def("convertStringVectorToUnsignedVector", (vector<unsigned> (*)(vector<std::string> const&)) &convertStringVectorToUnsignedVector);
     m.def("convertDoubleVectorToStringVector", (vector<std::string> (*)(vector<double> const&)) &convertDoubleVectorToStringVector);
 }

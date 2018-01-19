@@ -13,21 +13,24 @@ void countStars(vector<Pixel> const& pixels,
                 int const& pixelId,
                 string const& outFileName,
                 string const& whichOne){
-    string galaxiaFileName = galaxiaGetDataDirOut()
+    string inFileName;
+
+    if (whichOne.compare("galaxia") == 0){
+        inFileName = galaxiaGetDataDirOut()
                              + (galaxiaGetFileNameOutRoot() % pixels[pixelId].xLow
                                                             % pixels[pixelId].xHigh
                                                             % pixels[pixelId].yLow
                                                             % pixels[pixelId].yHigh).str();
-    string gaiaFileName;
-    if (whichOne.compare("gaia") == 0){
-        gaiaFileName = gaiaGetDataDirOut()
+    }
+    else if (whichOne.compare("gaia") == 0){
+        inFileName = gaiaGetDataDirOut()
                         + (gaiaGetFileNameOutRoot() % pixels[pixelId].xLow
                                                     % pixels[pixelId].xHigh
                                                     % pixels[pixelId].yLow
                                                     % pixels[pixelId].yHigh).str();
     }
     else if (whichOne.compare("gaiaTgas") == 0){
-        gaiaFileName = gaiaTgasGetDataDirOut()
+        inFileName = gaiaTgasGetDataDirOut()
                         + (gaiaTgasGetFileNameOutRoot() % pixels[pixelId].xLow
                                                         % pixels[pixelId].xHigh
                                                         % pixels[pixelId].yLow
@@ -36,18 +39,15 @@ void countStars(vector<Pixel> const& pixels,
     else{
         throw std::runtime_error("countStars: whichOne = <"+whichOne+"> not found in [gaia, gaiaTgas]");
     }
-    unsigned nStarsGaia = countLines(gaiaFileName);
-    unsigned nStarsGalaxia = countLines(galaxiaFileName);
-    string lockName = "/var/lock/out.lock";
+    unsigned nStars = countLines(inFileName);
+    string lockName = "/var/lock/"+outFileName.substr(outFileName.find_last_of("/")+1)+".lock";
     int fd = lockFile(outFileName,
                       lockName,
                       0.1);
     ofstream outFile(outFileName, ios_base::app);
 
-    string strToWrite = to_string(pixelId) + " " + to_string(nStarsGalaxia) + " " + to_string(nStarsGaia);
+    string strToWrite = to_string(pixelId) + "," + to_string(nStars)+"\n";
     outFile.write(strToWrite.c_str(), strlen(strToWrite.c_str()));
-    string endOfLine("\n");
-    outFile.write(endOfLine.c_str(), strlen(endOfLine.c_str()));
     closeFileAndDeleteLock(outFile,
                            lockName,
                            fd);
