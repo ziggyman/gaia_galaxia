@@ -28,6 +28,8 @@ XY Hammer::lonLatToXY(const double& lonDeg, const double& latDeg) const{
     xy.x = 2.0 * sqrt(2.0) * cos(latRad) * sin(lonRad / 2.0) / temp;
     xy.y = sqrt(2.0) * sin(latRad) / temp;
 
+//    cout << "hammer.lonLatToXY: lon = " << lon << ", lat = " << lat << ": x = " << xy.x << ", y = " << xy.y << endl;
+
     return xy;
 }
 

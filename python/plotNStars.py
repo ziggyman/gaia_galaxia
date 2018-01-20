@@ -61,17 +61,19 @@ class CountStars(object):
 
         pixelIds = csvFree.convertStringVectorToUnsignedVector(dataGaia.getData('PixelId'))
 
-        nStarsGalaxia = csvFree.convertStringVectorToDoubleVector(dataGalaxia.getData('Galaxia'))
+        nStarsGalaxia = np.asarray(csvFree.convertStringVectorToDoubleVector(dataGalaxia.getData('Galaxia')))
         maxNStarsGalaxia = max(nStarsGalaxia)
         minNStarsGalaxia = min(nStarsGalaxia)
 
-        nStarsGaia = csvFree.convertStringVectorToDoubleVector(dataGaia.getData('Gaia'))
+        nStarsGaia = np.asarray(csvFree.convertStringVectorToDoubleVector(dataGaia.getData('Gaia')))
         maxNStarsGaia = max(nStarsGaia)
         minNStarsGaia = min(nStarsGaia)
 
-        nStarsFac = np.asarray(nStarsGalaxia) / np.asarray(nStarsGaia)
+
+
+        nStarsFac = nStarsGalaxia / nStarsGaia
         maxNStarsFac = max(nStarsFac[np.isfinite(nStarsFac)])
-        minNStarsFac = min(nStarsFac)
+        minNStarsFac = min(nStarsFac[np.isfinite(nStarsFac)])
         nStarsFac[np.isnan(nStarsFac)] = maxNStarsFac
         nStarsFac[np.isinf(nStarsFac)] = maxNStarsFac
 
@@ -90,10 +92,12 @@ class CountStars(object):
 
         faceColorsGaia = [redGreen[int((len(redGreen)-1) * i / maxNStarsGaia)] for i in nStarsGaia]
 
+        maxNStarsGalaxia = maxNStarsGalaxia / 10.0
+        nStarsGalaxia = np.where(nStarsGalaxia > maxNStarsGalaxia, maxNStarsGalaxia, nStarsGalaxia)
         faceColorsGalaxia = [redGreen[int((len(redGreen)-1) * i / maxNStarsGalaxia)] for i in nStarsGalaxia]
 
-#        maxNStarsFac = 2.0
-#        nStarsFac = np.where(nStarsFac > maxNStarsFac, maxNStarsFac, nStarsFac)
+        maxNStarsFac = 1000.0#maxNStarsFac / 10.0
+        nStarsFac = np.where(nStarsFac > maxNStarsFac, maxNStarsFac, nStarsFac)
         colorIndex = [int((len(redGreen)-1.0) * i / maxNStarsFac) for i in nStarsFac]
         faceColorsFac = [redGreen[i] for i in colorIndex]
 

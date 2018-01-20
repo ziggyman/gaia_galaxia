@@ -213,34 +213,40 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                                                    lockName,
                                                    lockFd);
                             int iId = -1;
-                            for (auto itId=ids.begin(); itId!=ids.end(); ++itId){
-                                ++iId;
-                                cout << "iStar = " << iStar << ": csvDataOutFile.size() = " << csvDataOutFile.size() << ", reading id <" << *itId << ">" << endl;
-                                vector<string> idsTemp = csvDataOutFile.getData(*itId);
-                                cout << "iStar = " << iStar << ": idsTemp.size() = " << idsTemp.size() << endl;
-                                string id = csvData.getData(*itId, iStar);
-                                cout << "iStar = " << iStar << ": checking for " << *itId << " = " << id << " in file " << outFileNames[iPix] << endl;
-                                if (std::find(idsTemp.begin(), idsTemp.end(), id) != idsTemp.end()){
-                                    starFoundInIds[iId] = true;
-                                    cout << "iStar = " << iStar << ": id <" << id << "> found in " << outFileNames[iPix] << endl;
+                            if (ids.size() > 0){
+                                for (auto itId=ids.begin(); itId!=ids.end(); ++itId){
+                                    ++iId;
+                                    cout << "iStar = " << iStar << ": csvDataOutFile.size() = " << csvDataOutFile.size() << ", reading id <" << *itId << ">" << endl;
+                                    vector<string> idsTemp = csvDataOutFile.getData(*itId);
+                                    cout << "iStar = " << iStar << ": idsTemp.size() = " << idsTemp.size() << endl;
+                                    string id = csvData.getData(*itId, iStar);
+                                    cout << "iStar = " << iStar << ": checking for " << *itId << " = " << id << " in file " << outFileNames[iPix] << endl;
+                                    if (std::find(idsTemp.begin(), idsTemp.end(), id) != idsTemp.end()){
+                                        starFoundInIds[iId] = true;
+                                        cout << "iStar = " << iStar << ": id <" << id << "> found in " << outFileNames[iPix] << endl;
+                                    }
+                                    else{
+                                        starFoundInIds[iId] = false;
+                                        cout << "iStar = " << iStar << ": id <" << id << "> NOT found in " << outFileNames[iPix] << endl;
+                                        break;
+                                    }
+                                }
+                                alreadyThere = starFoundInIds[0];
+                                for (int iIId = 1; iIId<=iId; ++iIId){
+                                    alreadyThere = alreadyThere && starFoundInIds[iIId];
+                                }
+                                if (!alreadyThere){
+                                    lastEntryFound = false;
+                                    cout << "iStar = " << iStar << ": star not found in " << outFileNames[iPix] << " => stopping search" << endl;
                                 }
                                 else{
-                                    starFoundInIds[iId] = false;
-                                    cout << "iStar = " << iStar << ": id <" << id << "> NOT found in " << outFileNames[iPix] << endl;
-                                    break;
+                                    cout << "iStar = " << iStar << ": alreadyThere == true" << endl;
+                                    lastEntryFound = true;
                                 }
                             }
-                            alreadyThere = starFoundInIds[0];
-                            for (int iIId = 1; iIId<=iId; ++iIId){
-                                alreadyThere = alreadyThere && starFoundInIds[iIId];
-                            }
-                            if (!alreadyThere){
-                                lastEntryFound = false;
-                                cout << "iStar = " << iStar << ": star not found in " << outFileNames[iPix] << " => stopping search" << endl;
-                            }
                             else{
-                                cout << "iStar = " << iStar << ": alreadyThere == true" << endl;
-                                lastEntryFound = true;
+                                alreadyThere = false;
+                                lastEntryFound = false;
                             }
                         }
                         time (&findEnd); // note time after execution
