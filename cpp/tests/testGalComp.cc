@@ -70,10 +70,10 @@ TEST_F(GalCompTest, testConvertStringVectortoDoubleVector){
     cout << "dblVec[2] = " << dblVec[2] << endl;
 }
 
-TEST_F(GalCompTest, testGaiaMoveStarsToXY){
-    cout << "running gaiaMoveStars" << endl;
-    gaiaMoveStarsToXY();
-}
+//TEST_F(GalCompTest, testGaiaMoveStarsToXY){
+//    cout << "running gaiaMoveStars" << endl;
+//    gaiaMoveStarsToXY();
+//}
 
 }  // namespace
 

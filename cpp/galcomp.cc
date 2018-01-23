@@ -66,3 +66,91 @@ vector< vector< string > > getGaiaObject(CSVData const& csvData, string const& s
     }
     return out;
 }
+
+string getCSVFileName(Pixel const& pixel, string const& whichOne){
+    string fName;
+    if (whichOne.compare("galaxia") == 0){
+        fName = galaxiaGetDataDirOut() +
+                (galaxiaGetFileNameOutRoot() % pixel.xLow
+                                             % pixel.xHigh
+                                             % pixel.yLow
+                                             % pixel.yHigh).str();
+    }
+    else if (whichOne.compare("gaia") == 0){
+        fName = gaiaGetDataDirOut() +
+                (gaiaGetFileNameOutRoot() % pixel.xLow
+                                          % pixel.xHigh
+                                          % pixel.yLow
+                                          % pixel.yHigh).str();
+    }
+    else if (whichOne.compare("gaiaTgas") == 0){
+        fName = gaiaTgasGetDataDirOut() +
+                (gaiaTgasGetFileNameOutRoot() % pixel.xLow
+                                              % pixel.xHigh
+                                              % pixel.yLow
+                                              % pixel.yHigh).str();
+    }
+    else{
+        throw std::runtime_error("ERROR: whichOne(=<"+whichOne
+                +"> not found in possible options [galaxia, gaia, gaiaTgas]");
+    }
+
+}
+
+vector<string> getHeader(string const& whichOne){
+    Hammer hammer();
+    Pixel pix = hammer.getPixels()[0];
+    return readHeader(getCSVFileName(pix, whichOne));
+}
+
+vector<Pixel> getPixelsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& windowIn){
+    vector<Pixel> out(0);
+    for (auto itPix=pixelsIn.begin(); itPix!=pixelsIn.end(); ++itPix){
+        if (windowIn.isInside(XY(itPix->xLow, itPix->yLow))
+         || windowIn.isInside(XY(itPix->xHigh, itPix->yLow))
+         || windowIn.isInside(XY(itPix->xLow, itPix->yHigh))
+         || windowIn.isInside(XY(itPix->xHigh, itPix->yHigh))){
+            out.push_back(*itPix);
+        }
+    }
+    return out;
+}
+
+CSVData getStarsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& window, string const& whichOne){
+    vector<Pixel> goodPixels = getPixelsInXYWindow(pixelsIn, window);
+
+    CSVData csvDataOut;
+    csvDataOut._header = getHeader(whichOne);
+    Hammer hammer;
+    int headerPosX = csvDataOut.findKeywordPos(hammer.getKeyWordHammerX());
+    int headerPosXY= csvDataOut.findKeywordPos(hammer.getKeyWordHammerX());
+    for (auto itPix=goodPixels.begin(); itPix!=goodPixels.end(); ++itPix){
+        string fName = getCSVFileName(*itPix, whichOne);
+        CSVDataIn csvDataIn = readCSVFile(fName);
+        for (auto itStar=csvDataIn._data.begin(); itStar!=csvDataIn._data.end(); ++itStar){
+            if (itPix->isInside(XY((*itStar)[headerPosX], (*itStar)[headerPosY]))){
+                csvDataOut._data.push_back(*itStar);
+            }
+        }
+    }
+    return csvDataOut;
+}
+
+void simulateObservation(Pixel const& xyWindow, string const& filter, string const& whichObs){
+    Hammer hammer;
+    vector<Pixel> pixels = hammer.getPixels()
+
+    CSVData csvDataObs = getStarsInXYWindow(pixels, xyWindow, whichObs);
+    CSVData csvDataModel = getStarsInXYWindow(pixels, xyWindow, "galaxia");
+
+    vector<double> appMagFilterObs = convertStringVectorToDoubleVector(
+        csvDataObs.getData(gaiaGetFilterKeyWord(filter)));
+    vector<double> appMagFilterModel = convertStringVectorToDoubleVector(
+        csvDataModel.getData(galaxiaGetFilterKeyWord(filter)));
+
+    
+}
+
+void comparePixel(Pixel const& xyWindow, string const& keyWord, string const& whichObs){
+
+}

@@ -23,10 +23,39 @@ struct CSVData{
         return keywordPos;
     }
 
+    vector<string> getData(unsigned row) const{
+        if (size() == 0){
+            throw std::runtime_error("CSVData::getData(int): ERROR: _data is empty");
+        }
+        if (row >= size()){
+            throw std::runtime_error("CSVData::getData(int): ERROR: row(="
+                    +to_string(row)+") >= size(="+to_string(size())+")");
+        }
+        return vector<string>(_data[row]);
+    }
+
+    vector<string> getData(unsigned row){
+        if (size() == 0){
+            throw std::runtime_error("CSVData::getData(int): ERROR: _data is empty");
+        }
+        if (row >= size()){
+            throw std::runtime_error("CSVData::getData(int): ERROR: row(="
+                    +to_string(row)+") >= size(="+to_string(size())+")");
+        }
+        return _data[row];
+    }
+
     string getData(string const& keyword, int row) const{
         int headerPos = findKeywordPos(keyword);
         if (headerPos < 0){
             throw std::runtime_error("CSVData::getData: ERROR: keyword <" + keyword + "> not found");
+        }
+        if (size() == 0){
+            throw std::runtime_error("CSVData::getData(int): ERROR: _data is empty");
+        }
+        if (row >= size()){
+            throw std::runtime_error("CSVData::getData(int): ERROR: row(="
+                    +to_string(row)+") >= size(="+to_string(size())+")");
         }
         return _data[row][headerPos];
     }
@@ -52,14 +81,17 @@ struct CSVData{
                 out.push_back(outStr);
             }
             catch(...){
-                cout << "getData: ERROR thrown: iRow = " << iRow << ", headerPos = " << headerPos << ", _data.size() = " << _data.size() << ", _data[" << iRow << "].size() = " << _data[iRow].size() << endl;
+                string message("getData: ERROR thrown: iRow = ");
+                message += to_string(iRow) + ", headerPos = " + to_string(headerPos) +
+                        ", _data.size() = " + to_string(size()) + ", _data[" +
+                        to_string(iRow) + "].size() = " + to_string(_data[iRow].size()) + "\n";
                 for (int i=0; i<_data[iRow].size(); ++i)
-                    cout << "_data[" << iRow << "][" << i << "] = " << _data[iRow][i] << endl;
-                exit(EXIT_FAILURE);
+                    message += "_data[" + to_string(iRow) + "][" + to_string(i) + "] = " + _data[iRow][i] + "\n";
+                throw std::runtime_error(message);
             }
 //            cout << "CSVData.getData(): setting out[ = " << out.size() << "] to " << outStr << endl;
         }
-        cout << "CSVData.getData(): out.size() = " << out.size() << endl;
+//        cout << "CSVData.getData(): out.size() = " << out.size() << endl;
         return out;
     }
 

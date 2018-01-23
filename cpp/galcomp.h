@@ -9,6 +9,7 @@
 #include "csvData.h"
 #include "filesAndLocks.h"
 #include "hammer.h"
+#include "math.h"
 #include "parameters.h"
 
 using namespace std;
@@ -19,8 +20,16 @@ void countStars(vector<Pixel> const& pixels, int const& pixelId, string const& o
 
 vector< vector< string > > getGaiaObject(CSVData const& csvData, string const& source_id);
 
-CSVData getStarsInXYWindow(Pixel const& window, string const& whichOne);
+string getCSVFileName(Pixel const& pixel, string const& whichOne);
 
-void comparePixel(Pixel const& pix);
+vector<string> getHeader(string const& whichOne);
+
+vector<Pixel> getPixelsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& windowIn);
+
+CSVData getStarsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& window, string const& whichOne);
+
+void simulateObservation(Pixel const& xyWindow, string const& filter, string const& whichGaia);
+
+void comparePixel(Pixel const& xyWindow, string const& keyWord, string const& whichGaia);
 
 #endif

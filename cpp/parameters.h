@@ -18,4 +18,8 @@ string gaiaGetDataDirOut();
 
 string gaiaTgasGetDataDirOut();
 
+string gaiaGetFilterKeyWord(string const& filter);
+
+string galaxiaGetFilterKeyWord(string const& filter);
+
 #endif

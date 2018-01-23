@@ -13,8 +13,8 @@ boost::format gaiaTgasGetFileNameOutRoot(){
 }
 
 string galaxiaGetDataDirOut(){
-//    return "/Volumes/yoda/azuri/data/galaxia/xy/";
-    return "/Volumes/yoda/azuri/data/galaxia/xy1/";
+    return "/Volumes/yoda/azuri/data/galaxia/xy/";
+//    return "/Volumes/yoda/azuri/data/galaxia/xy1/";
 }
 
 string gaiaGetDataDirOut(){
@@ -24,3 +24,14 @@ string gaiaGetDataDirOut(){
 string gaiaTgasGetDataDirOut(){
     return "/Volumes/yoda/azuri/data/gaia-tgas/xy/";
 }
+
+string gaiaGetFilterKeyWord(string const& filter){
+    if (filter.compare("g") == 0)
+        return "phot_g_mean_mag";
+}
+
+string galaxiaGetFilterKeyWord(string const& filter){
+    if (filter.compare("g") == 0)
+        return "sdss_g";
+}
+
