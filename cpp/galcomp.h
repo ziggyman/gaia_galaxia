@@ -9,7 +9,7 @@
 #include "csvData.h"
 #include "filesAndLocks.h"
 #include "hammer.h"
-#include "math.h"
+#include "galaxyMath.h"
 #include "parameters.h"
 
 using namespace std;
@@ -28,8 +28,14 @@ vector<Pixel> getPixelsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& wi
 
 CSVData getStarsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& window, string const& whichOne);
 
-void simulateObservation(Pixel const& xyWindow, string const& filter, string const& whichGaia);
+void simulateObservation(vector<Pixel> const& pixels,
+                         Pixel const& xyWindow,
+                         string const& filter,
+                         string const& whichGaia);
 
-void comparePixel(Pixel const& xyWindow, string const& keyWord, string const& whichGaia);
+void comparePixel(vector<Pixel> const& pixels, 
+                  Pixel const& xyWindow,
+                  string const& keyWord,
+                  string const& whichObs);
 
 #endif

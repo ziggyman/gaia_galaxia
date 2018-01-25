@@ -39,7 +39,7 @@ class GalCompTest : public ::testing::Test {
 // Tests that the Galcomp::Bar() method does Abc.
 TEST_F(GalCompTest, testReadCSVFile) {
     cout << "running testReadCSVFile" << endl;
-    string fileName("/Volumes/external/azuri/data/gaia/lon-lat/GaiaSource_0-10_-90--80.csv");
+    string fileName("/Volumes/yoda/azuri/data/gaia-tgas/xy/TgasSource_-0.000000-0.017678_-0.601041--0.583363.csv");
     CSVData csvData = readCSVFile(fileName);
     cout << "csvData.header.size() = " << csvData.header.size() << ", csvData.data.size() = "
             << csvData.data.size() << ", csvData.data[0].size() = " << csvData.data[0].size() << endl;
@@ -50,7 +50,7 @@ TEST_F(GalCompTest, testReadCSVFile) {
 
 TEST_F(GalCompTest, testGetData){
     cout << "running testGetData" << endl;
-    string fileName("/Volumes/external/azuri/data/gaia/lon-lat/GaiaSource_80-90_-90--80.csv");
+    string fileName("/Volumes/yoda/azuri/data/gaia-tgas/xy/TgasSource_-0.000000-0.017678_-0.601041--0.583363.csv");
     CSVData csvData = readCSVFile(fileName);
     string l = csvData.getData(string("l"), 0);
     ASSERT_NE(l, string(""));
@@ -64,12 +64,23 @@ TEST_F(GalCompTest, testConvertStringVectortoDoubleVector){
     strVec[0] = string("0");
     strVec[1] = string("1.2");
     strVec[2] = string("");
-    vector<double> dblVec = convertStringVectortoDoubleVector(strVec);
+    vector<double> dblVec = convertStringVectorToDoubleVector(strVec);
     ASSERT_EQ(dblVec[0], 0.0);
     ASSERT_EQ(dblVec[1], 1.2);
     cout << "dblVec[2] = " << dblVec[2] << endl;
 }
 
+TEST_F(GalCompTest, testComparePixel){
+    Hammer hammer;
+    vector<Pixel> pixels = hammer.getPixels();
+    Pixel xyWindow = pixels[1000];
+    string keyWord("distance");
+    cout << "testComparePixel: xyWindow: xLow = " << xyWindow.xLow << ", xHigh = " << xyWindow.xHigh << ", yLow = " << xyWindow.yLow << ", yHigh = " << xyWindow.yHigh << endl;
+    comparePixel(pixels,
+                 xyWindow,
+                 keyWord,
+                 "gaiaTgas");
+}
 //TEST_F(GalCompTest, testGaiaMoveStarsToXY){
 //    cout << "running gaiaMoveStars" << endl;
 //    gaiaMoveStarsToXY();

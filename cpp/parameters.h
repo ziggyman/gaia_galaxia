@@ -18,8 +18,17 @@ string gaiaGetDataDirOut();
 
 string gaiaTgasGetDataDirOut();
 
+string obsGetFilter();
+
 string gaiaGetFilterKeyWord(string const& filter);
 
 string galaxiaGetFilterKeyWord(string const& filter);
+
+string galaxiaGetHeaderKeyWord(string const& keyWord);
+string gaiaGetHeaderKeyWord(string const& keyWord);
+
+unsigned getNStepsMagnitude();
+
+unsigned getNSims();
 
 #endif

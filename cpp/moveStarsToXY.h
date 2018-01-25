@@ -62,6 +62,6 @@ void galaxiaFixHeaderLineEnd();
  */
 void checkGaiaInputFiles();
 
-int main();
+//int main();
 
 #endif

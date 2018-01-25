@@ -54,14 +54,14 @@ void countStars(vector<Pixel> const& pixels,
 }
 
 vector< vector< string > > getGaiaObject(CSVData const& csvData, string const& source_id){
-    int nDataLines = csvData._data.size();
+    int nDataLines = csvData.data.size();
     cout << "csvData has " << nDataLines << " data lines" << endl;
 
     vector<string> sourceIds = csvData.getData("source_id");
     vector< vector< string > > out(0);
     for (int pos=0; pos!=sourceIds.size(); ++pos){
         if (sourceIds[pos].compare(source_id) == 0){
-            out.push_back(csvData._data[pos]);
+            out.push_back(csvData.data[pos]);
         }
     }
     return out;
@@ -94,11 +94,11 @@ string getCSVFileName(Pixel const& pixel, string const& whichOne){
         throw std::runtime_error("ERROR: whichOne(=<"+whichOne
                 +"> not found in possible options [galaxia, gaia, gaiaTgas]");
     }
-
+    return fName;
 }
 
 vector<string> getHeader(string const& whichOne){
-    Hammer hammer();
+    Hammer hammer;
     Pixel pix = hammer.getPixels()[0];
     return readHeader(getCSVFileName(pix, whichOne));
 }
@@ -117,40 +117,82 @@ vector<Pixel> getPixelsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& wi
 }
 
 CSVData getStarsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& window, string const& whichOne){
+    cout << "getStarsInXYWindow: whichOne = " << whichOne << endl;
     vector<Pixel> goodPixels = getPixelsInXYWindow(pixelsIn, window);
 
     CSVData csvDataOut;
-    csvDataOut._header = getHeader(whichOne);
+    csvDataOut.header = getHeader(whichOne);
+    cout << "getStarsInXYWindow: csvDataOut.header = ";
+    for (string& str: csvDataOut.header) cout << str;
+    cout << endl;
     Hammer hammer;
     int headerPosX = csvDataOut.findKeywordPos(hammer.getKeyWordHammerX());
-    int headerPosXY= csvDataOut.findKeywordPos(hammer.getKeyWordHammerX());
+    cout << "getStarsInXYWindow: headerPosX = " << headerPosX << endl;
+    int headerPosY= csvDataOut.findKeywordPos(hammer.getKeyWordHammerY());
+    cout << "getStarsInXYWindow: headerPosY = " << headerPosY << endl;
     for (auto itPix=goodPixels.begin(); itPix!=goodPixels.end(); ++itPix){
         string fName = getCSVFileName(*itPix, whichOne);
-        CSVDataIn csvDataIn = readCSVFile(fName);
-        for (auto itStar=csvDataIn._data.begin(); itStar!=csvDataIn._data.end(); ++itStar){
-            if (itPix->isInside(XY((*itStar)[headerPosX], (*itStar)[headerPosY]))){
-                csvDataOut._data.push_back(*itStar);
+        cout << "getStarsInXYWindow: fName = <" << fName << ">" << endl;
+        CSVData csvDataIn = readCSVFile(fName);
+        cout << "getStarsInXYWindow: cdvDataIn.size() = " << csvDataIn.size() << endl;
+        for (auto itStar=csvDataIn.data.begin(); itStar!=csvDataIn.data.end(); ++itStar){
+            if (itPix->isInside(XY(stod((*itStar)[headerPosX]), stod((*itStar)[headerPosY])))){
+                csvDataOut.data.push_back(*itStar);
+                cout << "getStarsInXYWindow: star found" << endl;
             }
         }
     }
+    cout << "getStarsInXYWindow: csvDataOut.size() = " << csvDataOut.size() << endl;
     return csvDataOut;
 }
 
-void simulateObservation(Pixel const& xyWindow, string const& filter, string const& whichObs){
-    Hammer hammer;
-    vector<Pixel> pixels = hammer.getPixels()
-
+vector< vector< vector< unsigned > > > simulateObservation(
+    vector<Pixel> const& pixels,
+    Pixel const& xyWindow,
+    string const& filter,
+    string const& whichObs,
+    unsigned nSims)
+{
     CSVData csvDataObs = getStarsInXYWindow(pixels, xyWindow, whichObs);
+//    cout << "simluateObservation: csvDataObs.size() = " << csvDataObs.size() << endl;
     CSVData csvDataModel = getStarsInXYWindow(pixels, xyWindow, "galaxia");
 
+//    string filterKeyWordObs = gaiaGetFilterKeyWord(filter);
+//    cout << "simulateObservation: filterKeyWordObs = <" << filterKeyWordObs << ">" << endl;
+//    vector<string> appMagFilterObsStr = csvDataObs.getData(filterKeyWordObs);
+//    cout << "simulateObservation: appMagFilterObsStr.size() = " << appMagFilterObsStr.size() << endl;
     vector<double> appMagFilterObs = convertStringVectorToDoubleVector(
         csvDataObs.getData(gaiaGetFilterKeyWord(filter)));
     vector<double> appMagFilterModel = convertStringVectorToDoubleVector(
         csvDataModel.getData(galaxiaGetFilterKeyWord(filter)));
 
-    
+    if (appMagFilterObs.size() == 0)
+        throw std::runtime_error("simulateObservation: ERROR: no stars in appMagFilterObs");
+
+    Histogram obsHist;
+    double minMagObs = *min_element(appMagFilterObs.begin(), appMagFilterObs.end());
+    double maxMagObs = *max_element(appMagFilterObs.begin(), appMagFilterObs.end());
+    obsHist.makeBinLimits(minMagObs, maxMagObs, getNStepsMagnitude());
+    obsHist.make(appMagFilterObs);
+
+    vector< vector< vector< unsigned > > > sims(0);
+    sims.push_back(obsHist.indices);
+    unsigned seed = 1;
+    for (unsigned sim=0; sim < nSims; ++sim){
+        sims.push_back(obsHist.fillRandomly(appMagFilterModel, seed));
+        cout << "simulateObservation: seed = " << seed << endl;
+    }
+    return sims;
 }
 
-void comparePixel(Pixel const& xyWindow, string const& keyWord, string const& whichObs){
-
+void comparePixel(vector<Pixel> const& pixels,
+                  Pixel const& xyWindow,
+                  string const& keyWord,
+                  string const& whichObs){
+    vector< vector< vector< unsigned > > > data = simulateObservation(pixels,
+                                                                      xyWindow,
+                                                                      obsGetFilter(),
+                                                                      whichObs,
+                                                                      getNSims());
+    cout << "comparePixel: getNSims() = " << getNSims() << ": data.size() = " << data.size() << endl;
 }

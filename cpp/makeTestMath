@@ -1,0 +1,1 @@
+g++ -std=c++11 -isystem ../../cpp/googletest/googletest/include -pthread tests/testMath.cc galaxyMath.cc ../../cpp/googletest/googletest/make/libgtest.a -I/opt/local/include -L/usr/local/lib -o testMath -Wno-c++11-extensions

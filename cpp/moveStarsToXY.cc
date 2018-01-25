@@ -438,9 +438,9 @@ void checkGaiaInputFiles(){
     }
 }
 
-int main(){
-//    galaxiaMoveStarsFromEBFToXY();
-    gaiaTgasMoveStarsToXY();
-    return 0;
-}
+//int main(){
+////    galaxiaMoveStarsFromEBFToXY();
+//    gaiaTgasMoveStarsToXY();
+//    return 0;
+//}
 
