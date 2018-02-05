@@ -93,9 +93,9 @@ string gaiaGetHeaderKeyWord(string const& keyWord){
 }
 
 unsigned getNStepsMagnitude(){
-    return 20;
+    return 10;
 }
 
 unsigned getNSims(){
-    return 30;
+    return 2;
 }
