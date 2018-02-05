@@ -58,8 +58,8 @@ TEST_F(GalCompTest, testGetData){
     ASSERT_EQ(ls.size(), csvData.data.size());
 }
 
-TEST_F(GalCompTest, testConvertStringVectortoDoubleVector){
-    cout << "running testConvertStringVectortoDoubleVector" << endl;
+TEST_F(GalCompTest, testConvertStringVectorToDoubleVector){
+    cout << "running testConvertStringVectorToDoubleVector" << endl;
     vector<string> strVec(3);
     strVec[0] = string("0");
     strVec[1] = string("1.2");
@@ -73,9 +73,25 @@ TEST_F(GalCompTest, testConvertStringVectortoDoubleVector){
 TEST_F(GalCompTest, testComparePixel){
     Hammer hammer;
     vector<Pixel> pixels = hammer.getPixels();
-    Pixel xyWindow = pixels[1000];
+    Pixel xyWindow;// = pixels[pixels.size()/2];
+    xyWindow.xLow = -1.01;
+    xyWindow.xHigh = -0.99;
+    xyWindow.yLow = -1.02;
+    xyWindow.yHigh = -1.0;
+    Pixel lonLatWindowA;// = pixels[pixels.size()/2];
+    lonLatWindowA.xLow = hammer.xYToLonLat(xyWindow.xLow, xyWindow.yLow).lon;
+    lonLatWindowA.xHigh = hammer.xYToLonLat(xyWindow.xHigh, xyWindow.yHigh).lon;
+    lonLatWindowA.yLow = hammer.xYToLonLat(xyWindow.xLow, xyWindow.yLow).lat;
+    lonLatWindowA.yHigh = hammer.xYToLonLat(xyWindow.xHigh, xyWindow.yHigh).lat;
+    Pixel lonLatWindowB;// = pixels[pixels.size()/2];
+    lonLatWindowB.xLow = hammer.xYToLonLat(xyWindow.xLow, xyWindow.yHigh).lon;
+    lonLatWindowB.xHigh = hammer.xYToLonLat(xyWindow.xHigh, xyWindow.yLow).lon;
+    lonLatWindowB.yLow = hammer.xYToLonLat(xyWindow.xHigh, xyWindow.yLow).lat;
+    lonLatWindowB.yHigh = hammer.xYToLonLat(xyWindow.xLow, xyWindow.yHigh).lat;
     string keyWord("distance");
     cout << "testComparePixel: xyWindow: xLow = " << xyWindow.xLow << ", xHigh = " << xyWindow.xHigh << ", yLow = " << xyWindow.yLow << ", yHigh = " << xyWindow.yHigh << endl;
+    cout << "testComparePixel: lonLatWindowA: lonLow = " << lonLatWindowA.xLow << ", lonHigh = " << lonLatWindowA.xHigh << ", latLow = " << lonLatWindowA.yLow << ", latHigh = " << lonLatWindowA.yHigh << endl;
+    cout << "testComparePixel: lonLatWindowB: lonLow = " << lonLatWindowB.xLow << ", lonHigh = " << lonLatWindowB.xHigh << ", latLow = " << lonLatWindowB.yLow << ", latHigh = " << lonLatWindowB.yHigh << endl;
     comparePixel(pixels,
                  xyWindow,
                  keyWord,
