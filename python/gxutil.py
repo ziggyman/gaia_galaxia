@@ -42,7 +42,7 @@ def append_pm(data):
     data['mul']=vl/(4.74e3*r)
     data['mub']=vb/(4.74e3*r)
 
-def abs2app(data,noext=False,dered=False,corr=False):
+def abs2app(data,noext=False,dered=False,corr=False,append=False):
     """
     Apply extinction and computes the apparent magntiude.
     All magnitude related keys in data are modified.
@@ -66,9 +66,15 @@ def abs2app(data,noext=False,dered=False,corr=False):
         if temp1 in aebv:
 #            print temp
             if noext==1:
-                data[temp]=data[temp]+dmod
+                if not append:
+                    data[temp]=data[temp]+dmod
+                else:
+                    data[temp+'_app']=data[temp]+dmod
             else:
-                data[temp]=data[temp]+dmod+aebv[temp1]*ebv
+                if not append:
+                    data[temp]=data[temp]+dmod+aebv[temp1]*ebv
+                else:
+                    data[temp+'_app']=data[temp]+dmod+aebv[temp1]*ebv
             j+=1
 
     if  j == 0:
