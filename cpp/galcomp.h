@@ -38,4 +38,6 @@ void comparePixel(vector<Pixel> const& pixels,
                   string const& keyWord,
                   string const& whichObs);
 
+vector<double> getGaiaG(CSVData const& csvData);
+
 #endif

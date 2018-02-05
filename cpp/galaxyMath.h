@@ -88,4 +88,9 @@ pair<double, double> muRaDecToMuLB(double muRa, double muDec, double ra, double 
  */
 double parallaxToDistance(double par);
 
+double calcGaiaGFromgri(double const& sdss_g, double const& sdss_r, double const& sdss_i);
+
+double calcIcFromBV(double const& ubv_b, double const& ubv_v);
+double calcGaiaGFromBV(double const& ubv_b, double const& ubv_v);
+
 #endif
