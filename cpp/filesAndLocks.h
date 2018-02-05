@@ -14,7 +14,7 @@ using namespace std;
 
 int lockFile(string const& fileName,
              string const& lockName,
-             float sleepTime=5.0);
+             float sleepTime=0.1);
 
 /**
  * @brief : if lock file exists, close all open files and remove their locks,
