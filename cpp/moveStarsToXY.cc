@@ -266,11 +266,11 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                                             iPix);
                         }
                         if (doWrite){
-                            writeStrVecToFile(csvData._data[iStar], *(outFiles[iPix]));
+                            writeStrVecToFile(csvData.data[iStar], *(outFiles[iPix]));
                             ++nStarsWritten;
                         }
                         else
-                            cout << "would write csvData._data[" << iStar << "] to <"
+                            cout << "would write csvData.data[" << iStar << "] to <"
                                     << outFileNames[iPix] << "> but not going to as doWrite is false" << endl;
                     }
                     pixFound = true;
@@ -373,8 +373,8 @@ void moveStarsToXY(string const& whichOne){
                 lonLat.lon=lonDbl[iLine];
                 lonLat.lat=latDbl[iLine];
                 XY xy = hammer.lonLatToXY(lonLat);
-                csvData._data[iLine].push_back(to_string(xy.x));
-                csvData._data[iLine].push_back(to_string(xy.y));
+                csvData.data[iLine].push_back(to_string(xy.x));
+                csvData.data[iLine].push_back(to_string(xy.y));
             }
             appendCSVDataToXYFiles(csvData, pixels, whichOne, ids);
         }
@@ -411,10 +411,10 @@ void galaxiaFixHeaderLineEnd(){
     for (auto itFileName=lonLatFileNames.begin(); itFileName!=lonLatFileNames.begin()+1; ++itFileName){//lonLatFileNames.end(); ++itFileName){
         cout << "reading <" << *itFileName << ">" << endl;
         CSVData csvData = readCSVFile(*itFileName);
-        cout << "csvData._header.size() = " << csvData._header.size() << ", csvData._data.size() = "
-                << csvData._data.size() << ", csvData._data[0].size() = " << csvData._data[0].size() << endl;
-        if (csvData._header.size() != csvData._data[0].size()){
-            cout << "_header size and _data size differ, gonna fix that..." << endl;
+        cout << "csvData.header.size() = " << csvData.header.size() << ", csvData.data.size() = "
+                << csvData.data.size() << ", csvData.data[0].size() = " << csvData.data[0].size() << endl;
+        if (csvData.header.size() != csvData.data[0].size()){
+            cout << "header size and data size differ, gonna fix that..." << endl;
         }
     }
     return;
