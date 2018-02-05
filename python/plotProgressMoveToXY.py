@@ -25,24 +25,32 @@ def readFile(fileName):
     return lonLat
 
 def main(argv):
-    dir = '/Volumes/yoda/azuri/data/galaxia'
-    fileNameWorking = 'workinOnFiles.txt'
-    fileNameFinished = 'finishedFiles.txt'
-    lonLatWorking = readFile(os.path.join(dir, fileNameWorking))
-    lonLatFinished = readFile(os.path.join(dir, fileNameFinished))
+    finishedOnly = True
 
     fig, ax = plt.subplots(1)
-    recsWorking = []
-    for i in range(len(lonLatWorking)):
-        recsWorking.append(
-            Rectangle(
-                (lonLatWorking[i][0]-5, lonLatWorking[i][1]-5),   # (x,y)
-                10,          # width
-                10,          # height
+    if finishedOnly:
+        fileNameFinished = '/Volumes/yoda/azuri/data/galaxia/ebfFilesWritten.txt'
+        lonLatFinished = readFile(fileNameFinished)
+
+    else:
+        dir = '/Volumes/yoda/azuri/data/galaxia'
+        fileNameWorking = 'workinOnFiles.txt'
+        fileNameFinished = 'finishedFiles.txt'
+        lonLatFinished = readFile(os.path.join(dir, fileNameFinished))
+
+        lonLatWorking = readFile(os.path.join(dir, fileNameWorking))
+        recsWorking = []
+        for i in range(len(lonLatWorking)):
+            recsWorking.append(
+                Rectangle(
+                    (lonLatWorking[i][0]-5, lonLatWorking[i][1]-5),   # (x,y)
+                    10,          # width
+                    10,          # height
+                )
             )
-        )
-    pcWorking = PatchCollection(recsWorking, facecolor='red')#, alpha=0.9,
-                         #edgecolor='None')
+        pcWorking = PatchCollection(recsWorking, facecolor='red')#, alpha=0.9,
+                             #edgecolor='None')
+        ax.add_collection(pcWorking)
 
     recsFinished = []
     for i in range(len(lonLatFinished)):
@@ -56,7 +64,6 @@ def main(argv):
     pcFinished = PatchCollection(recsFinished, facecolor='green')#, alpha=0.9,
                          #edgecolor='None')
 
-    ax.add_collection(pcWorking)
     ax.add_collection(pcFinished)
 
     plt.axis([-180, 180, -90, 90])
