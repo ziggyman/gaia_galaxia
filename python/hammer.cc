@@ -44,6 +44,18 @@ PYBIND11_MODULE(hammer, m) {
             })
     ;
 
+    py::class_<LonLat>(m, "LonLat")
+        .def(py::init<>())
+        .def(py::init<double, double>())
+        .def_readwrite("lon", &LonLat::lon)
+        .def_readwrite("lat", &LonLat::lat)
+        .def("__repr__",
+            [](const LonLat &a) {
+                return "lon='" + to_string(a.lon)
+                        + "', lat='" + to_string(a.lat) + "'";
+            })
+    ;
+
     py::class_<Hammer>(m, "Hammer")
         .def(py::init<>())
         .def("isInside", (bool (Hammer::*)(double, double)) &Hammer::isInside)
@@ -51,6 +63,7 @@ PYBIND11_MODULE(hammer, m) {
         .def("getPixels", &Hammer::getPixels)
         .def("lonLatToXY", (XY (Hammer::*)(const double &, const double &) const) &Hammer::lonLatToXY)
         .def("lonLatToXY", (vector< vector< double > > (Hammer::*)(vector<double> &, vector<double> &) const) &Hammer::lonLatToXY)
+        .def("xYToLonLat", (LonLat (Hammer::*)(const double &, const double &) const) &Hammer::xYToLonLat)
         .def("getKeyWordHammerX", (string (Hammer::*)() const) &Hammer::getKeyWordHammerX)
         .def("getKeyWordHammerY", (string (Hammer::*)() const) &Hammer::getKeyWordHammerY)
     ;
