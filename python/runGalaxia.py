@@ -7,6 +7,7 @@ import gxutil
 from multiprocessing import Pool
 import numpy as np
 import os
+import random
 import sys
 import subprocess
 import time
@@ -16,33 +17,17 @@ import csvFree
 import hammer
 import moveStarsToXY
 
-#globallock = Lock()
-#def get_aebv_factor(band):
-#    if band == 'sdss_u':
-#        return 5.155
-#    elif band == 'sdss_g':
-#        return 3.793
-#    elif band == 'sdss_r':
-#        return 2.751
-#    elif band == 'sdss_i':
-#        return 2.086
-#    elif band == 'sdss_z':
-#        return 1.479
-#    else:
-#        print 'get_aebv_factor: unknown band <',band,'>'
-#        STOP
-
 class Galaxia(object):
     ham = hammer.Hammer()
     pixels = ham.getPixels()
     ebfFilesWritten = []
     keys = []
     ids = ['rad', 'hammerX', 'hammerY', 'exbv_solar']
-    progressFile = '/Volumes/yoda/azuri/data/galaxia/ebfFilesWritten.txt'
+    lockSuffix = '_1'
+    progressFile = '/Volumes/yoda/azuri/data/galaxia/ebfFilesWritten_Vlt13.txt'
+    dir = '/Volumes/yoda/azuri/data/galaxia/ubv_Vlt13'
 
     def __init__(self):
-        dir = '/Volumes/external/azuri/data/galaxia/ubv'
-        self.fileNameIn = os.path.join(dir, 'galaxia_%d_%d.ebf')
         self.headerFile = '/Users/azuri/entwicklung/gaia_galaxia/galaxia_65_15_UBV_V-1000_21.5.ebf'#self.fileNameIn % (-85, -85)
 
     def getHeader(self):
@@ -165,9 +150,8 @@ class Galaxia(object):
         return csv
 
     def processGalaxia(self, lon, test=False):
-        reload(sys)
-        dir = '/Volumes/yoda/azuri/data/galaxia'
-        outputDir = os.path.join(dir, 'ubv')
+#        reload(sys)
+        outputDir = Galaxia.dir#os.path.join(dir, 'ubv_vLT13')
 #        ebfOutputDir = '/Volumes/external/azuri/data/galaxia/ubv'
         outputFile = ''
         overwrite = True
@@ -183,7 +167,7 @@ class Galaxia(object):
             outputFile = 'galaxia_%d_%d' % (lon, lat)
 #            print "outputFile = <", outputFile, ">"
     #        globallock.acquire()
-            parameterFileOut = os.path.join(dir, 'parameterfile_%d_%d' % (lon, lat))
+            parameterFileOut = os.path.join(Galaxia.dir, 'parameterfile_%d_%d' % (lon, lat))
             surveyArea = 157.08
 
             # Read parameterfile
@@ -197,7 +181,7 @@ class Galaxia(object):
                         fOut.write('photoSys UBV\n')
                         fOut.write('magcolorNames V,B-V\n')
                         fOut.write('appMagLimits[0] -1000\n')
-                        fOut.write('appMagLimits[1] 21.5\n')
+                        fOut.write('appMagLimits[1] 13.0\n')
                         fOut.write('absMagLimits[0] -1000\n')
                         fOut.write('absMagLimits[1] 1000\n')
                         fOut.write('colorLimits[0] -1000\n')
@@ -206,7 +190,7 @@ class Galaxia(object):
                         fOut.write('longitude %d\n' % lon)
                         fOut.write('latitude %d\n' % lat)
                         fOut.write('surveyArea %f\n' % surveyArea)
-                        fOut.write('fSample 0.5\n')
+                        fOut.write('fSample 1.0\n')
                         fOut.write('popID -1\n')
                         fOut.write('warpFlareOn 1\n')
                         fOut.write('seed 3\n')
@@ -275,6 +259,7 @@ class Galaxia(object):
 #                        except Exception as e:
 #                            print "processGalaxia: Unexpected error initalizing ",ebfFileNameOut,": ",str(e)
 
+                        durationAll = 0.0
                         nLinesRead = 0;
                         for it in data:
                             nLinesRead += cache
@@ -306,10 +291,12 @@ class Galaxia(object):
                                                                  Galaxia.pixels,
                                                                  'galaxia',
                                                                  Galaxia.ids,
-                                                                 doFind)
+                                                                 doFind,
+                                                                 Galaxia.lockSuffix)
                             timeEnd = time.time()
                             duration = timeEnd-timeStartIt
-                            print 'ran file <',ebfFileName,'> iIter=',iIter,' in ',duration,' s: ',nLinesRead * 100.0 / nLines,' % done in ',duration,' seconds'
+                            durationAll += duration
+                            print 'ran file <',ebfFileName,'> iIter=',iIter,' in ',int(duration),' s: ',nLinesRead * 100.0 / nLines,' % done in ',int(durationAll),' seconds'
                             iIter += 1
                         print nStarsWritten,' stars written'
                                     #STOP
@@ -322,11 +309,11 @@ class Galaxia(object):
                 Galaxia.ebfFilesWritten.append(ebfFileName)
                 with open(Galaxia.progressFile, 'a+') as f:
                         f.write(ebfFileName+'\n')
-                os.remove(ebfFileName)
+#                os.remove(ebfFileName)
 
             timeEnd = time.time()
             duration = timeEnd-timeStart
-            print 'ran file <',ebfFileName,'> iIter=',iIter,' in ',duration,' s'
+            print 'ran file <',ebfFileName,'> iIter=',iIter,' in ',int(duration),' s'
 
 #        globallock.release()
 def processGalaxia(lon, test=False):
@@ -344,18 +331,18 @@ def main(argv):
     galaxia.writeHeaders()
 
     """delete existing lock files"""
-    for filename in glob("/var/lock/*"):
+    for filename in glob("/var/lock/*"+lockSuffix):
         os.remove(filename)
 
     """delete old progressFile"""
     if os.path.isfile(Galaxia.progressFile):
         os.remove(Galaxia.progressFile)
 
-    """delete old Galaxia output ebf files"""
-    for filename in glob("/Volumes/yoda/azuri/data/galaxia/ubv/*"):
+    """delete old Galaxia outputs files"""
+    for filename in glob(os.path.join(Galaxia.dir,"*.ebf*")):
         os.remove(filename)
 
-    processes = 12
+    processes = 16
     if processes == 1:
         lon = -75
         processGalaxia(lon, test=True)
