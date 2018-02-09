@@ -17,25 +17,18 @@ void countStars(vector<Pixel> const& pixels,
     string inFileName;
 
     if (whichOne.compare("galaxia") == 0){
-        inFileName = galaxiaGetDataDirOut()
-                             + (galaxiaGetFileNameOutRoot() % pixels[pixelId].xLow
-                                                            % pixels[pixelId].xHigh
-                                                            % pixels[pixelId].yLow
-                                                            % pixels[pixelId].yHigh).str();
+        inFileName = modelGetDataDirOut()
+                             + (modelGetFileNameOutRoot() % pixels[pixelId].xLow
+                                                          % pixels[pixelId].xHigh
+                                                          % pixels[pixelId].yLow
+                                                          % pixels[pixelId].yHigh).str();
     }
-    else if (whichOne.compare("gaia") == 0){
-        inFileName = gaiaGetDataDirOut()
-                        + (gaiaGetFileNameOutRoot() % pixels[pixelId].xLow
-                                                    % pixels[pixelId].xHigh
-                                                    % pixels[pixelId].yLow
-                                                    % pixels[pixelId].yHigh).str();
-    }
-    else if (whichOne.compare("gaiaTgas") == 0){
-        inFileName = gaiaTgasGetDataDirOut()
-                        + (gaiaTgasGetFileNameOutRoot() % pixels[pixelId].xLow
-                                                        % pixels[pixelId].xHigh
-                                                        % pixels[pixelId].yLow
-                                                        % pixels[pixelId].yHigh).str();
+    else if ((whichOne.compare("gaia") == 0) || (whichOne.compare("gaiaTgas") == 0)){
+        inFileName = obsGetDataDirOut(whichOne)
+                        + (obsGetFileNameOutRoot(whichOne) % pixels[pixelId].xLow
+                                                           % pixels[pixelId].xHigh
+                                                           % pixels[pixelId].yLow
+                                                           % pixels[pixelId].yHigh).str();
     }
     else{
         throw std::runtime_error("countStars: whichOne = <"+whichOne+"> not found in [gaia, gaiaTgas]");
@@ -71,8 +64,8 @@ vector< vector< string > > getGaiaObject(CSVData const& csvData, string const& s
 string getCSVFileName(Pixel const& pixel, string const& whichOne){
     string fName;
     if (whichOne.compare("galaxia") == 0){
-        fName = galaxiaGetDataDirOut() +
-                (galaxiaGetFileNameOutRoot() % pixel.xLow
+        fName = modelGetDataDirOut() +
+                (modelGetFileNameOutRoot() % pixel.xLow
                                              % pixel.xHigh
                                              % pixel.yLow
                                              % pixel.yHigh).str();
@@ -151,8 +144,10 @@ CSVData getStarsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& window, s
         for (auto itStar=csvDataIn.data.begin(); itStar!=csvDataIn.data.end(); ++itStar){
             if (window.isInside(XY(stod((*itStar)[headerPosX]), stod((*itStar)[headerPosY])))){
                 csvDataOut.data.push_back(*itStar);
-//                cout << "getStarsInXYWindow: star found" << endl;
+//                cout << "getStarsInXYWindow: star found at [x=" << (*itStar)[headerPosX] << ", y=" << (*itStar)[headerPosY] << "]" << endl;
             }
+//            else
+//                cout << "getStarsInXYWindow: star at [x=" << (*itStar)[headerPosX] << ", y=" << (*itStar)[headerPosY] << "] outside window [" << window.xLow << ", " << window.xHigh << "; " << window.yLow << ", " << window.yHigh << "]" << endl;
         }
     }
     cout << "getStarsInXYWindow: csvDataOut.size() = " << csvDataOut.size() << endl;
@@ -176,7 +171,7 @@ vector< vector< vector< unsigned > > > simulateObservation(
 //    vector<string> appMagFilterObsStr = csvDataObs.getData(filterKeyWordObs);
 //    cout << "simulateObservation: appMagFilterObsStr.size() = " << appMagFilterObsStr.size() << endl;
     vector<double> appMagFilterObs = convertStringVectorToDoubleVector(
-        csvDataObs.getData(gaiaGetFilterKeyWord(filter)));
+        csvDataObs.getData(obsGetFilterKeyWord(filter)));
     cout << "simluateObservation: appMagFilterObs.size() = " << appMagFilterObs.size() << endl;
 
     vector<double> appMagFilterModel = getGaiaG(csvDataModel);
@@ -222,18 +217,68 @@ void comparePixel(vector<Pixel> const& pixels,
                                                                       whichObs,
                                                                       getNSims());
     cout << "comparePixel: getNSims() = " << getNSims() << ": data.size() = " << data.size() << endl;
+    /// more to follow once this works
 }
 
 vector<double> getGaiaG(CSVData const& csvData){
-    vector<double> sdss_g = convertStringVectorToDoubleVector(csvData.getData("sdss_g"));
-//    cout << "getGaiaG: min(sdss_g) = " << *min_element(sdss_g.begin(), sdss_g.end()) << ", max(sdss_g) = " << *max_element(sdss_g.begin(), sdss_g.end()) << endl;
-    vector<double> sdss_r = convertStringVectorToDoubleVector(csvData.getData("sdss_r"));
-    vector<double> sdss_i = convertStringVectorToDoubleVector(csvData.getData("sdss_i"));
-    vector<double> gaiaG(sdss_g.size());
-    for (auto itG=gaiaG.begin(), itSDSSg = sdss_g.begin(), itSDSSr = sdss_r.begin(), itSDSSi = sdss_i.begin();
-         itG != gaiaG.end();
-         ++itG, ++itSDSSg, ++itSDSSr, ++itSDSSi){
-        *itG = calcGaiaGFromgri(*itSDSSg, *itSDSSr, *itSDSSi);
+    vector<string> filters = splitCSVLine(modelGetFilters());
+    cout << "filters = [";
+    for (auto i: filters) cout << i << ", ";
+    cout << "]" << endl;
+    vector<double> gaiaG(0);
+
+    if (getPhotometricSystem().compare("SDSS") == 0){
+        vector<double> sdss_g;
+        vector<double> sdss_r;
+        vector<double> sdss_i;
+        for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
+            if (itFilter->compare("g") == 0)
+                sdss_g = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("g")));
+            else if (itFilter->compare("g") == 0)
+                sdss_r = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("r")));
+            else if (itFilter->compare("i") == 0)
+                sdss_i = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("i")));
+        }
+
+    //    cout << "getGaiaG: min(sdss_g) = " << *min_element(sdss_g.begin(), sdss_g.end()) << ", max(sdss_g) = " << *max_element(sdss_g.begin(), sdss_g.end()) << endl;
+        gaiaG.reserve(sdss_g.size());
+        for (auto itSDSSg = sdss_g.begin(), itSDSSr = sdss_r.begin(), itSDSSi = sdss_i.begin();
+             itSDSSg != sdss_g.end();
+             ++itSDSSg, ++itSDSSr, ++itSDSSi){
+            gaiaG.push_back(calcGaiaGFromgri(*itSDSSg, *itSDSSr, *itSDSSi));
+        }
+    }
+    else if (getPhotometricSystem().compare("UBV") == 0){
+        vector<double> ubv_b;
+        vector<double> ubv_v;
+        vector<double> ubv_i;
+        for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
+            cout << "getGaiaG: *itFilter = " << *itFilter << endl;
+            if (itFilter->compare("B") == 0){
+                cout << "getGaiaG: *itFilter = 'B'" << endl;
+                ubv_b = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("B")));
+                cout << "getGaiaG: ubv_b.size() = " << ubv_b.size() << endl;
+            }
+            else if (itFilter->compare("V") == 0){
+                cout << "getGaiaG: *itFilter = 'V'" << endl;
+                ubv_v = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("V")));
+                cout << "getGaiaG: ubv_v.size() = " << ubv_v.size() << endl;
+            }
+            else if (itFilter->compare("I") == 0){
+                cout << "getGaiaG: *itFilter = 'I'" << endl;
+                ubv_i = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("I")));
+                cout << "getGaiaG: ubv_i.size() = " << ubv_i.size() << endl;
+                for (auto i: ubv_i) cout << i << ", ";
+                cout << endl;
+            }
+        }
+
+        gaiaG.reserve(ubv_b.size());
+        for (auto itUBVb = ubv_b.begin(), itUBVv = ubv_v.begin(), itUBVi = ubv_i.begin();//, itLogG = log_g.begin();
+             itUBVb != ubv_b.end();
+             ++itUBVb, ++itUBVv, ++itUBVi){//, ++itLogG){
+            gaiaG.push_back(calcGaiaGFromBVI(*itUBVb, *itUBVv, *itUBVi));
+        }
     }
 //    cout << "getGaiaG: min(gaiaG) = " << *min_element(gaiaG.begin(), gaiaG.end()) << ", max(gaiaG) = " << *max_element(gaiaG.begin(), gaiaG.end()) << endl;
     return gaiaG;
