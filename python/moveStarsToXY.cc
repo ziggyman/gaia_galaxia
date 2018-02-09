@@ -5,7 +5,6 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(moveStarsToXY, m) {
-    m.def("galaxiaGetFileNameOutRoot", &galaxiaGetFileNameOutRoot);
     m.def("getOutFiles", &getOutFiles);
     m.def("getOutFileNames", &getOutFileNames);
     m.def("writeHeaderToOutFiles", &writeHeaderToOutFiles);
