@@ -6,13 +6,17 @@
 
 using namespace std;
 
-boost::format galaxiaGetFileNameOutRoot();
+boost::format modelGetFileNameOutRoot();
+
+boost::format obsGetFileNameOutRoot(string const& whichOne = "gaia");
 
 boost::format gaiaGetFileNameOutRoot();
 
 boost::format gaiaTgasGetFileNameOutRoot();
 
-string galaxiaGetDataDirOut();
+string modelGetDataDirOut();
+
+string obsGetDataDirOut(string const& whichOne = "gaia");
 
 string gaiaGetDataDirOut();
 
@@ -20,12 +24,12 @@ string gaiaTgasGetDataDirOut();
 
 string obsGetFilter();
 
-string gaiaGetFilterKeyWord(string const& filter);
+string modelGetFilters();
 
-string galaxiaGetFilterKeyWord(string const& filter);
+string obsGetFilterKeyWord(string const& filter);
 
-string galaxiaGetHeaderKeyWord(string const& keyWord);
-string gaiaGetHeaderKeyWord(string const& keyWord);
+string modelGetHeaderKeyWord(string const& keyWord);
+string obsGetHeaderKeyWord(string const& keyWord);
 
 unsigned getNStepsMagnitude();
 

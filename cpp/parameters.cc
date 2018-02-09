@@ -1,7 +1,16 @@
 #include "parameters.h"
 
-boost::format galaxiaGetFileNameOutRoot(){
+boost::format modelGetFileNameOutRoot(){
     return boost::format("galaxia_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+}
+
+boost::format obsGetFileNameOutRoot(string const& whichOne){
+    if (whichOne.compare("gaia") == 0)
+        return gaiaGetFileNameOutRoot();
+    else if (whichOne.compare("gaiaTgas") == 0)
+        return gaiaTgasGetFileNameOutRoot();
+    else
+        throw std::runtime_error("obsGetFileNameOutRoot: ERROR: whichOne = <"+whichOne+"> not recognized");
 }
 
 boost::format gaiaGetFileNameOutRoot(){
@@ -12,9 +21,18 @@ boost::format gaiaTgasGetFileNameOutRoot(){
     return boost::format("TgasSource_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 }
 
-string galaxiaGetDataDirOut(){
-    return "/Volumes/yoda/azuri/data/galaxia/xy/";
+string modelGetDataDirOut(){
+    return "/Volumes/yoda/azuri/data/galaxia/xy_ubv_Vlt13/";
 //    return "/Volumes/yoda/azuri/data/galaxia/xy1/";
+}
+
+string obsGetDataDirOut(string const& whichOne){
+    if (whichOne.compare("gaia") == 0)
+        return gaiaGetDataDirOut();
+    else if (whichOne.compare("gaiaTgas") == 0)
+        return gaiaTgasGetDataDirOut();
+    else
+        throw std::runtime_error("obsGetDataDirOut: ERROR: whichOne = <"+whichOne+"> not recognized");
 }
 
 string gaiaGetDataDirOut(){
@@ -28,21 +46,21 @@ string gaiaTgasGetDataDirOut(){
 string obsGetFilter(){
     return "g";
 }
-string gaiaGetFilterKeyWord(string const& filter){
+string obsGetFilterKeyWord(string const& filter){
     if (filter.compare("g") == 0)
         return "phot_g_mean_mag";
     else
-        throw std::runtime_error("gaiaGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
+        throw std::runtime_error("obsGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
 }
 
-string galaxiaGetFilterKeyWord(string const& filter){
+string modelGetFilterKeyWord(string const& filter){
     if (filter.compare("g") == 0)
         return "sdss_g";
     else
         throw std::runtime_error("galaxiaGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
 }
 
-string galaxiaGetHeaderKeyWord(string const& keyWord){
+string modelGetHeaderKeyWord(string const& keyWord){
     if (keyWord.compare("distance"))///[kpc]
         return "rad";
     else if (keyWord.compare("log_Teff"))
@@ -66,10 +84,10 @@ string galaxiaGetHeaderKeyWord(string const& keyWord){
     else if (keyWord.compare(""))
         return "";*/
     else
-        throw std::runtime_error("galaxiaGetHeaderKeyWord: ERROR: unknow keyWord <"+keyWord+">");
+        throw std::runtime_error("modelGetHeaderKeyWord: ERROR: unknow keyWord <"+keyWord+">");
 }
 
-string gaiaGetHeaderKeyWord(string const& keyWord){
+string obsGetHeaderKeyWord(string const& keyWord){
     if (keyWord.compare("mu_ra"))
         return "pmra";
     else if (keyWord.compare("error_mu_ra"))
@@ -89,7 +107,7 @@ string gaiaGetHeaderKeyWord(string const& keyWord){
     else if (keyWord.compare(""))
         return "";*/
     else
-        throw std::runtime_error("gaiaGetHeaderKeyWord: ERROR: unknown keyWord <"+keyWord+">");
+        throw std::runtime_error("obsGetHeaderKeyWord: ERROR: unknown keyWord <"+keyWord+">");
 }
 
 unsigned getNStepsMagnitude(){
