@@ -39,7 +39,8 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                             vector<Pixel> const& pixels,
                             string const& whichOne,
                             vector<string> const& ids,
-                            bool const& doFind=false);
+                            bool const& doFind=false,
+                            string const& lockSuffix="");
 //                            vector< std::shared_ptr< ofstream > > const& outFiles,
 //                            vector<string> const& outFileNames);
 

@@ -151,12 +151,14 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                             vector<Pixel> const& pixels,
                             string const& whichOne,
                             vector<string> const& ids,
-                            bool const& doFind){
+                            bool const& doFind,
+                            string const& lockSuffix=""){
     bool doWrite = true;
     Hammer ham;
 
     vector< std::shared_ptr< ofstream > > const& outFiles = getOutFiles(pixels);
     vector<string> const& outFileNames = getOutFileNames(pixels, whichOne);
+    cout << "moveStarsToXY.appendCSVDataToXYFiles: outFileNames[0] = " << outFileNames[0] << endl;
 
     vector< string > locks(0);
     vector< int > lockFds(0);
@@ -201,7 +203,7 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                         time_t findStart, findEnd;
                         time (&findStart); // note time before execution
 
-                        string lockName = "/var/lock/lock_" + to_string(iPix);
+                        string lockName = "/var/lock/lock_" + to_string(iPix) + lockSuffix;
                         if (outFiles[iPix]->is_open())
                             closeFilesAndDeleteLocks(filesOpened,
                                                      locks,
