@@ -31,4 +31,6 @@ unsigned getNStepsMagnitude();
 
 unsigned getNSims();
 
+string getPhotometricSystem();
+
 #endif

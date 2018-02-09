@@ -99,3 +99,7 @@ unsigned getNStepsMagnitude(){
 unsigned getNSims(){
     return 2;
 }
+
+string getPhotometricSystem(){
+    return "UBV";//"SDSS"
+}
