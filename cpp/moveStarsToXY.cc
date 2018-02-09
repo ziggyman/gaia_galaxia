@@ -86,8 +86,8 @@ vector<string> getOutFileNames(vector<Pixel> const& pixels,
     boost::format fileNameOutRoot;
     string dataDirOut;
     if (whichOne.compare("galaxia") == 0){
-        fileNameOutRoot = galaxiaGetFileNameOutRoot();
-        dataDirOut = galaxiaGetDataDirOut();
+        fileNameOutRoot = modelGetFileNameOutRoot();
+        dataDirOut = modelGetDataDirOut();
     }
     else if (whichOne.compare("gaia") == 0){
         fileNameOutRoot = gaiaGetFileNameOutRoot();
@@ -307,9 +307,9 @@ void moveStarsToXY(string const& whichOne){
 
     boost::format fileNameOutRoot;
     if (whichOne.compare("galaxia") == 0){
-        dataDirOut = galaxiaGetDataDirOut();
+        dataDirOut = modelGetDataDirOut();
         inputFileNames = galaxiaGetInputFileNames();
-        fileNameOutRoot = galaxiaGetFileNameOutRoot();
+        fileNameOutRoot = modelGetFileNameOutRoot();
         ids.push_back("rad");
         ids.push_back("hammerX");
         ids.push_back("hammerY");
