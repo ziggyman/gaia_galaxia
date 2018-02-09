@@ -125,6 +125,11 @@ vector<Pixel> getPixelsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& wi
 CSVData getStarsInXYWindow(vector<Pixel> const& pixelsIn, Pixel const& window, string const& whichOne){
     cout << "getStarsInXYWindow: whichOne = " << whichOne << endl;
     cout << "getStarsInXYWindow: xindow = [" << window.xLow << ", " << window.xHigh << "; " << window.yLow << ", " << window.yHigh << "]" << endl;
+    if (window.xLow >= window.xHigh)
+        throw std::runtime_error("getStarsInXYWindow: ERROR: xLow >= xHigh");
+    if (window.yLow >= window.yHigh)
+        throw std::runtime_error("getStarsInXYWindow: ERROR: yLow >= yHigh");
+
     vector<Pixel> goodPixels = getPixelsInXYWindow(pixelsIn, window);
     cout << "getStarsInXYWindow: goodPixels = " << goodPixels.size() << ": ";
     for (Pixel& pix: goodPixels) cout << "[" << pix.xLow << ", " << pix.xHigh << "; " << pix.yLow << ", " << pix.yHigh << "] ";
