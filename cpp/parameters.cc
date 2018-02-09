@@ -46,6 +46,17 @@ string gaiaTgasGetDataDirOut(){
 string obsGetFilter(){
     return "g";
 }
+
+string modelGetFilters(){
+    string photometricSystem = getPhotometricSystem();
+    if (photometricSystem.compare("UBV") == 0)
+        return("B,V,I,log_g");
+    else if (photometricSystem.compare("SDSS") == 0)
+        return("g,r,i");
+    else
+        throw std::runtime_error("modelGetFilters: ERROR: photometric system <"+photometricSystem+">");
+}
+
 string obsGetFilterKeyWord(string const& filter){
     if (filter.compare("g") == 0)
         return "phot_g_mean_mag";
@@ -55,9 +66,31 @@ string obsGetFilterKeyWord(string const& filter){
 
 string modelGetFilterKeyWord(string const& filter){
     if (filter.compare("g") == 0)
-        return "sdss_g";
+        return "sdss_g_app";
+    else if (filter.compare("r") == 0)
+        return "sdss_r_app";
+    else if (filter.compare("i") == 0)
+        return "sdss_i_app";
+    else if (filter.compare("I") == 0)
+        return "ubv_i_app";
+    else if (filter.compare("U") == 0)
+        return "ubv_u_app";
+    else if (filter.compare("B") == 0)
+        return "ubv_b_app";
+    else if (filter.compare("V") == 0)
+        return "ubv_v_app";
+    else if (filter.compare("J") == 0)
+        return "ubv_j_app";
+    else if (filter.compare("H") == 0)
+        return "ubv_h_app";
+    else if (filter.compare("K") == 0)
+        return "ubv_k_app";
+    else if (filter.compare("R") == 0)
+        return "ubv_r_app";
+    else if (filter.compare("log_g") == 0)
+        return modelGetHeaderKeyWord("log_g");
     else
-        throw std::runtime_error("galaxiaGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
+        throw std::runtime_error("modelGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
 }
 
 string modelGetHeaderKeyWord(string const& keyWord){
@@ -73,9 +106,9 @@ string modelGetHeaderKeyWord(string const& keyWord){
         return "feh";
     else if (keyWord.compare("v_rad"))
         return "vrad";
+    else if (keyWord.compare("log_g"))
+        return "grav";
 /*    else if (keyWord.compare(""))
-        return "";
-    else if (keyWord.compare(""))
         return "";
     else if (keyWord.compare(""))
         return "";

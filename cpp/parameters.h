@@ -28,6 +28,8 @@ string modelGetFilters();
 
 string obsGetFilterKeyWord(string const& filter);
 
+string modelGetFilterKeyWord(string const& filter);
+
 string modelGetHeaderKeyWord(string const& keyWord);
 string obsGetHeaderKeyWord(string const& keyWord);
 
