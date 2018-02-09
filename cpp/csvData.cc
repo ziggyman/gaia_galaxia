@@ -142,3 +142,20 @@ vector<string> convertDoubleVectorToStringVector(vector<double> const& doubleVec
     }
     return stringVector;
 }
+
+vector<string> splitCSVLine(string const& line){
+    string tmpStr(line);
+    cout << "splitCSVLine: tmpStr = " << tmpStr << endl;
+    vector<string> out(0);
+    size_t kommaPos = tmpStr.find(",");
+    cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
+    while (kommaPos != string::npos){
+        out.push_back(tmpStr.substr(0,kommaPos));
+        tmpStr = tmpStr.substr(kommaPos+1);
+        cout << "splitCSVLine: tmpStr = " << tmpStr << endl;
+        kommaPos = tmpStr.find(",");
+        cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
+    }
+    out.push_back(tmpStr);
+    return out;
+}

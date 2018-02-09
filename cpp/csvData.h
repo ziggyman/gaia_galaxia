@@ -161,6 +161,7 @@ vector<string> readHeader(string const& fileName);
 void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile);
 
 CSVData readCSVFile(string const& fileName);
+vector<string> splitCSVLine(string const& line);
 
 vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVector);
 vector<unsigned> convertStringVectorToUnsignedVector(vector<string> const& stringVector);
