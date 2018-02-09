@@ -10,6 +10,11 @@
 
 using namespace std;
 
+//struct ApparentMagnitudeResult{
+//    double appMag;
+//    string flag;
+//};
+
 struct Histogram{
     vector< std::pair< double, double > > limits;/// limit=[limits[i].first, limits[i].second)
     vector< vector< unsigned > > indices;
@@ -87,10 +92,77 @@ pair<double, double> muRaDecToMuLB(double muRa, double muDec, double ra, double 
  * @brief Convert the parallax from mas to distance in kpc
  */
 double parallaxToDistance(double par);
+vector<double> parallaxToDistance(vector<double> const& par);
 
 double calcGaiaGFromgri(double const& sdss_g, double const& sdss_r, double const& sdss_i);
+vector<double> calcGaiaGFromgri(vector<double> const& sdss_g,
+                                vector<double> const& sdss_r,
+                                vector<double> const& sdss_i);
 
-double calcIcFromBV(double const& ubv_b, double const& ubv_v);
-double calcGaiaGFromBV(double const& ubv_b, double const& ubv_v);
+double calcIcFromBVg(double const& ubv_b, double const& ubv_v, double const& g);
+vector<double> calcIcFromBVg(vector<double> const& ubv_b,
+                             vector<double> const& ubv_v,
+                             vector<double> const& g);
 
+double calcGaiaGFromBVI(double const& ubv_b, double const& ubv_v, double const& ubv_i);
+vector<double> calcGaiaGFromBVI(vector<double> const& ubv_b, vector<double> const& ubv_v, vector<double> const& ubv_i);
+
+/**
+ * @brief Calculate a - b
+ * @param a : a
+ * @param b : b
+ * @return : a - b
+ */
+template<typename T>
+vector<T> difference(vector<T> const& a, vector<T> const& b);
+
+/**
+ * @brief Calculate a_i - b
+ * @param a : a
+ * @param b : b
+ * @return : a - b
+ */
+template<typename T>
+vector<T> difference(vector<T> const& a, T const& b);
+
+/**
+ * @brief Calculate sum of elements in a
+ * @param a : a
+ * @return : sum(a)
+ */
+template< typename T >
+T sum(vector< T > const& a);
+
+/**
+ * @brief Calculate mean(a)
+ * @param a : a
+ * @return : mean(a)
+ */
+template<typename T>
+T mean(vector<T> const& a);
+
+/**
+ * @brief Calculate the variance of a
+ * @param a : a
+ * @return : variance of a
+ */
+template< typename T >
+T variance(vector< T > const& a);
+
+/**
+ * @brief Calcualte the Standard Deviation of a
+ * @param a : a
+ * @return : standard deviation of a
+ */
+template< typename T >
+T standardDeviation(vector< T > const& a);
+
+/**
+ * @brief : calculate a_i ^ n
+ * @param a : a
+ * @param n : n
+ * @return : [a_i ^ n]
+ */
+template< typename T >
+vector< T > pow(vector< T > const& a, int n);
 #endif

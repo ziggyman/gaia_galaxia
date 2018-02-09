@@ -193,6 +193,17 @@ pair<double, double> muRaDecToMuLB(double muRa, double muDec, double ra, double 
 double parallaxToDistance(double par){
     return 1.0 / par / 1000.0;
 }
+
+vector<double> parallaxToDistance(vector<double> const& par){
+    vector<double> out(par.size());
+    auto itOut = out.begin();
+    for (auto itPar = par.begin();
+         itPar != par.end();
+         ++itPar, ++itOut)
+        *itOut = parallaxToDistance(*itPar);
+    return out;
+}
+
 /*int random(int min, int max, unsigned seed){
     std::mt19937 gen;
 
@@ -220,8 +231,20 @@ double calcGaiaGFromgri(double const& sdss_g, double const& sdss_r, double const
                + sdss_g;
 }
 
+vector<double> calcGaiaGFromgri(vector<double> const& sdss_g,
+                                vector<double> const& sdss_r,
+                                vector<double> const& sdss_i){
+    vector<double> out(sdss_g.size());
+    auto itOut = out.begin();
+    for (auto itG = sdss_g.begin(), itR = sdss_r.begin(), itI = sdss_i.begin();
+         itG != sdss_g.end();
+         ++itG, ++itR, ++itI, ++itOut)
+        *itOut = calcGaiaGFromgri(*itG, *itR, *itI);
+    return out;
+}
+
 double calcIcFromBVg(double const& ubv_b, double const& ubv_v, double const& g){
-    double c1, c2, c3, c4, c5, c6, c7, c8, fm, to, shfx, shfy, ord;
+    double c1, c2, c3, c4, c5, c6, c7, c8, fm, to, shfx, shfy;
     if (g < 3.5){/// giants
         c1 = -0.008879586;
         c2 = 0.7390707;
@@ -235,7 +258,6 @@ double calcIcFromBVg(double const& ubv_b, double const& ubv_v, double const& g){
         to = 1.75;
         shfx = 1.0;
         shfy = 1.0;
-        ord = 7.0;
     }
     else{/// dwarfs
         c1 = 0.0890659;
@@ -250,12 +272,141 @@ double calcIcFromBVg(double const& ubv_b, double const& ubv_v, double const& g){
         to = 1.40;
         shfx = 1.0;
         shfy = 1.0;
-        ord = 7.0;
     }
-    double x = ubv_b - ubv_v - shfx;
-    double y =
+    double bMinusV = ubv_b - ubv_v;
+    double x = bMinusV - shfx;
+    double y = c1
+               + (c2 * x)
+               + (c3 * x * x)
+               + (c4 * x * x * x)
+               + (c5 * x * x * x * x)
+               + (c6 * x * x * x * x * x)
+               + (c7 * x * x * x * x * x * x)
+               + (c8 * x * x * x * x * x * x * x);
+    double I_c = ubv_v - y - shfy;
+    return I_c;
+//    ApparentMagnitudeResult res;
+//    res.appMag = I_c;
+//    res.flag = "";
+//    if ((bMinusV < fm) or (bMinusV > to))
+//        res.flag = "o"; /// o for outside trusted range
+//    return res;
 }
 
-double calcGaiaGFromBV(double const& ubv_b, double const& ubv_v){
-
+vector<double> calcIcFromBVg(vector<double> const& ubv_b,
+                            vector<double> const& ubv_v,
+                            vector<double> const& g){
+    vector<double> out(ubv_b.size());
+    auto itOut = out.begin();
+    for (auto itB = ubv_b.begin(), itV = ubv_v.begin(), itG = g.begin();
+         itB != ubv_b.end();
+         ++itB, ++itV, ++itG, ++itOut)
+        *itOut = calcIcFromBVg(*itB, *itV, *itG);
+    return out;
 }
+
+double calcGaiaGFromBVI(double const& ubv_b, double const& ubv_v, double const& ubv_i){
+    double a = -0.0099;
+    double b = -0.2116;
+    double c = -0.1387;
+    double d = 0.0060;
+    double e = 0.1485;
+    double f = -0.0895;
+    double g = 0.0094;
+    double h = 0.0327;
+
+    double vMinusI = ubv_v - ubv_i;
+    double bMinusV = ubv_b - ubv_v;
+    double vMinusISquared = vMinusI * vMinusI;
+    double bMinusVSquared = bMinusV * bMinusV;
+
+    double G = a
+               + (b * vMinusI)
+               + (c * vMinusISquared)
+               + (d * vMinusISquared * vMinusI)
+               + (e * bMinusV)
+               + (f * bMinusVSquared)
+               + (g * bMinusVSquared * bMinusV)
+               + (h * vMinusI * bMinusV);
+    return G;
+}
+
+vector<double> calcGaiaGFromBVI(vector<double> const& ubv_b, vector<double> const& ubv_v, vector<double> const& ubv_i){
+    if (ubv_b.size() != ubv_v.size())
+        throw std::runtime_error("calcGaiaGFromBVI: ERROR: ubv_b.size()="+to_string(ubv_b.size()) +" != ubv_v.size()="+to_string(ubv_v.size()));
+    if (ubv_b.size() != ubv_i.size())
+        throw std::runtime_error("calcGaiaGFromBVI: ERROR: ubv_b.size()="+to_string(ubv_b.size()) +" != ubv_i.size()="+to_string(ubv_i.size()));
+
+    vector<double> out(ubv_b.size());
+    if (ubv_b.size() != out.size())
+        throw std::runtime_error("calcGaiaGFromBVI: ERROR: ubv_b.size()="+to_string(ubv_b.size()) +" != out.size()="+to_string(out.size()));
+    auto itOut = out.begin();
+    for (auto itB = ubv_b.begin(), itV = ubv_v.begin(), itI = ubv_i.begin();
+         itB != ubv_b.end();
+         ++itB, ++itV, ++itI, ++itOut)
+        *itOut = calcGaiaGFromBVI(*itB, *itV, *itI);
+    return out;
+}
+
+template<typename T>
+vector<T> difference(vector<T> const& a, vector<T> const& b){
+    vector<T> res(a.size());
+    auto itRes = res.begin();
+    for (auto itA = a.begin(), itB = b.begin();
+         itA != a.end();
+         ++itA, ++itB, ++itRes)
+        *itRes = *itA - *itB;
+    return res;
+}
+template vector<double> difference(vector<double> const&, vector<double> const&);
+
+template<typename T>
+vector<T> difference(vector<T> const& a, T const& b){
+    vector<T> diff(a.size());
+    auto itDiff = diff.begin();
+    for (auto itA = a.begin(); itA != a.end(); ++itA, ++itDiff)
+        *itDiff = *itA - b;
+    return diff;
+}
+template vector<double> difference(vector<double> const&, double const&);
+
+template< typename T >
+T sum(vector< T > const& a){
+    T sum = 0;
+    for (auto it = a.begin(); it != a.end(); ++it)
+        sum += *it;
+    return sum;
+}
+template double sum(vector< double > const&);
+
+template<typename T>
+T mean(vector<T> const& a){
+    T mean = sum(a) / T(a.size());
+    return mean;
+}
+template double mean(vector<double> const&);
+
+template< typename T >
+T variance(vector< T > const& a){
+    vector< T > aMinusMean = difference(a, mean(a));
+    vector< T > aMinusMeanSquared = pow(aMinusMean, 2);
+    T sumAMinusMeanSquared = sum(aMinusMeanSquared);
+    return sumAMinusMeanSquared / T(a.size());
+}
+template double variance(vector< double > const&);
+
+template< typename T >
+T standardDeviation(vector< T > const& a){
+    T sDev = sqrt(variance(a));
+    return sDev;
+}
+template double standardDeviation(vector< double > const&);
+
+template< typename T >
+vector< T > pow(vector< T > const& a, int n){
+    vector< T > res(a);
+    for (auto it = res.begin(); it != res.end(); ++it)
+        *it = pow(*it, n);
+    return res;
+}
+template vector< double > pow(vector< double > const&, int);
