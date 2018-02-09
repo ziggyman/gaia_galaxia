@@ -70,14 +70,36 @@ TEST_F(GalCompTest, testConvertStringVectorToDoubleVector){
     cout << "dblVec[2] = " << dblVec[2] << endl;
 }
 
+TEST_F(GalCompTest, testCalcIcFromBVg){
+    Hammer hammer;
+    vector<Pixel> pixels = hammer.getPixels();
+    Pixel xyWindow;// = pixels[pixels.size()/2];
+    xyWindow.xLow = 0.01;
+    xyWindow.xHigh = 0.05;
+    xyWindow.yLow = -0.6;
+    xyWindow.yHigh = -0.5;
+
+    CSVData csvData = getStarsInXYWindow(pixels, xyWindow, "galaxia");
+    cout << "testCalcIcFromBVg: csvData.size() = " << csvData.size() << endl;
+
+    vector<double> ubv_b = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("B")));
+    vector<double> ubv_v = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("V")));
+    vector<double> ubv_i = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("I")));
+    vector<double> log_g = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("log_g")));
+
+    vector<double> ubv_i_calc = calcIcFromBVg(ubv_b, ubv_v, log_g);
+    vector<double> diff = difference(ubv_i, ubv_i_calc);
+    cout << "testCalcIcFromBVg: mean(ubv_i - ubv_i_calc) = " << mean(diff) << ", sDev(ubv_i - ubv_i_calc) = " << standardDeviation(diff) << endl;
+}
+
 TEST_F(GalCompTest, testComparePixel){
     Hammer hammer;
     vector<Pixel> pixels = hammer.getPixels();
     Pixel xyWindow;// = pixels[pixels.size()/2];
-    xyWindow.xLow = -1.01;
-    xyWindow.xHigh = -0.99;
-    xyWindow.yLow = -1.02;
-    xyWindow.yHigh = -1.0;
+    xyWindow.xLow = 0.01;
+    xyWindow.xHigh = 0.05;
+    xyWindow.yLow = -0.6;
+    xyWindow.yHigh = -0.5;
     Pixel lonLatWindowA;// = pixels[pixels.size()/2];
     lonLatWindowA.xLow = hammer.xYToLonLat(xyWindow.xLow, xyWindow.yLow).lon;
     lonLatWindowA.xHigh = hammer.xYToLonLat(xyWindow.xHigh, xyWindow.yHigh).lon;
