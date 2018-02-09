@@ -152,7 +152,7 @@ class Galaxia(object):
             gxutil.append_pm(it)
 
             """convert absolute magnitudes to apparent ones"""
-            gxutil.abs2app(it,corr=True)
+            gxutil.abs2app(it,corr=True, append=True)
 
             Galaxia.keys = list(it.keys())
 #            print 'Galaxia.keys = ',Galaxia.keys
@@ -231,7 +231,7 @@ class Galaxia(object):
         gxutil.append_pm(data)
 
         """convert absolute magnitudes to apparent ones"""
-        gxutil.abs2app(data,corr=True)
+        gxutil.abs2app(data,corr=True, append=True)
 
     def writeHeaders(self):
 
