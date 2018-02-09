@@ -13,23 +13,28 @@ def readFile(fileName):
     lines = fn.readlines()
     fn.close()
     for line in lines:
-        print 'line = ',type(line),': ',line
+        line = os.path.basename(line)
+#        print 'line = ',type(line),': ',line
         subLine = line[line.find('_')+1:]
-        print 'subLine = ',subLine
+#        print 'subLine = ',subLine
         lon = float(subLine[0:subLine.find('_')])
         subLine = subLine[subLine.find('_')+1:]
-        print 'subLine = ',subLine
+#        print 'subLine = ',subLine
         lat = float(subLine[0:subLine.find('.')])
-        print 'line = ',line,': lon = ',lon,', lat = ',lat
+#        print 'line = ',line,': lon = ',lon,', lat = ',lat
         lonLat.append([lon, lat])
     return lonLat
 
 def main(argv):
-    finishedOnly = True
+    finishedOnly = False
+    print 'len(argv) = ',len(argv)
+    print 'argv[0] = ',argv[0]
+    if len(argv) > 1:
+        finishedOnly = True
+        fileNameFinished = argv[1]
 
     fig, ax = plt.subplots(1)
     if finishedOnly:
-        fileNameFinished = '/Volumes/yoda/azuri/data/galaxia/ebfFilesWritten.txt'
         lonLatFinished = readFile(fileNameFinished)
 
     else:
