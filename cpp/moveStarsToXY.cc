@@ -152,7 +152,7 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                             string const& whichOne,
                             vector<string> const& ids,
                             bool const& doFind,
-                            string const& lockSuffix=""){
+                            string const& lockSuffix){
     bool doWrite = true;
     Hammer ham;
 
@@ -265,7 +265,8 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
                                             filesOpened,
                                             locks,
                                             lockFds,
-                                            iPix);
+                                            iPix,
+                                            lockSuffix);
                         }
                         if (doWrite){
                             writeStrVecToFile(csvData.data[iStar], *(outFiles[iPix]));

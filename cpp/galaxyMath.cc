@@ -34,7 +34,8 @@ template void Histogram::make(vector<double> const&);
 
 template< typename T >
 vector< vector< unsigned > > Histogram::fillRandomly(vector< T > const& dataIn, unsigned & seed){
-//    cout << "Histogram::fillRandomly: dataIn.size() = " << dataIn.size() << endl;
+    cout << "Histogram::fillRandomly: dataIn.size() = " << dataIn.size() << endl;
+//    cout << "Histogram::fillRandomly: dataIn = ";
 //    for (T const& x: dataIn) cout << x << ", ";
 //    cout << endl;
     vector< vector< unsigned > > out(indices.size());
@@ -305,13 +306,40 @@ vector<double> calcIcFromBVg(vector<double> const& ubv_b,
     return out;
 }
 
+double calcGaiaGFromVI(double const& ubv_v, double const& ubv_i){
+    double a = 0.0 - 0.0257;
+    double b = 0.0 - 0.0924;
+    double c = 0.0 - 0.1623;
+    double d = 0.009;
+
+    double vMinusI = ubv_v - ubv_i;
+    double vMinusISquared = vMinusI * vMinusI;
+
+    return (a + (b * vMinusI) + (c * vMinusISquared) + (d * vMinusISquared * vMinusI) + ubv_v);
+}
+
+vector<double> calcGaiaGFromVI(vector<double> const& ubv_v, vector<double> const& ubv_i){
+    if (ubv_v.size() != ubv_i.size())
+        throw std::runtime_error("calcGaiaGFromVI: ERROR: ubv_v.size()="+to_string(ubv_v.size()) +" != ubv_i.size()="+to_string(ubv_i.size()));
+
+    vector<double> out(ubv_v.size());
+
+    auto itOut = out.begin();
+    for (auto itV = ubv_v.begin(), itI = ubv_i.begin();
+         itV != ubv_v.end();
+         ++itV, ++itI, ++itOut){
+        *itOut = calcGaiaGFromVI(*itV, *itI);
+    }
+    return out;
+}
+
 double calcGaiaGFromBVI(double const& ubv_b, double const& ubv_v, double const& ubv_i){
-    double a = -0.0099;
-    double b = -0.2116;
-    double c = -0.1387;
+    double a = 0.0-0.0099;
+    double b = 0.0-0.2116;
+    double c = 0.0-0.1387;
     double d = 0.0060;
     double e = 0.1485;
-    double f = -0.0895;
+    double f = 0.0-0.0895;
     double g = 0.0094;
     double h = 0.0327;
 
@@ -327,7 +355,8 @@ double calcGaiaGFromBVI(double const& ubv_b, double const& ubv_v, double const& 
                + (e * bMinusV)
                + (f * bMinusVSquared)
                + (g * bMinusVSquared * bMinusV)
-               + (h * vMinusI * bMinusV);
+               + (h * vMinusI * bMinusV)
+               + ubv_v;
     return G;
 }
 

@@ -104,6 +104,9 @@ vector<double> calcIcFromBVg(vector<double> const& ubv_b,
                              vector<double> const& ubv_v,
                              vector<double> const& g);
 
+double calcGaiaGFromVI(double const& ubv_v, double const& ubv_i);
+vector<double> calcGaiaGFromVI(vector<double> const& ubv_v, vector<double> const& ubv_i);
+
 double calcGaiaGFromBVI(double const& ubv_b, double const& ubv_v, double const& ubv_i);
 vector<double> calcGaiaGFromBVI(vector<double> const& ubv_b, vector<double> const& ubv_v, vector<double> const& ubv_i);
 

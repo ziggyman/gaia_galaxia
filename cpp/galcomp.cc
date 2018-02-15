@@ -222,9 +222,9 @@ void comparePixel(vector<Pixel> const& pixels,
 
 vector<double> getGaiaG(CSVData const& csvData){
     vector<string> filters = splitCSVLine(modelGetFilters());
-    cout << "filters = [";
-    for (auto i: filters) cout << i << ", ";
-    cout << "]" << endl;
+//    cout << "filters = [";
+//    for (auto i: filters) cout << i << ", ";
+//    cout << "]" << endl;
     vector<double> gaiaG(0);
 
     if (getPhotometricSystem().compare("SDSS") == 0){
@@ -241,45 +241,26 @@ vector<double> getGaiaG(CSVData const& csvData){
         }
 
     //    cout << "getGaiaG: min(sdss_g) = " << *min_element(sdss_g.begin(), sdss_g.end()) << ", max(sdss_g) = " << *max_element(sdss_g.begin(), sdss_g.end()) << endl;
-        gaiaG.reserve(sdss_g.size());
-        for (auto itSDSSg = sdss_g.begin(), itSDSSr = sdss_r.begin(), itSDSSi = sdss_i.begin();
-             itSDSSg != sdss_g.end();
-             ++itSDSSg, ++itSDSSr, ++itSDSSi){
-            gaiaG.push_back(calcGaiaGFromgri(*itSDSSg, *itSDSSr, *itSDSSi));
-        }
+        gaiaG = calcGaiaGFromgri(sdss_g, sdss_r, sdss_i);
     }
     else if (getPhotometricSystem().compare("UBV") == 0){
         vector<double> ubv_b;
         vector<double> ubv_v;
         vector<double> ubv_i;
         for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
-            cout << "getGaiaG: *itFilter = " << *itFilter << endl;
             if (itFilter->compare("B") == 0){
-                cout << "getGaiaG: *itFilter = 'B'" << endl;
                 ubv_b = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("B")));
-                cout << "getGaiaG: ubv_b.size() = " << ubv_b.size() << endl;
             }
             else if (itFilter->compare("V") == 0){
-                cout << "getGaiaG: *itFilter = 'V'" << endl;
                 ubv_v = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("V")));
-                cout << "getGaiaG: ubv_v.size() = " << ubv_v.size() << endl;
             }
             else if (itFilter->compare("I") == 0){
-                cout << "getGaiaG: *itFilter = 'I'" << endl;
                 ubv_i = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("I")));
-                cout << "getGaiaG: ubv_i.size() = " << ubv_i.size() << endl;
-                for (auto i: ubv_i) cout << i << ", ";
-                cout << endl;
             }
         }
 
-        gaiaG.reserve(ubv_b.size());
-        for (auto itUBVb = ubv_b.begin(), itUBVv = ubv_v.begin(), itUBVi = ubv_i.begin();//, itLogG = log_g.begin();
-             itUBVb != ubv_b.end();
-             ++itUBVb, ++itUBVv, ++itUBVi){//, ++itLogG){
-            gaiaG.push_back(calcGaiaGFromBVI(*itUBVb, *itUBVv, *itUBVi));
-        }
+        gaiaG = calcGaiaGFromVI(ubv_v, ubv_i);
     }
-//    cout << "getGaiaG: min(gaiaG) = " << *min_element(gaiaG.begin(), gaiaG.end()) << ", max(gaiaG) = " << *max_element(gaiaG.begin(), gaiaG.end()) << endl;
+    cout << "getGaiaG: min(gaiaG) = " << *min_element(gaiaG.begin(), gaiaG.end()) << ", max(gaiaG) = " << *max_element(gaiaG.begin(), gaiaG.end()) << endl;
     return gaiaG;
 }

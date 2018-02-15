@@ -28,8 +28,9 @@ int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
                     vector<string> & locks,
                     vector<int> & lockFds,
                     int iPix,
+                    string const& lockSuffix,
                     float sleepTime){
-    string lockName = "/var/lock/lock_" + to_string(iPix);
+    string lockName = "/var/lock/lock_" + to_string(iPix) + lockSuffix;
     /// if lock file exists, close all open files and remove their locks,
     /// and wait until lock file is deleted
     int fd = open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 );

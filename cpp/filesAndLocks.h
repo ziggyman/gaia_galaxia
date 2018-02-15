@@ -27,7 +27,8 @@ int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
                     vector<string> & locks,
                     vector<int> & lockFds,
                     int iPix,
-                    float sleepTime=5.0);
+                    string const& lockSuffix = "",
+                    float sleepTime=0.1);
 
 /**
  * @brief : close file and remove lockName

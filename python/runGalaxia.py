@@ -24,8 +24,8 @@ class Galaxia(object):
     keys = []
     ids = ['rad', 'hammerX', 'hammerY', 'exbv_solar']
     lockSuffix = '_1'
-    progressFile = '/Volumes/yoda/azuri/data/galaxia/ebfFilesWritten_Vlt13.txt'
-    dir = '/Volumes/yoda/azuri/data/galaxia/ubv_Vlt13'
+    progressFile = '/Volumes/yoda/azuri/data/galaxia/ebfFilesWritten_Vlt21_5.txt'
+    dir = '/Volumes/yoda/azuri/data/galaxia/ubv_Vlt21_5'
 
     def __init__(self):
         self.headerFile = '/Users/azuri/entwicklung/gaia_galaxia/galaxia_65_15_UBV_V-1000_21.5.ebf'#self.fileNameIn % (-85, -85)
@@ -181,7 +181,7 @@ class Galaxia(object):
                         fOut.write('photoSys UBV\n')
                         fOut.write('magcolorNames V,B-V\n')
                         fOut.write('appMagLimits[0] -1000\n')
-                        fOut.write('appMagLimits[1] 13.0\n')
+                        fOut.write('appMagLimits[1] 21.5\n')
                         fOut.write('absMagLimits[0] -1000\n')
                         fOut.write('absMagLimits[1] 1000\n')
                         fOut.write('colorLimits[0] -1000\n')
@@ -193,7 +193,7 @@ class Galaxia(object):
                         fOut.write('fSample 1.0\n')
                         fOut.write('popID -1\n')
                         fOut.write('warpFlareOn 1\n')
-                        fOut.write('seed 3\n')
+                        fOut.write('seed 17\n')
                         fOut.write('r_max 1000\n')
                         fOut.write('starType 0\n')
                         fOut.write('photoError 0\n')
@@ -331,7 +331,7 @@ def main(argv):
     galaxia.writeHeaders()
 
     """delete existing lock files"""
-    for filename in glob("/var/lock/*"+lockSuffix):
+    for filename in glob("/var/lock/*"+Galaxia.lockSuffix):
         os.remove(filename)
 
     """delete old progressFile"""
