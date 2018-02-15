@@ -81,21 +81,25 @@ vector< std::shared_ptr< ofstream > > getOutFiles(vector<Pixel> const& pixels){
 }
 
 vector<string> getOutFileNames(vector<Pixel> const& pixels,
-                               string const& whichOne){
+                               string const& whichOne,
+                               string const& dataDirOut){
     vector<string> outFileNames(0);
     boost::format fileNameOutRoot;
-    string dataDirOut;
+    string dirOut(dataDirOut);
     if (whichOne.compare("galaxia") == 0){
         fileNameOutRoot = modelGetFileNameOutRoot();
-        dataDirOut = modelGetDataDirOut();
+        if (dirOut.compare("") == 0)
+            dirOut = modelGetDataDirOut();
     }
     else if (whichOne.compare("gaia") == 0){
         fileNameOutRoot = gaiaGetFileNameOutRoot();
-        dataDirOut = gaiaGetDataDirOut();
+        if (dirOut.compare("") == 0)
+            dirOut = gaiaGetDataDirOut();
     }
     else if (whichOne.compare("gaiaTgas") == 0){
         fileNameOutRoot = gaiaTgasGetFileNameOutRoot();
-        dataDirOut = gaiaTgasGetDataDirOut();
+        if (dirOut.compare("") == 0)
+            dirOut = gaiaTgasGetDataDirOut();
     }
     else{
         cout << "getOutFileNames: ERROR: whichOne(=<" << whichOne << ">) neither equal to <galaxia> nor to <gaia> nor to <gaiaTgas>" << endl;
@@ -103,10 +107,10 @@ vector<string> getOutFileNames(vector<Pixel> const& pixels,
     }
     outFileNames.reserve(pixels.size());
     for (int iPix=0; iPix<pixels.size(); ++iPix){
-        string outFileName = dataDirOut + (fileNameOutRoot % pixels[iPix].xLow
-                                                           % pixels[iPix].xHigh
-                                                           % pixels[iPix].yLow
-                                                           % pixels[iPix].yHigh).str();
+        string outFileName = dirOut + (fileNameOutRoot % pixels[iPix].xLow
+                                                       % pixels[iPix].xHigh
+                                                       % pixels[iPix].yLow
+                                                       % pixels[iPix].yHigh).str();
         outFileNames.push_back(outFileName);
     }
     return outFileNames;
@@ -115,9 +119,10 @@ vector<string> getOutFileNames(vector<Pixel> const& pixels,
 void writeHeaderToOutFiles(vector<string> const& header,
                            vector<Pixel> const& pixels,
                            string const& whichOne,
-                           bool const& append){
+                           bool const& append,
+                           string const& dataDirOut){
     cout << "opening outfiles and writing headers" << endl;
-    vector<string> outFileNames = getOutFileNames(pixels, whichOne);
+    vector<string> outFileNames = getOutFileNames(pixels, whichOne, dataDirOut);
     vector< std::shared_ptr< ofstream > > outFiles = getOutFiles(pixels);
     for (int i=0; i<outFiles.size(); ++i){
         outFiles[i]->exceptions(ofstream::failbit | ofstream::badbit);
@@ -147,17 +152,18 @@ void galaxiaMoveStarsFromLonLatToXY(){
     moveStarsToXY("galaxia");
 }
 
-void appendCSVDataToXYFiles(CSVData const& csvData,
-                            vector<Pixel> const& pixels,
-                            string const& whichOne,
-                            vector<string> const& ids,
-                            bool const& doFind,
-                            string const& lockSuffix){
+int appendCSVDataToXYFiles(CSVData const& csvData,
+                           vector<Pixel> const& pixels,
+                           string const& whichOne,
+                           vector<string> const& ids,
+                           bool const& doFind,
+                           string const& lockSuffix,
+                           string const& outputDir){
     bool doWrite = true;
     Hammer ham;
 
     vector< std::shared_ptr< ofstream > > const& outFiles = getOutFiles(pixels);
-    vector<string> const& outFileNames = getOutFileNames(pixels, whichOne);
+    vector<string> const& outFileNames = getOutFileNames(pixels, whichOne, outputDir);
     cout << "moveStarsToXY.appendCSVDataToXYFiles: outFileNames[0] = " << outFileNames[0] << endl;
 
     vector< string > locks(0);
@@ -297,7 +303,7 @@ void appendCSVDataToXYFiles(CSVData const& csvData,
     time (&end); // note time after execution
 
     cout << "time taken for appendCSVDataToXYFiles(): " << end-start << " s" << endl;
-
+    return nStarsWritten;
 }
 
 void moveStarsToXY(string const& whichOne){

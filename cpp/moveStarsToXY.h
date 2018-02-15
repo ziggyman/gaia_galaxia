@@ -26,21 +26,24 @@ vector<string> gaiaGetInputFileNamesFromLonLat();
 vector< std::shared_ptr< ofstream > > getOutFiles(vector<Pixel> const& pixels);
 
 vector<string> getOutFileNames(vector<Pixel> const& pixels,
-                               string const& whichOne);
+                               string const& whichOne,
+                               string const& dataDirOut = "");
 
 void writeHeaderToOutFiles(vector<string> const& header,
                            vector<Pixel> const& pixels,
                            string const& whichOne,
-                           bool const& append);
+                           bool const& append,
+                           string const& dataDirOut = "");
 //                           vector<string> const& outFileNames,
 //                           vector< std::shared_ptr< ofstream > > const& outFiles);
 
-void appendCSVDataToXYFiles(CSVData const& csvData,
+int appendCSVDataToXYFiles(CSVData const& csvData,
                             vector<Pixel> const& pixels,
                             string const& whichOne,
                             vector<string> const& ids,
                             bool const& doFind=false,
-                            string const& lockSuffix="");
+                            string const& lockSuffix="",
+                            string const& outputDir="");
 //                            vector< std::shared_ptr< ofstream > > const& outFiles,
 //                            vector<string> const& outFileNames);
 
