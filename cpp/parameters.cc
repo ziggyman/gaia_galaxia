@@ -23,7 +23,7 @@ boost::format gaiaTgasGetFileNameOutRoot(){
 
 string modelGetDataDirOut(){
 //    return "/Volumes/yoda/azuri/data/galaxia/xy_ubv_Vlt13/";
-    return "/Volumes/yoda/azuri/data/galaxia/xy_ubv_Vlt21_5_temp/";
+    return "/Volumes/yoda/azuri/data/galaxia/ubv_Vlt21.5_1.0.bak/";
 }
 
 string obsGetDataDirOut(string const& whichOne){

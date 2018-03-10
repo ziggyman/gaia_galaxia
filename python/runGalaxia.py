@@ -28,12 +28,13 @@ def main(argv):
         os.remove(filename)
 
     """delete old progressFile"""
-    if os.path.isfile(Galaxia.progressFile):
-        os.remove(Galaxia.progressFile)
+    if not Galaxia.appendToProgressFile:
+        if os.path.isfile(Galaxia.progressFile):
+            os.remove(Galaxia.progressFile)
 
     """delete old Galaxia outputs files"""
-    for filename in glob(os.path.join(Galaxia.dir,"*.ebf*")):
-        os.remove(filename)
+#    for filename in glob(os.path.join(Galaxia.dir,"*.ebf*")):
+#        os.remove(filename)
 
     processes = 16
     if processes == 1:
@@ -41,7 +42,7 @@ def main(argv):
         processGalaxia(lon, test=True)
     else:
         p = Pool(processes=processes)
-        lon = np.arange(-175, 0, 10)
+        lon = np.arange(Galaxia.lonMin, Galaxia.lonMax+1, 10)
         random.shuffle(lon)
         #    lon = np.arange(5, 360, 10)
         print 'lon = ',lon

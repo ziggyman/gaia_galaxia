@@ -21,7 +21,9 @@ class Galaxia(object):
     ids = ['rad', 'hammerX', 'hammerY', 'exbv_solar']
     fSample = 1.0
     maxVMag = 21.5
-    tmpDir = 'ubv_Vlt%.1f_%.1f' % (maxVMag, fSample)
+    lonMin = 5
+    lonMax = 180
+    tmpDir = 'ubv_Vlt%.1f_%.1f.bak' % (maxVMag, fSample)
     print 'tmpDir = ',tmpDir
     lockSuffix = '_'+tmpDir+'_'
     dir = os.path.join('/Volumes/yoda/azuri/data/galaxia', tmpDir)
@@ -29,16 +31,25 @@ class Galaxia(object):
     print 'dir = ',dir
 
     progressFile = os.path.join(dir, 'ebfFilesWritten.txt')
+    appendToProgressFile = True
 
     xyDir = os.path.join(dir, 'xy/')
     mkdir_p(xyDir)
 
     append = True
     overwrite = False
+    overwriteParameterFile = True
     doIt = True
     doCSV = True
 
     deleteOldXYFiles = True
+
+    done = []
+    if os.path.exists(progressFile):
+        with open(progressFile) as f:
+            done = f.readlines()
+        # remove whitespace characters like `\n` at the end of each line
+        done = [x.strip() for x in done]
 
     def __init__(self):
         self.headerFile = '/Users/azuri/entwicklung/gaia_galaxia/galaxia_2.5_-30_UBV_V-1000_13.ebf'#self.fileNameIn % (-85, -85)
@@ -193,7 +204,8 @@ class Galaxia(object):
 
             # Read parameterfile
             if (Galaxia.overwrite
-                or (not os.path.isfile(parameterFileOut))):
+                or (not os.path.isfile(parameterFileOut))
+                or Galaxia.overwriteParameterFile):
 #                print 'creating parameterFileOut <',parameterFileOut,'>'
                 if Galaxia.doIt:
                     with open(parameterFileOut, 'w') as fOut:
@@ -232,6 +244,8 @@ class Galaxia(object):
             tmpFiles = [n for n in filterMatch if os.path.isfile(os.path.join(outputDir, n))]
 #            print 'outputFile = ',outputFile,': len(tmpFiles) = ',len(tmpFiles),': tmpFiles = ',tmpFiles
             ebfFileName = os.path.join(outputDir, outputFile+'.ebf')
+            done = ebfFileName in Galaxia.done
+            print 'ebfFileName = <'+ebfFileName+'> already done'
             if (Galaxia.overwrite
                 or (not os.path.isfile(ebfFileName))
                 or (os.path.isfile(ebfFileName)
@@ -257,88 +271,89 @@ class Galaxia(object):
     #        if not os.path.isfile(os.path.join(outputDir, outputFile+'.ebf')):
     #            print "ERROR: file <",os.path.join(outputDir, outputFile+'.ebf'),"> not found"
     #            STOP
-            if Galaxia.doCSV:
-                if Galaxia.deleteOldXYFiles:
-                    for filename in glob(os.path.join(xyOutputDir,"*.csv")):
-                        os.remove(filename)
-                nLines = len(ebf.read(ebfFileName, '/px'))
-                lonStart = lon-5
-                lonEnd = lon+5
-                if (lon < 0):
-                    lonStart += 360.0
-                    lonEnd += 360.0
-                latStart = lat-5
-                latEnd = lat+5
-#                print 'lonStart = ',lonStart,', lonEnd = ',lonEnd,', latStart = ',latStart,', latEnd = ',latEnd
-                cache = 100000
-
-                nStarsWritten = 0
-                if Galaxia.doIt:
-                    data = ebf.iterate(ebfFileName, '/px+', cache)
-
-                    iIter = 0
-#                        ebfFileNameOut = os.path.join(ebfOutputDir, outputFile+'.ebf')
-#                        try:
-#                            ebf.initialize(ebfFileNameOut)
-#                        except Exception as e:
-#                            print "processGalaxia: Unexpected error initalizing ",ebfFileNameOut,": ",str(e)
-
-                    durationAll = 0.0
-                    nLinesRead = 0;
-                    for it in data:
-                        nLinesRead += cache
-                        timeStartIt = time.time()
-                        self.addXYandPMandAbs2App(it)
-
-                        window = hammer.Pixel()
-                        window.xLow = lonStart
-                        window.xHigh = lonEnd
-                        window.yLow = latStart
-                        window.yHigh = latEnd
-
-                        self.getStarsInWindow(it, window)
-                        print "processGalaxia: len(it['px']) = ",len(it['px'])
-#                            print 'processGalaxia: it.keys() = ',it.keys()
-#                            print 'processGalaxia: data.keys() = ',data.keys()
-#                            try:
-#                                for key in it.keys():
-#                                    print 'processGalaxia: key = ',key
-#                                    ebf.write(ebfFileNameOut, '/'+key, it[key], 'a')
-#                            except Exception as e:
-#                                print "processGalaxia: Unexpected error writing to ",ebfFileNameOut,": ",str(e)
-
-                        csv = self.getCSVData(it, ebfFileName, iIter)
-#                            for iStar in range(csv.size()):
-#                                print 'lon[',iStar,'] = ',csv.getData('glon',iStar),', lat[',iStar,'] = ',csv.getData('glat',iStar),': hammerX[',iStar,'] = ',csv.getData('hammerX',iStar),', hammerY[',iStar,'] = ',csv.getData('hammerY',iStar)
-                        doFind = False
-                        lockSuffix = Galaxia.lockSuffix + lonLatStr
-
-                        for filename in glob(os.path.join('/var/lock/',"lock*"+lockSuffix)):
+            if Galaxia.overwrite or (not done):
+                if Galaxia.doCSV:
+                    if Galaxia.deleteOldXYFiles:
+                        for filename in glob(os.path.join(xyOutputDir,"*.csv")):
                             os.remove(filename)
+                    nLines = len(ebf.read(ebfFileName, '/px'))
+                    lonStart = lon-5
+                    lonEnd = lon+5
+                    if (lon < 0):
+                        lonStart += 360.0
+                        lonEnd += 360.0
+                    latStart = lat-5
+                    latEnd = lat+5
+    #                print 'lonStart = ',lonStart,', lonEnd = ',lonEnd,', latStart = ',latStart,', latEnd = ',latEnd
+                    cache = 100000
 
-                        nStarsWritten += moveStarsToXY.appendCSVDataToXYFiles(csv,
-                                                                              Galaxia.pixels,
-                                                                              'galaxia',
-                                                                              Galaxia.ids,
-                                                                              doFind,
-                                                                              lockSuffix,
-                                                                              xyOutputDir)
-                        timeEnd = time.time()
-                        duration = timeEnd-timeStartIt
-                        durationAll += duration
-                        print 'ran file <',ebfFileName,'> iIter=',iIter,' in ',int(duration),' s: ',nLinesRead * 100.0 / nLines,' % done in ',int(durationAll),' seconds'
-                        iIter += 1
-                    print nStarsWritten,' stars written'
-                                #STOP
-                else:
-                    print 'not actually doing anything'
+                    nStarsWritten = 0
+                    if Galaxia.doIt:
+                        data = ebf.iterate(ebfFileName, '/px+', cache)
 
-            if os.path.exists(ebfFileName):
-                Galaxia.ebfFilesWritten.append(ebfFileName)
-                with open(Galaxia.progressFile, 'a+') as f:
-                        f.write(ebfFileName+'\n')
+                        iIter = 0
+    #                        ebfFileNameOut = os.path.join(ebfOutputDir, outputFile+'.ebf')
+    #                        try:
+    #                            ebf.initialize(ebfFileNameOut)
+    #                        except Exception as e:
+    #                            print "processGalaxia: Unexpected error initalizing ",ebfFileNameOut,": ",str(e)
+
+                        durationAll = 0.0
+                        nLinesRead = 0;
+                        for it in data:
+                            nLinesRead += cache
+                            timeStartIt = time.time()
+                            self.addXYandPMandAbs2App(it)
+
+                            window = hammer.Pixel()
+                            window.xLow = lonStart
+                            window.xHigh = lonEnd
+                            window.yLow = latStart
+                            window.yHigh = latEnd
+
+                            self.getStarsInWindow(it, window)
+                            print "processGalaxia: len(it['px']) = ",len(it['px'])
+    #                            print 'processGalaxia: it.keys() = ',it.keys()
+    #                            print 'processGalaxia: data.keys() = ',data.keys()
+    #                            try:
+    #                                for key in it.keys():
+    #                                    print 'processGalaxia: key = ',key
+    #                                    ebf.write(ebfFileNameOut, '/'+key, it[key], 'a')
+    #                            except Exception as e:
+    #                                print "processGalaxia: Unexpected error writing to ",ebfFileNameOut,": ",str(e)
+
+                            csv = self.getCSVData(it, ebfFileName, iIter)
+    #                            for iStar in range(csv.size()):
+    #                                print 'lon[',iStar,'] = ',csv.getData('glon',iStar),', lat[',iStar,'] = ',csv.getData('glat',iStar),': hammerX[',iStar,'] = ',csv.getData('hammerX',iStar),', hammerY[',iStar,'] = ',csv.getData('hammerY',iStar)
+                            doFind = False
+                            lockSuffix = Galaxia.lockSuffix + lonLatStr
+
+                            for filename in glob(os.path.join('/var/lock/',"lock*"+lockSuffix)):
+                                os.remove(filename)
+
+                            nStarsWritten += moveStarsToXY.appendCSVDataToXYFiles(csv,
+                                                                                  Galaxia.pixels,
+                                                                                  'galaxia',
+                                                                                  Galaxia.ids,
+                                                                                  doFind,
+                                                                                  lockSuffix,
+                                                                                  xyOutputDir)
+                            timeEnd = time.time()
+                            duration = timeEnd-timeStartIt
+                            durationAll += duration
+                            print 'ran file <',ebfFileName,'> iIter=',iIter,' in ',int(duration),' s: ',nLinesRead * 100.0 / nLines,' % done in ',int(durationAll),' seconds'
+                            iIter += 1
+                        print nStarsWritten,' stars written'
+                                    #STOP
+                    else:
+                        print 'not actually doing anything'
+
+                if os.path.exists(ebfFileName):
+                    Galaxia.ebfFilesWritten.append(ebfFileName)
+                    with open(Galaxia.progressFile, 'a+') as f:
+                            f.write(ebfFileName+'\n')
 #                os.remove(ebfFileName)
 
             timeEnd = time.time()
             duration = timeEnd-timeStart
-            print 'ran file <',ebfFileName,'> iIter=',iIter,' in ',int(duration),' s'
+            print 'ran file <',ebfFileName,'> in ',int(duration),' s'
