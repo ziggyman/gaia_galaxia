@@ -120,6 +120,18 @@ vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVec
     return doubleVector;
 }
 
+vector<float> convertStringVectorToFloatVector(vector<string> const& stringVector){
+    vector<float> floatVector(0);
+    for (vector<string>::const_iterator iter = stringVector.begin(); iter != stringVector.end(); ++iter){
+        string const& element = *iter;
+        std::istringstream is(element);
+        float result;
+        is >> result;
+        floatVector.push_back(result);
+    }
+    return floatVector;
+}
+
 vector<unsigned> convertStringVectorToUnsignedVector(vector<string> const& stringVector){
     vector<unsigned> outVector(0);
     for (vector<string>::const_iterator iter = stringVector.begin(); iter != stringVector.end(); ++iter){
@@ -158,4 +170,16 @@ vector<string> splitCSVLine(string const& line){
     }
     out.push_back(tmpStr);
     return out;
+}
+
+void appendFile(string const& inFileName, string const& outFileName){
+    std::ifstream inFile(inFileName);
+    std::ofstream outFile(outFileName, std::ios_base::app | std::ios_base::out);
+    std::string   line;
+
+    while(std::getline(inFile, line))
+    {
+        outFile << line;
+    }
+    outFile.close();
 }

@@ -35,7 +35,7 @@ class GalComp(object):
                     GalComp.galaxiaKeys = it.keys()
                     break
 
-    def getGaiaHeader(self):
+#    def getGaiaHeader(self):
 
 
     def writeHeaders(self):
@@ -118,8 +118,6 @@ class GalComp(object):
                 print 'getCSVData: ERROR: len(csv.data[0])(=',len(csv.data[0]),') != len(GalComp.keys)(=',len(GalComp.keys),')'
                 STOP
         return csv
-
-    def processGalComp(self, lon):
 
     def processGalComp(self, lon):
         dir = '/Volumes/yoda/azuri/data/galaxia'

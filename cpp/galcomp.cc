@@ -220,42 +220,42 @@ void comparePixel(vector<Pixel> const& pixels,
     /// more to follow once this works
 }
 
-vector<double> getGaiaG(CSVData const& csvData){
+vector<float> getGaiaG(CSVData const& csvData){
     vector<string> filters = splitCSVLine(modelGetFilters());
 //    cout << "filters = [";
 //    for (auto i: filters) cout << i << ", ";
 //    cout << "]" << endl;
-    vector<double> gaiaG(0);
+    vector<float> gaiaG(0);
 
     if (getPhotometricSystem().compare("SDSS") == 0){
-        vector<double> sdss_g;
-        vector<double> sdss_r;
-        vector<double> sdss_i;
+        vector<float> sdss_g;
+        vector<float> sdss_r;
+        vector<float> sdss_i;
         for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
             if (itFilter->compare("g") == 0)
-                sdss_g = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("g")));
+                sdss_g = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("g")));
             else if (itFilter->compare("g") == 0)
-                sdss_r = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("r")));
+                sdss_r = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("r")));
             else if (itFilter->compare("i") == 0)
-                sdss_i = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("i")));
+                sdss_i = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("i")));
         }
 
     //    cout << "getGaiaG: min(sdss_g) = " << *min_element(sdss_g.begin(), sdss_g.end()) << ", max(sdss_g) = " << *max_element(sdss_g.begin(), sdss_g.end()) << endl;
         gaiaG = calcGaiaGFromgri(sdss_g, sdss_r, sdss_i);
     }
     else if (getPhotometricSystem().compare("UBV") == 0){
-        vector<double> ubv_b;
-        vector<double> ubv_v;
-        vector<double> ubv_i;
+        vector<float> ubv_b;
+        vector<float> ubv_v;
+        vector<float> ubv_i;
         for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
             if (itFilter->compare("B") == 0){
-                ubv_b = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("B")));
+                ubv_b = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("B")));
             }
             else if (itFilter->compare("V") == 0){
-                ubv_v = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("V")));
+                ubv_v = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("V")));
             }
             else if (itFilter->compare("I") == 0){
-                ubv_i = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("I")));
+                ubv_i = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("I")));
             }
         }
 
@@ -263,4 +263,88 @@ vector<double> getGaiaG(CSVData const& csvData){
     }
     cout << "getGaiaG: min(gaiaG) = " << *min_element(gaiaG.begin(), gaiaG.end()) << ", max(gaiaG) = " << *max_element(gaiaG.begin(), gaiaG.end()) << endl;
     return gaiaG;
+}
+
+vector< pair< float, float > > getHistogramLimits(int const& nBars,
+                                                  float const& xMin,
+                                                  float const& xMax){
+    vector< pair< float, float > > limits(nBars);
+    float dist = (xMax - xMin) / float(nBars);
+    limits[0].first = xMin;
+    limits[0].second = xMin + dist;
+    for (int i = 1; i < nBars; ++i){
+        limits[i].first = limits[i-1].second;
+        limits[i].second = limits[i].first + dist;
+    }
+    cout << "makeHistogram: xMin = " << xMin << ", limits[0].first = " << limits[0].first << endl;
+    cout << "makeHistogram: xMax = " << xMax << ", limits[" << nBars - 1 << "].second = " << limits[nBars-1].second << endl;
+    return limits;
+}
+
+/*string getHeaderKeyWord(string const& keyWord,
+                        string const& whichOne){
+    if ((whichOne.compare("gaia") == 0) or (whichOne.compare("gaiaTgas") == 0))
+        return obsGetHeaderKeyWord(keyWord);
+    else if (whichOne.compare("galaxia") == 0)
+        return modelGetHeaderKeyWord(keyWord);
+    else
+        throw std::runtime_error("getHeaderKeyWord: ERROR: whichOne = <"+whichOne+"> not recognized");
+}*/
+
+vector<int> getHistogram(vector<Pixel> const& pixelsIn,
+                         Pixel const& xyWindow
+                         string const& whichOne,
+                         string const& keyWord,
+                         vector< pair< float, float > > limits){
+    /// get stars in xyWindow
+    CSVData stars = getStarsInXYWindow(pixelsIn,
+                                       xyWindow,
+                                       whichOne);
+
+    string headerKeyWord = getHeaderKeyWord(keyWord, whichOne);
+
+    vector<float> data;
+    if (headerKeyWord.compare("G") == 0){
+        if ((whichOne.compare("gaia") == 0) or (whichOne.compare("gaiaTgas") == 0))
+            data = stars.getData(headerKeyWord);
+        else
+            data = getGaiaG(stars);
+    }
+    else
+        data = stars.getData(headerKeyWord);
+
+    vector<int> histogram(limits.size(), int(0));
+
+    for (auto it = data.begin(); it != data.end(); ++it){
+        auto itHist = histogram.begin();
+        for (auto itLim = limits.begin(); itLim != limits.end(); ++itLim, ++itHist){
+            if ((*it >= itLim->first) && (*it < itLim->second)){
+                *itHist += 1;
+                break;
+            }
+        }
+    }
+
+    return histogram;
+}
+
+void makeHistogram(vector<Pixel> const& pixelsIn,
+                   Pixel const& xyWindow,
+                   vector<string> const& whichOnes,
+                   string const& keyWord,
+                   vector< pair< float, float > > limits,
+                   string const& outFileName){
+    /// get all stars in xyWindow for each string in whichOne
+    vector< vector< int > > histograms(whichOnes.size());
+    auto itWhichOne = whichOnes.begin();
+    for (auto itHist = histograms.begin(); itHist != histograms.end(); ++itHist, ++itWhichOne){
+        *itHist = getHistogram(pixelsIn,
+                               xyWindow
+                               *itWhichOne,
+                               keyWord,
+                               limits);
+    }
+
+
+
 }

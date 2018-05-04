@@ -119,6 +119,36 @@ TEST_F(GalCompTest, testComparePixel){
                  keyWord,
                  "gaiaTgas");
 }
+
+TEST_F(GalCompTest, testHistogram){
+    Hammer hammer;
+    vector<Pixel> pixels = hammer.getPixels();
+
+    Pixel xyWindow;// = pixels[pixels.size()/2];
+    xyWindow.xLow = 0.01;
+    xyWindow.xHigh = 0.05;
+    xyWindow.yLow = -0.6;
+    xyWindow.yHigh = -0.5;
+
+    string whichOne("galaxia");
+
+    string keyWord = "G";
+
+    int nBars = 20;
+    float xMin = 5.0;
+    float xMax = 21.0;
+
+    vector< pair< float, float > > limits = getHistogramLimits(int const& nBars,
+                                                               float const& xMin,
+                                                               float const& xMax);
+
+    vector<int> hist = getHistogram(pixels,
+                                    xyWindow,
+                                    whichOne,
+                                    keyWord,
+                                    limits);
+}
+
 //TEST_F(GalCompTest, testGaiaMoveStarsToXY){
 //    cout << "running gaiaMoveStars" << endl;
 //    gaiaMoveStarsToXY();

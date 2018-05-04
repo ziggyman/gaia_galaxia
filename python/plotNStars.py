@@ -96,7 +96,7 @@ class CountStars(object):
         nStarsGalaxia = np.where(nStarsGalaxia > maxNStarsGalaxia, maxNStarsGalaxia, nStarsGalaxia)
         faceColorsGalaxia = [redGreen[int((len(redGreen)-1) * i / maxNStarsGalaxia)] for i in nStarsGalaxia]
 
-        maxNStarsFac = 1000.0#maxNStarsFac / 10.0
+        maxNStarsFac = 1.0#maxNStarsFac / 10.0
         nStarsFac = np.where(nStarsFac > maxNStarsFac, maxNStarsFac, nStarsFac)
         colorIndex = [int((len(redGreen)-1.0) * i / maxNStarsFac) for i in nStarsFac]
         faceColorsFac = [redGreen[i] for i in colorIndex]
@@ -168,12 +168,12 @@ def main(argv):
     for f in glob('/var/lock/*.lock'):
         os.remove(f)
 
-    if False:
+    if True:
         # rename existing outFile
         if os.path.isfile(gal.getOutFileNameGaia()):
-            shutil.move(gal.getOutFileName(), gal.getOutFileName()+'.bak')
+            shutil.move(gal.getOutFileNameGaia(), gal.getOutFileNameGaia()+'.bak')
         if os.path.isfile(gal.getOutFileNameGalaxia()):
-            shutil.move(gal.getOutFileName(), gal.getOutFileName()+'.bak')
+            shutil.move(gal.getOutFileNameGalaxia(), gal.getOutFileNameGalaxia()+'.bak')
 
         with open(gal.getOutFileNameGaia(), 'w') as f:
             f.write('PixelId,nStars\n')

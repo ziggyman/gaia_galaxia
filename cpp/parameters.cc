@@ -23,7 +23,7 @@ boost::format gaiaTgasGetFileNameOutRoot(){
 
 string modelGetDataDirOut(){
 //    return "/Volumes/yoda/azuri/data/galaxia/xy_ubv_Vlt13/";
-    return "/Volumes/yoda/azuri/data/galaxia/ubv_Vlt21.5_1.0.bak/";
+    return "/Volumes/yoda/azuri/data/galaxia/ubv_Vlt21.5_1.0/xy/";
 }
 
 string obsGetDataDirOut(string const& whichOne){
@@ -44,7 +44,7 @@ string gaiaTgasGetDataDirOut(){
 }
 
 string obsGetFilter(){
-    return "g";
+    return "G";
 }
 
 string modelGetFilters(){
@@ -58,7 +58,7 @@ string modelGetFilters(){
 }
 
 string obsGetFilterKeyWord(string const& filter){
-    if (filter.compare("g") == 0)
+    if (filter.compare("G") == 0)
         return "phot_g_mean_mag";
     else
         throw std::runtime_error("obsGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
@@ -89,6 +89,8 @@ string modelGetFilterKeyWord(string const& filter){
         return "ubv_r_app";
     else if (filter.compare("log_g") == 0)
         return modelGetHeaderKeyWord("log_g");
+    else if (filter.compare("G") == 0)
+        return string("G");
     else
         throw std::runtime_error("modelGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
 }

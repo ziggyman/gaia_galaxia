@@ -48,6 +48,15 @@ struct CSVData{
     string getData(string const& keyword, int row) const{
         int headerPos = findKeywordPos(keyword);
         if (headerPos < 0){
+            /// mayge it's the G color...
+            if (keyword.compare("G") == 0){
+                /// TODO: here we should actually require the G values to be present
+                /// somewhere as a vector and not calculate it again each time
+                /// for the whole data set. For now it works but it will be
+                /// extremely slow if we ask for the G values of lots of rows...
+                return string(getGaiaG(*this)[row]);
+            }
+            else
             throw std::runtime_error("CSVData::getData: ERROR: keyword <" + keyword + "> not found");
         }
         if (size() == 0){
@@ -64,7 +73,14 @@ struct CSVData{
         cout << "CSVData::getData(keyword=" << keyword << ")" << endl;
         int headerPos = findKeywordPos(keyword);
         if (headerPos < 0){
-            throw std::runtime_error("CSVData::getData: ERROR: keyword <" + keyword + "> not found");
+            /// mayge it's the G color...
+            if (keyword.compare("G") == 0){
+                /// a little complicated returning a string vector of a double vector
+                /// only to convert it to float or double again later...
+                return convertDoubleVectorToStringVector(getGaiaG(*this));
+            }
+            else
+                throw std::runtime_error("CSVData::getData: ERROR: keyword <" + keyword + "> not found");
         }
         cout << "CSVData.getData(): size() = " << size() << endl;
         vector<string> out(0);
@@ -164,7 +180,10 @@ CSVData readCSVFile(string const& fileName);
 vector<string> splitCSVLine(string const& line);
 
 vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVector);
+vector<float> convertStringVectorToFloatVector(vector<string> const& stringVector);
 vector<unsigned> convertStringVectorToUnsignedVector(vector<string> const& stringVector);
 vector<string> convertDoubleVectorToStringVector(vector<double> const& doubleVector);
+
+void appendFile(string const& inFileName, string const& outFileName);
 
 #endif
