@@ -150,6 +150,21 @@ int CSVData::size() const{
     return data.size();
 }
 
+void CSVData::append(vector<string> const& newLine){
+    if (newLine.size() != header.size()){
+        throw std::runtime_error("CSVData::append: ERROR newLine.size() = "
+                + to_string(newLine.size()) + " != header.size() = " + to_string(header.size()));
+    }
+    data.push_back(newLine);
+}
+
+void CSVData::printHeader() const{
+    cout << header[0];
+    for (int i=1; i<header.size(); ++i)
+        cout << ", " << header[i];
+    cout << endl;
+}
+
 vector<string> readHeader(string const& fileName){
     ifstream inStream(fileName);
     vector<string> header(0);

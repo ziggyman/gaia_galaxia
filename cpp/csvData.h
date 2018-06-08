@@ -35,6 +35,9 @@ struct CSVData{
 
     int size() const;
 
+    void append(vector<string> const& newLine);
+
+    void printHeader() const;
 /*    void setDataSize(int nCols, int nStars){
         data.resize(nCols);
         for (auto itDat=data.begin(); itDat!=data.end(); ++itDat)
