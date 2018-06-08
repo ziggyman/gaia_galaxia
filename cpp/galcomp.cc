@@ -220,51 +220,6 @@ void comparePixel(vector<Pixel> const& pixels,
     /// more to follow once this works
 }
 
-vector<float> getGaiaG(CSVData const& csvData){
-    vector<string> filters = splitCSVLine(modelGetFilters());
-//    cout << "filters = [";
-//    for (auto i: filters) cout << i << ", ";
-//    cout << "]" << endl;
-    vector<float> gaiaG(0);
-
-    if (getPhotometricSystem().compare("SDSS") == 0){
-        vector<float> sdss_g;
-        vector<float> sdss_r;
-        vector<float> sdss_i;
-        for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
-            if (itFilter->compare("g") == 0)
-                sdss_g = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("g")));
-            else if (itFilter->compare("g") == 0)
-                sdss_r = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("r")));
-            else if (itFilter->compare("i") == 0)
-                sdss_i = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("i")));
-        }
-
-    //    cout << "getGaiaG: min(sdss_g) = " << *min_element(sdss_g.begin(), sdss_g.end()) << ", max(sdss_g) = " << *max_element(sdss_g.begin(), sdss_g.end()) << endl;
-        gaiaG = calcGaiaGFromgri(sdss_g, sdss_r, sdss_i);
-    }
-    else if (getPhotometricSystem().compare("UBV") == 0){
-        vector<float> ubv_b;
-        vector<float> ubv_v;
-        vector<float> ubv_i;
-        for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
-            if (itFilter->compare("B") == 0){
-                ubv_b = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("B")));
-            }
-            else if (itFilter->compare("V") == 0){
-                ubv_v = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("V")));
-            }
-            else if (itFilter->compare("I") == 0){
-                ubv_i = convertStringVectorToFloatVector(csvData.getData(modelGetFilterKeyWord("I")));
-            }
-        }
-
-        gaiaG = calcGaiaGFromVI(ubv_v, ubv_i);
-    }
-    cout << "getGaiaG: min(gaiaG) = " << *min_element(gaiaG.begin(), gaiaG.end()) << ", max(gaiaG) = " << *max_element(gaiaG.begin(), gaiaG.end()) << endl;
-    return gaiaG;
-}
-
 vector< pair< float, float > > getHistogramLimits(int const& nBars,
                                                   float const& xMin,
                                                   float const& xMax){
@@ -280,8 +235,8 @@ vector< pair< float, float > > getHistogramLimits(int const& nBars,
     cout << "makeHistogram: xMax = " << xMax << ", limits[" << nBars - 1 << "].second = " << limits[nBars-1].second << endl;
     return limits;
 }
-
-/*string getHeaderKeyWord(string const& keyWord,
+/*
+string getHeaderKeyWord(string const& keyWord,
                         string const& whichOne){
     if ((whichOne.compare("gaia") == 0) or (whichOne.compare("gaiaTgas") == 0))
         return obsGetHeaderKeyWord(keyWord);
@@ -289,10 +244,10 @@ vector< pair< float, float > > getHistogramLimits(int const& nBars,
         return modelGetHeaderKeyWord(keyWord);
     else
         throw std::runtime_error("getHeaderKeyWord: ERROR: whichOne = <"+whichOne+"> not recognized");
-}*/
+}
 
 vector<int> getHistogram(vector<Pixel> const& pixelsIn,
-                         Pixel const& xyWindow
+                         Pixel const& xyWindow,
                          string const& whichOne,
                          string const& keyWord,
                          vector< pair< float, float > > limits){
@@ -348,3 +303,4 @@ void makeHistogram(vector<Pixel> const& pixelsIn,
 
 
 }
+*/

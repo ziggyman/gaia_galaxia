@@ -26,7 +26,7 @@ class Galaxia(object):
     tmpDir = 'ubv_Vlt%.1f_%.1f.bak' % (maxVMag, fSample)
     print 'tmpDir = ',tmpDir
     lockSuffix = '_'+tmpDir+'_'
-    dir = os.path.join('/Volumes/yoda/azuri/data/galaxia', tmpDir)
+    dir = os.path.join('/Volumes/yobiwan/azuri/data/galaxia', tmpDir)
     mkdir_p(dir)
     print 'dir = ',dir
 
@@ -211,7 +211,7 @@ class Galaxia(object):
                     with open(parameterFileOut, 'w') as fOut:
                         fOut.write('outputFile '+outputFile+'\n')
                         fOut.write('outputDir '+outputDir+'\n')
-                        fOut.write('photoSys UBV\n')
+                        fOut.write('photoSys SDSS\n')
                         fOut.write('magcolorNames V,B-V\n')
                         fOut.write('appMagLimits[0] -1000\n')
                         fOut.write('appMagLimits[1] %.1f\n' % (Galaxia.maxVMag))

@@ -47,8 +47,6 @@ void comparePixel(vector<Pixel> const& pixels,
                   string const& keyWord,
                   string const& whichObs);
 
-vector<double> getGaiaG(CSVData const& csvData);
-
 /**
  * @brief Return a vector of pairs of x-limits for each histogram bin
  * @param nBars Number of histogram bins between xMin and xMax
@@ -67,24 +65,24 @@ vector< pair< float, float > > getHistogramLimits(int const& nBars,
  * @param whichOne Name of data set
  * @param keyWord  Key word for which to calculate the histogram
  * @param limits   Vector of pairs of lower and upper limits for each bin 
- */
+ *
 vector<int> getHistogram(vector<Pixel> const& pixelsIn,
                          Pixel const& xyWindow,
                          string const& whichOne,
                          string const& keyWord,
                          vector< pair< float, float > > limits);
 
-/**
+**
  * @brief
  * @param 
- */
+ *
 void makeHistogram(vector<Pixel> const& pixelsIn,
-                   Pixel const& xyWindow
+                   Pixel const& xyWindow,
                    string const& whichOne,
                    string const& keyWord,
                    int const& nBars,
                    float const& xMin,
                    float const& xMax,
                    string const& outFileName);
-
+*/
 #endif
