@@ -36,7 +36,7 @@ string obsGetDataDirOut(string const& whichOne){
 }
 
 string gaiaGetDataDirOut(){
-    return "/Volumes/external/azuri/data/gaia/xy/";
+    return "/Volumes/obiwan/azuri/data/gaia/xy/";
 }
 
 string gaiaTgasGetDataDirOut(){
