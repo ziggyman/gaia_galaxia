@@ -139,7 +139,7 @@ void Hammer::calcOuterLimits(){
         cout << "xMin = " << _OuterLimitsXY[0].x << ", xMax = " << _OuterLimitsXY[1].x
              << ", yMin = " << _OuterLimitsXY[0].y << ", yMax = " << _OuterLimitsXY[1].y << endl;
     #ifdef __PLOT__
-        string plotName("/Volumes/external/azuri/data/limits.png");
+        string plotName("/Volumes/obiwan/azuri/data/limits.png");
         mglGraph gr;
         gr.SetMarkSize(0.00001);
         plot(_OuterLimits, gr, plotName);

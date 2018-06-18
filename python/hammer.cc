@@ -66,5 +66,6 @@ PYBIND11_MODULE(hammer, m) {
         .def("xYToLonLat", (LonLat (Hammer::*)(const double &, const double &) const) &Hammer::xYToLonLat)
         .def("getKeyWordHammerX", (string (Hammer::*)() const) &Hammer::getKeyWordHammerX)
         .def("getKeyWordHammerY", (string (Hammer::*)() const) &Hammer::getKeyWordHammerY)
+        .def("plotGrid", (bool (Hammer::*)(string)) &Hammer::plotGrid)
     ;
 }
