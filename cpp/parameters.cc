@@ -9,6 +9,8 @@ boost::format obsGetFileNameOutRoot(string const& whichOne){
         return gaiaGetFileNameOutRoot();
     else if (whichOne.compare("gaiaTgas") == 0)
         return gaiaTgasGetFileNameOutRoot();
+    else if (whichOne.compare("gaiaXSimbad") == 0)
+        return gaiaXSimbadGetFileNameOutRoot();
     else
         throw std::runtime_error("obsGetFileNameOutRoot: ERROR: whichOne = <"+whichOne+"> not recognized");
 }
@@ -21,6 +23,10 @@ boost::format gaiaTgasGetFileNameOutRoot(){
     return boost::format("TgasSource_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 }
 
+boost::format gaiaXSimbadGetFileNameOutRoot(){
+    return boost::format("GaiaXSimbad_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+}
+
 string modelGetDataDirOut(){
 //    return "/Volumes/yoda/azuri/data/galaxia/xy_ubv_Vlt13/";
     return "/Volumes/yoda/azuri/data/galaxia/ubv_Vlt21.5_1.0/xy/";
@@ -31,6 +37,8 @@ string obsGetDataDirOut(string const& whichOne){
         return gaiaGetDataDirOut();
     else if (whichOne.compare("gaiaTgas") == 0)
         return gaiaTgasGetDataDirOut();
+    else if (whichOne.compare("gaiaXSimbad") == 0)
+        return gaiaXSimbadGetDataDirOut();
     else
         throw std::runtime_error("obsGetDataDirOut: ERROR: whichOne = <"+whichOne+"> not recognized");
 }
@@ -41,6 +49,10 @@ string gaiaGetDataDirOut(){
 
 string gaiaTgasGetDataDirOut(){
     return "/Volumes/yoda/azuri/data/gaia-tgas/xy/";
+}
+
+string gaiaXSimbadGetDataDirOut(){
+    return "/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/";
 }
 
 string obsGetFilter(){
@@ -57,11 +69,44 @@ string modelGetFilters(){
         throw std::runtime_error("modelGetFilters: ERROR: photometric system <"+photometricSystem+">");
 }
 
-string obsGetFilterKeyWord(string const& filter){
+string obsGetFilterKeyWord(string const& filter, string const& whichOne){
     if (filter.compare("G") == 0)
         return "phot_g_mean_mag";
-    else
-        throw std::runtime_error("obsGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
+    else if (filter.compare("G_BP") == 0)
+        return "phot_bp_mean_mag";
+    else if (filter.compare("G_RP") == 0)
+        return "phot_rp_mean_mag";
+    else{
+        if (whichOne.compare("gaia")){
+            throw std::runtime_error("obsGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
+        }
+        else if (whichOne.compare("gaiaXSimbad")){
+            if (filter.compare("U"))
+                return "U";
+            else if (filter.compare("B"))
+                return "B";
+            else if (filter.compare("V"))
+                return "V";
+            else if (filter.compare("R"))
+                return "R";
+            else if (filter.compare("I"))
+                return "I";
+            else if (filter.compare("u"))
+                return "u";
+            else if (filter.compare("g"))
+                return "g";
+            else if (filter.compare("r"))
+                return "r";
+            else if (filter.compare("i"))
+                return "i";
+            else if (filter.compare("z"))
+                return "z";
+            else
+                throw std::runtime_error("obsGetFilterKeyWord: ERROR: unknown filter <"+filter+">");
+        }
+        else
+            throw std::runtime_error("obsGetFilterKeyWord: ERROR: unknown survey <"+whichOne+">");
+    }
 }
 
 string modelGetFilterKeyWord(string const& filter){

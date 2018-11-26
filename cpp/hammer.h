@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <math.h>
-#include <mgl2/mgl.h>
+//#include <mgl2/mgl.h>
 #include <vector>
 
 #define PI 3.14159265
@@ -129,7 +129,7 @@ public:
      * @brief Plot the grid of longitudes and latitudes in Hammer projection
      * @param plotName Name for the file to write
      */
-    void plotGrid(string plotName="") const;
+//    void plotGrid(string plotName="") const;
 
     /**
      * @brief return pixels within outer Hammer sphere limits
@@ -156,7 +156,7 @@ public:
      */
     LonLat xYToLonLat(const double& x, const double& y) const;
 
-    void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName="") const;
+//    void plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName="") const;
 
     /**
      * @brief Convert degrees to radians

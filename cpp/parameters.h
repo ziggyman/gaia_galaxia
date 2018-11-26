@@ -14,11 +14,15 @@ boost::format gaiaGetFileNameOutRoot();
 
 boost::format gaiaTgasGetFileNameOutRoot();
 
+boost::format gaiaXSimbadGetFileNameOutRoot();
+
 string modelGetDataDirOut();
 
 string obsGetDataDirOut(string const& whichOne = "gaia");
 
 string gaiaGetDataDirOut();
+
+string gaiaXSimbadGetDataDirOut();
 
 string gaiaTgasGetDataDirOut();
 
@@ -26,7 +30,7 @@ string obsGetFilter();
 
 string modelGetFilters();
 
-string obsGetFilterKeyWord(string const& filter);
+string obsGetFilterKeyWord(string const& filter, string const& whichOne = "gaia");
 
 string modelGetFilterKeyWord(string const& filter);
 

@@ -22,6 +22,7 @@ vector<string> galaxiaGetInputFileNames();
 vector<string> gaiaGetInputFileNames();
 vector<string> gaiaTgasGetInputFileNames();
 vector<string> gaiaGetInputFileNamesFromLonLat();
+vector<string> gaiaXSimbadGetInputFileName();
 
 vector< std::shared_ptr< ofstream > > getOutFiles(vector<Pixel> const& pixels);
 

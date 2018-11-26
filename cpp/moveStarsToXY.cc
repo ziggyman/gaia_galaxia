@@ -16,7 +16,7 @@ vector<string> galaxiaGetInputFileNames(){
 }
 
 vector<string> gaiaGetInputFileNames(){
-    string dataDir("/Volumes/external/azuri/data/gaia/cdn.gea.esac.esa.int/Gaia/gaia_source/csv/");
+    string dataDir("/Volumes/obiwan/azuri/data/gaia/cdn.gea.esac.esa.int/Gaia/gaia_source/csv/");
     boost::format fileNameRoot = boost::format("GaiaSource_%03i-%03i-%03i.csv");//% (release, tract, patch);
     vector<string> inputFileNames(0);
     for (int iRelease=0; iRelease<3; ++iRelease){
@@ -54,7 +54,7 @@ vector<string> gaiaTgasGetInputFileNames(){
 }
 
 vector<string> gaiaGetInputFileNamesFromLonLat(){
-    string dataDir("/Volumes/external/azuri/data/gaia/lon-lat/");
+    string dataDir("/Volumes/obiwan/azuri/data/gaia/lon-lat/");
     boost::format fileNameRoot = boost::format("GaiaSource_%i-%i_%i-%i.csv");// % (int(minLongitude), int(maxLongitude), int(minLatitude), int(maxLatitude))
     vector<string> inputFileNames(0);
     for (int lon=10; lon<=360; lon+=10){
@@ -65,6 +65,109 @@ vector<string> gaiaGetInputFileNamesFromLonLat(){
                                                              % lat).str());
         }
     }
+    return inputFileNames;
+}
+
+vector<string> gaiaXSimbadGetInputFileName(){
+    string dataDir("/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/");
+    vector<string> inputFileNames(0);
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_aa"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ab"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ac"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ad"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ae"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_af"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ag"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ah"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ai"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_aj"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ak"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_al"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_am"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_an"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ao"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ap"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_aq"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ar"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_as"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_at"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_au"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_av"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_aw"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ax"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ay"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_az"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ba"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bb"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bc"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bd"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_be"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bf"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bg"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bh"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bi"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bj"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bk"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bl"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bm"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bn"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bo"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bp"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bq"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_br"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bs"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bt"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bu"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bv"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bw"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bx"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_by"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_bz"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ca"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cb"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cc"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cd"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ce"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cf"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cg"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ch"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ci"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cj"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ck"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cl"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cm"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cn"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_co"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cp"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cq"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cr"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cs"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ct"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cu"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cv"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cw"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cx"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cy"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_cz"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_da"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_db"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dc"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dd"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_de"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_df"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dg"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dh"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_di"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dj"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dk"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dl"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dm"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dn"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_do"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dp"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dq"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_dr"));
+    inputFileNames.push_back(dataDir + ("GaiaDR2xSimbad_ds"));
     return inputFileNames;
 }
 
@@ -100,6 +203,11 @@ vector<string> getOutFileNames(vector<Pixel> const& pixels,
         fileNameOutRoot = gaiaTgasGetFileNameOutRoot();
         if (dirOut.compare("") == 0)
             dirOut = gaiaTgasGetDataDirOut();
+    }
+    else if (whichOne.compare("gaiaXSimbad") == 0){
+        fileNameOutRoot = gaiaXSimbadGetFileNameOutRoot();
+        if (dirOut.compare("") == 0)
+            dirOut = gaiaXSimbadGetDataDirOut();
     }
     else{
         cout << "getOutFileNames: ERROR: whichOne(=<" << whichOne << ">) neither equal to <galaxia> nor to <gaia> nor to <gaiaTgas>" << endl;
@@ -342,6 +450,12 @@ void moveStarsToXY(string const& whichOne){
         fileNameOutRoot = gaiaGetFileNameOutRoot();
         ids.push_back("source_id");
     }
+    else if (whichOne.compare("gaiaXSimbad") == 0){
+        dataDirOut = gaiaXSimbadGetDataDirOut();
+        inputFileNames = gaiaXSimbadGetInputFileName();
+        fileNameOutRoot = gaiaXSimbadGetFileNameOutRoot();
+        ids.push_back("source_id");
+    }
     else{
         cout << "moveStarsToXY: ERROR: whichOne(=<" << whichOne << ">) is neither equal to <galaxia> nor to <gaia>" << endl;
         exit(EXIT_FAILURE);
@@ -430,7 +544,7 @@ void galaxiaFixHeaderLineEnd(){
 }
 
 void checkGaiaInputFiles(){
-    std::string dataDir("/Volumes/external/azuri/data/gaia/cdn.gea.esac.esa.int/Gaia/gaia_source/csv/");
+    std::string dataDir("/Volumes/obiwan/azuri/data/gaia/cdn.gea.esac.esa.int/Gaia/gaia_source/csv/");
     boost::format fileNameRoot = boost::format("GaiaSource_%03i-%03i-%03i.csv");//% (release, tract, patch)
 
     float lon, lat;

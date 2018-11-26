@@ -189,6 +189,20 @@ vector<string> readHeader(string const& fileName){
     return header;
 }
 
+vector<int> countCharPerLine(string const& fileName, char const& character){
+    ifstream inStream(fileName);
+    vector<int> occurances;
+    if (inStream.is_open()){
+        string line;
+        while(inStream.good()){
+            if (getline(inStream, line)){
+                occurances.push_back(std::count(line.begin(), line.end(), character));
+            }
+        }
+    }
+    return occurances;
+}
+
 void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
     string strToWrite(strVec[0]);
     for (int iStr=1; iStr<strVec.size(); ++iStr){
@@ -201,7 +215,7 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
     return;
 }
 
-CSVData readCSVFile(string const& fileName){
+CSVData readCSVFile(string const& fileName, bool const& removeBadLines){
     ifstream inStream(fileName);
     if (!inStream.is_open()){
         cout << "file with name <" << fileName << "> is not open" << endl;
@@ -255,51 +269,54 @@ CSVData readCSVFile(string const& fileName){
                 cout << "readCSVFile: ERROR: nCommas = " << nCommas << " != csvData.header.size()-1 = " << csvData.header.size()-1 << endl;
                 cout << "previousLine = " << previousLine << endl;
                 cout << "line = " << line << endl;
-                exit(EXIT_FAILURE);
-            }
-            vector<string> dataLine(0);
-            stringstream lineStream(line.c_str());
-            pos = 0;
-            if (nQuotes > 0){
-                while(lineStream.good()){
-                    getline(lineStream, substring, '"');
-                    if (lineStream.good())//There was a quote, remove the last comma before the quote
-                        substring = substring.substr(0,substring.length()-1);
-//                    cout << "header: substring = " << substring << endl;
-                    stringstream subStream(substring);
-                    while (subStream.good()){
-                        getline(subStream, substring, ',');
-//                        cout << "header: pos = " << pos << ": substring = " << substring << endl;
-                        dataLine.push_back(substring);
-                        pos++;
-                    }
-                    if (lineStream.good()){
-                        getline(lineStream, substring, '"');
-//                        cout << "header: pos = " << pos << ": substring = " << substring << endl;
-                        dataLine.push_back(substring);
-                        pos++;
-                        if (lineStream.good())
-                            getline(lineStream, substring, ',');//Remove first comma after the 2nd quote
-                    }
-                }
+                if (!removeBadLines)
+                    exit(EXIT_FAILURE);
             }
             else{
-                while(lineStream.good()){
-                    getline(lineStream, substring, ',');
-    //                cout << "pos = " << pos << ": substring = " << substring << endl;
-                    dataLine.push_back(substring);
-                    pos++;
+                vector<string> dataLine(0);
+                stringstream lineStream(line.c_str());
+                pos = 0;
+                if (nQuotes > 0){
+                    while(lineStream.good()){
+                        getline(lineStream, substring, '"');
+                        if (lineStream.good())//There was a quote, remove the last comma before the quote
+                            substring = substring.substr(0,substring.length()-1);
+    //                    cout << "header: substring = " << substring << endl;
+                        stringstream subStream(substring);
+                        while (subStream.good()){
+                            getline(subStream, substring, ',');
+    //                        cout << "header: pos = " << pos << ": substring = " << substring << endl;
+                            dataLine.push_back(substring);
+                            pos++;
+                        }
+                        if (lineStream.good()){
+                            getline(lineStream, substring, '"');
+    //                        cout << "header: pos = " << pos << ": substring = " << substring << endl;
+                            dataLine.push_back(substring);
+                            pos++;
+                            if (lineStream.good())
+                                getline(lineStream, substring, ',');//Remove first comma after the 2nd quote
+                        }
+                    }
                 }
+                else{
+                    while(lineStream.good()){
+                        getline(lineStream, substring, ',');
+        //                cout << "pos = " << pos << ": substring = " << substring << endl;
+                        dataLine.push_back(substring);
+                        pos++;
+                    }
+                }
+                if (dataLine.size() != csvData.header.size()){
+                    cout << "readCSVFile: ERROR: dataLine.size() = " << dataLine.size() << " != csvData.header.size() = " << csvData.header.size() << endl;
+                    cout << "line = " << line << endl;
+                    for (int i=0; i<dataLine.size(); ++i)
+                        cout << "dataLine[" << i << "] = " << dataLine[i] << endl;
+                    exit(EXIT_FAILURE);
+                }
+                csvData.data.push_back(dataLine);
+                previousLine = line;
             }
-            if (dataLine.size() != csvData.header.size()){
-                cout << "readCSVFile: ERROR: dataLine.size() = " << dataLine.size() << " != csvData.header.size() = " << csvData.header.size() << endl;
-                cout << "line = " << line << endl;
-                for (int i=0; i<dataLine.size(); ++i)
-                    cout << "dataLine[" << i << "] = " << dataLine[i] << endl;
-                exit(EXIT_FAILURE);
-            }
-            csvData.data.push_back(dataLine);
-            previousLine = line;
         }
         inStream.close();
         gettimeofday(&end, NULL);

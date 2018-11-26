@@ -3,10 +3,12 @@ import csv
 import csvData
 import csvFree
 
-fname = '/Volumes/external/azuri/data/gaia/GaiaSource_1008431284282695936_1008626993058019840.csv'
+#fname = '/Volumes/external/azuri/data/gaia/GaiaSource_1008431284282695936_1008626993058019840.csv'
+fname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad.csv'
 
-def readGaiaToDict():
-    reader = csv.reader(open(fname, 'r'))
+
+def readGaiaToDict(filename):
+    reader = csv.reader(open(filename, 'r'))
     d = {}
 
     iLine = 0
@@ -28,6 +30,7 @@ def readGaiaToDict():
 
     print 'data[',keys[0],'] = ',data[keys[0]]
     print 'data[ra] = ',data['ra']
+    return data
 
 def readGaiaCSVData():
     return csvFree.readCSVFile(fname)

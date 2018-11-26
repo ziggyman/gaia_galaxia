@@ -65,7 +65,7 @@ LonLat Hammer::xYToLonLat(const double& x, const double& y) const{
     return lonLat;
 }
 
-
+/**
 void Hammer::plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& plotName) const{
     gr.Title("Hammer sphere");
     gr.Box();
@@ -98,7 +98,7 @@ void Hammer::plot(vector<LonLatXY> const& lonLatXY, mglGraph& gr, string const& 
         gr.WriteFrame(plotName.c_str());
     return;
 }
-
+*/
 /**
  * @brief Calculate the outer limits in x and y of the Hammer projection
  * @return Vector containing the outer limits (lon=-180, lon=180)
@@ -201,7 +201,7 @@ bool Hammer::isInside(double x, double y){
         cout << "x(=" << x << "), y(=" << y << ") not found to be inside a pixel" << endl;
     return false;
 }
-
+/**
 void Hammer::plotGrid(string plotName) const{
     mglGraph gr;
     gr.SetMarkSize(0.00001);
@@ -227,7 +227,7 @@ void Hammer::plotGrid(string plotName) const{
     plot(out, gr, plotName);
     return;
 }
-
+*/
 vector<Pixel> Hammer::getPixels(){
     /// running calcOuterLimits()
     calcOuterLimits();

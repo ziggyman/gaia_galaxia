@@ -48,9 +48,11 @@ struct CSVData{
 
 vector<string> readHeader(string const& fileName);
 
+vector<int> countCharPerLine(string const& fileName, char const& character);
+
 void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile);
 
-CSVData readCSVFile(string const& fileName);
+CSVData readCSVFile(string const& fileName, bool const& removeBadLines=true);
 vector<string> splitCSVLine(string const& line);
 
 vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVector);
