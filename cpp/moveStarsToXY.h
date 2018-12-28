@@ -20,6 +20,7 @@ using namespace std;
 
 vector<string> galaxiaGetInputFileNames();
 vector<string> gaiaGetInputFileNames();
+vector<string> gaiaDR2GetInputFileNames();
 vector<string> gaiaTgasGetInputFileNames();
 vector<string> gaiaGetInputFileNamesFromLonLat();
 vector<string> gaiaXSimbadGetInputFileName();
@@ -49,6 +50,8 @@ int appendCSVDataToXYFiles(CSVData const& csvData,
 //                            vector<string> const& outFileNames);
 
 void gaiaMoveStarsToXY();
+
+void gaiaDR2MoveStarsToXY();
 
 void gaiaTgasMoveStarsToXY();
 

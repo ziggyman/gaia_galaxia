@@ -34,6 +34,24 @@ vector<string> gaiaGetInputFileNames(){
     return inputFileNames;
 }
 
+vector<string> gaiaDR2GetInputFileNames(){
+    string dataDir("/Volumes/obiwan/azuri/data/gaia/dr2/cdn.gea.esac.esa.int/Gaia/gdr2/gaia_source/csv/");
+    boost::format fileNameRoot = boost::format("GaiaSource_%s_%s.csv");
+    vector<string> inputFileNames(0);
+    std::ifstream file("/Volumes/obiwan/azuri/data/gaia/dr2/cdn.gea.esac.esa.int/Gaia/gdr2/gaia_source/csv/csvFiles.list");
+    std::string line;
+    while (std::getline(file, line)) {
+        // line contains the current line
+        std::string fileName = dataDir + (fileNameRoot % line.substr(line.rfind('e_')+2, line.rfind('_')-line.rfind('e_')-2)
+                                                       % line.substr(line.rfind('_')+1, line.rfind('.csv')-line.rfind('_')-1)).str();
+        cout << "gaiaDR2GetInputFileNames: fileName = <" << fileName << ">" << endl;
+        if (ifstream(fileName)){/// File exists
+            inputFileNames.push_back(fileName);
+        }
+    }
+    return inputFileNames;
+}
+
 vector<string> gaiaTgasGetInputFileNames(){
     string dataDir("/Volumes/yoda/azuri/data/gaia-tgas/");
     boost::format fileNameRoot = boost::format("TgasSource_%03i-%03i-%03i.csv");//% (release, tract, patch);
@@ -199,6 +217,11 @@ vector<string> getOutFileNames(vector<Pixel> const& pixels,
         if (dirOut.compare("") == 0)
             dirOut = gaiaGetDataDirOut();
     }
+    else if (whichOne.compare("gaiaDR2") == 0){
+        fileNameOutRoot = gaiaGetFileNameOutRoot();
+        if (dirOut.compare("") == 0)
+            dirOut = gaiaDR2GetDataDirOut();
+    }
     else if (whichOne.compare("gaiaTgas") == 0){
         fileNameOutRoot = gaiaTgasGetFileNameOutRoot();
         if (dirOut.compare("") == 0)
@@ -246,6 +269,10 @@ void writeHeaderToOutFiles(vector<string> const& header,
 
 void gaiaMoveStarsToXY(){
     moveStarsToXY("gaia");
+}
+
+void gaiaDR2MoveStarsToXY(){
+    moveStarsToXY("gaiaDR2");
 }
 
 void gaiaTgasMoveStarsToXY(){
@@ -435,6 +462,12 @@ void moveStarsToXY(string const& whichOne){
     else if (whichOne.compare("gaia") == 0){
         dataDirOut = gaiaGetDataDirOut();
         inputFileNames = gaiaGetInputFileNames();
+        fileNameOutRoot = gaiaGetFileNameOutRoot();
+        ids.push_back("source_id");
+    }
+    else if (whichOne.compare("gaiaDR2") == 0){
+        dataDirOut = gaiaDR2GetDataDirOut();
+        inputFileNames = gaiaDR2GetInputFileNames();
         fileNameOutRoot = gaiaGetFileNameOutRoot();
         ids.push_back("source_id");
     }

@@ -407,6 +407,43 @@ void appendFile(string const& inFileName, string const& outFileName){
     outFile.close();
 }
 
+CSVData crossMatch(CSVData const& csvDataA, CSVData const& csvDataB, string const& key){
+    CSVData csvDataOut;
+    vector<string> headerA = csvDataA.header;
+    vector<string> headerB = csvDataB.header;
+    for (size_t iHeader=0; iHeader<headerA.size(); iHeader++){
+        csvDataOut.header.push_back(headerA[iHeader]);
+    }
+    for (size_t iHeader=0; iHeader<headerB.size(); iHeader++){
+        if (std::find(csvDataOut.header.begin(), csvDataOut.header.end(), headerB[iHeader]) != csvDataOut.header.end()){
+            csvDataOut.header.push_back(headerB[iHeader]);
+        }
+    }
+
+    string valA;
+    size_t lenB = csvDataB.size();
+    vector<string> lineOut(csvDataOut.header.size());
+    for (size_t iA=0; iA<csvDataA.size(); ++iA){
+        valA = csvDataA.getData(key, iA);
+        bool found = false;
+        size_t iB = 0;
+        while ((!found) && (iB < lenB)){
+            if (csvDataB.getData(key, iB).compare(valA) == 0){
+                for (size_t iHeader=0; iHeader<headerA.size(); ++iHeader){
+                    lineOut[csvDataOut.findKeywordPos(headerA[iHeader])] = csvDataA.getData(headerA[iHeader], iA);
+                }
+                for (size_t iHeader=0; iHeader<headerB.size(); ++iHeader){
+                    lineOut[csvDataOut.findKeywordPos(headerB[iHeader])] = csvDataB.getData(headerB[iHeader], iB);
+                }
+                csvDataOut.data.push_back(lineOut);
+                found = true;
+            }
+            ++iB;
+        }
+    }
+    return csvDataOut;
+}
+
 vector<double> getGaiaG(CSVData const& csvData){
     vector<string> filters = splitCSVLine(modelGetFilters());
 //    cout << "filters = [";

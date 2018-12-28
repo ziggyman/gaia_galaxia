@@ -7,6 +7,8 @@ boost::format modelGetFileNameOutRoot(){
 boost::format obsGetFileNameOutRoot(string const& whichOne){
     if (whichOne.compare("gaia") == 0)
         return gaiaGetFileNameOutRoot();
+    else if (whichOne.compare("gaiaDR2") == 0)
+        return gaiaGetFileNameOutRoot();
     else if (whichOne.compare("gaiaTgas") == 0)
         return gaiaTgasGetFileNameOutRoot();
     else if (whichOne.compare("gaiaXSimbad") == 0)
@@ -45,6 +47,10 @@ string obsGetDataDirOut(string const& whichOne){
 
 string gaiaGetDataDirOut(){
     return "/Volumes/obiwan/azuri/data/gaia/xy/";
+}
+
+string gaiaDR2GetDataDirOut(){
+    return "/Volumes/obiwan/azuri/data/gaia/dr2/xy/";
 }
 
 string gaiaTgasGetDataDirOut(){

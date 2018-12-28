@@ -16,4 +16,5 @@ PYBIND11_MODULE(csvFree, m) {
     m.def("convertStringVectorToUnsignedVector", (vector<unsigned> (*)(vector<std::string> const&)) &convertStringVectorToUnsignedVector);
     m.def("convertDoubleVectorToStringVector", (vector<std::string> (*)(vector<double> const&)) &convertDoubleVectorToStringVector);
     m.def("appendFile", (void (*)(string const&, string const&)) &appendFile);
+    m.def("crossMatch", (CSVData (*)(CSVData const&, CSVData const&, string const&)) &crossMatch);
 }

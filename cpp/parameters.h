@@ -22,6 +22,8 @@ string obsGetDataDirOut(string const& whichOne = "gaia");
 
 string gaiaGetDataDirOut();
 
+string gaiaDR2GetDataDirOut();
+
 string gaiaXSimbadGetDataDirOut();
 
 string gaiaTgasGetDataDirOut();
