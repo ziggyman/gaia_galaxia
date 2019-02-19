@@ -31,6 +31,14 @@ vector<string> CSVData::getData(unsigned row){
     return data[row];
 }
 
+vector< vector< string > > CSVData::getData(vector<unsigned> const& rows) const{
+    vector< vector< string > > outCSVData(0);
+    for (int i = 0; i < rows.size(); ++i){
+        outCSVData.push_back(getData(rows[i]));
+    }
+    return outCSVData;
+}
+
 string CSVData::getData(string const& keyword, int row) const{
     int headerPos = findKeywordPos(keyword);
     if (headerPos < 0){
@@ -56,7 +64,7 @@ string CSVData::getData(string const& keyword, int row) const{
 }
 
 vector<string> CSVData::getData(string const& keyword) const{
-    cout << "CSVData::getData(keyword=" << keyword << ")" << endl;
+//    cout << "CSVData::getData(keyword=" << keyword << ")" << endl;
     int headerPos = findKeywordPos(keyword);
     if (headerPos < 0){
         /// mayge it's the G color...
@@ -68,7 +76,7 @@ vector<string> CSVData::getData(string const& keyword) const{
         else
             throw std::runtime_error("CSVData::getData: ERROR: keyword <" + keyword + "> not found");
     }
-    cout << "CSVData.getData(): size() = " << size() << endl;
+//    cout << "CSVData.getData(): size() = " << size() << endl;
     vector<string> out(0);
     out.reserve(size());
     for (int iRow=0; iRow<size(); ++iRow){
@@ -331,6 +339,34 @@ CSVData readCSVFile(string const& fileName, bool const& removeBadLines){
     return csvData;
 }
 
+void writeCSVFile(CSVData const& dat, string const& fileName){
+    std::ofstream myfile;
+    myfile.open(fileName);
+
+    ///write header
+    string outStr = dat.header[0];
+    for (int i=1; i<dat.header.size(); i++){
+        outStr += ","+dat.header[i];
+    }
+    outStr += "\n";
+    myfile << outStr;
+
+    ///write data
+    for (int iLine = 0; iLine < dat.size(); ++iLine){
+        vector<string> data = dat.getData(iLine);
+        outStr = data[0];
+        for (int i=1; i<data.size(); i++){
+            outStr += ","+data[i];
+        }
+        outStr += "\n";
+        myfile << outStr;
+    }
+
+    myfile.close();
+    return;
+}
+
+
 vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVector){
     vector<double> doubleVector(0);
     for (vector<string>::const_iterator iter = stringVector.begin(); iter != stringVector.end(); ++iter){
@@ -413,34 +449,47 @@ CSVData crossMatch(CSVData const& csvDataA, CSVData const& csvDataB, string cons
     vector<string> headerB = csvDataB.header;
     for (size_t iHeader=0; iHeader<headerA.size(); iHeader++){
         csvDataOut.header.push_back(headerA[iHeader]);
+//        cout << "crossMatch: added headerA[" << iHeader << "] = <" << headerA[iHeader] << "> to csvDataOut" << endl;
+//        cout << "crossMatch: csvDataOut.header[" << csvDataOut.header.size()-1 << "] = " << csvDataOut.header[csvDataOut.header.size()-1] << endl;
     }
     for (size_t iHeader=0; iHeader<headerB.size(); iHeader++){
-        if (std::find(csvDataOut.header.begin(), csvDataOut.header.end(), headerB[iHeader]) != csvDataOut.header.end()){
+//        cout << "crossMatch: csvDataOut.header.size() = " << csvDataOut.header.size() << endl;
+        auto pos = std::find(csvDataOut.header.begin(), csvDataOut.header.end(), headerB[iHeader]);
+        if (pos == csvDataOut.header.end()){
             csvDataOut.header.push_back(headerB[iHeader]);
+//            cout << "crossMatch: added headerB[" << iHeader << "] = <" << headerB[iHeader] << "> to csvDataOut" << endl;
+//            cout << "crossMatch: csvDataOut.header[" << csvDataOut.header.size()-1 << "] = " << csvDataOut.header[csvDataOut.header.size()-1] << endl;
         }
+//        else{
+//            cout << "crossMatch: found headerB[" << iHeader << "] = <" << headerB[iHeader] << "> in csvDataOut at position " << pos - csvDataOut.header.begin() << endl;
+//        }
     }
 
     string valA;
+    size_t lenA = csvDataA.size();
     size_t lenB = csvDataB.size();
     vector<string> lineOut(csvDataOut.header.size());
-    for (size_t iA=0; iA<csvDataA.size(); ++iA){
+    vector<string> valsB = csvDataB.getData(key);
+    for (size_t iA=0; iA<lenA; ++iA){
+//        cout << "crossMatch: searching for star number " << iA << " out of " << lenA << " stars in data set A" << endl;
         valA = csvDataA.getData(key, iA);
-        bool found = false;
-        size_t iB = 0;
-        while ((!found) && (iB < lenB)){
-            if (csvDataB.getData(key, iB).compare(valA) == 0){
-                for (size_t iHeader=0; iHeader<headerA.size(); ++iHeader){
-                    lineOut[csvDataOut.findKeywordPos(headerA[iHeader])] = csvDataA.getData(headerA[iHeader], iA);
-                }
-                for (size_t iHeader=0; iHeader<headerB.size(); ++iHeader){
-                    lineOut[csvDataOut.findKeywordPos(headerB[iHeader])] = csvDataB.getData(headerB[iHeader], iB);
-                }
-                csvDataOut.data.push_back(lineOut);
-                found = true;
+        size_t iB = std::find(valsB.begin(), valsB.end(), valA) - valsB.begin();
+//        cout << "crossMatch: iB = " << iB << ", valsB.size() = " << valsB.size() << endl;
+        if (iB != valsB.size()){
+//            cout << "crossMatch: found <" << valA << "> in data set B" << endl;
+            for (size_t iHeader=0; iHeader<headerA.size(); ++iHeader){
+                lineOut[csvDataOut.findKeywordPos(headerA[iHeader])] = csvDataA.getData(headerA[iHeader], iA);
             }
-            ++iB;
+            for (size_t iHeader=0; iHeader<headerB.size(); ++iHeader){
+                lineOut[csvDataOut.findKeywordPos(headerB[iHeader])] = csvDataB.getData(headerB[iHeader], iB);
+            }
+            csvDataOut.data.push_back(lineOut);
+        }
+        else{
+            cout << "crossMatch: could not find <" << valA << "> in data set B" << endl;
         }
     }
+    cout << "crossMatch: found" << csvDataOut.data.size() << " stars" << endl;
     return csvDataOut;
 }
 

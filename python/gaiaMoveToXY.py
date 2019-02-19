@@ -17,6 +17,7 @@ import moveStarsToXY
 
 
 class GaiaDR2(object):
+    append = True
     ham = hammer.Hammer()
     inFileNames = []
     keys = []
@@ -24,8 +25,11 @@ class GaiaDR2(object):
     combinations = []
     fileWorkingName = '/Volumes/obiwan/azuri/data/gaia/dr2/workinOnFiles.txt'
     fileWorking = None
+    filePreviouslyFinishedName = '/Volumes/obiwan/azuri/data/gaia/dr2/previouslyFinishedFiles.txt'
+    filePreviouslyFinished = None
     fileFinishedName = '/Volumes/obiwan/azuri/data/gaia/dr2/finishedFiles.txt'
     fileFinished = None
+    filesPreviouslyFinished = []
     filesFinished = []
     filesWorking = []
     ids = ['source_id']
@@ -43,11 +47,17 @@ class GaiaDR2(object):
     def openFileFinished(self, flag='a'):
         GaiaDR2.fileFinished = open(GaiaDR2.fileFinishedName, flag)
 
+    def openFilePreviouslyFinished(self, flag='a'):
+        GaiaDR2.filePreviouslyFinished = open(GaiaDR2.filePreviouslyFinishedName, flag)
+
     def closeFileWorking(self):
         GaiaDR2.fileWorking.close()
 
     def closeFileFinished(self):
         GaiaDR2.fileFinished.close()
+
+    def closeFilePreviouslyFinished(self):
+        GaiaDR2.filePreviouslyFinished.close()
 
     def writeToFileWorking(self, text):
         self.openFileWorking()
@@ -66,6 +76,16 @@ class GaiaDR2(object):
             self.closeFileFinished()
             for line in lines:
                 GaiaDR2.filesFinished.append(line[0:line.find(' ')])
+            return True
+        return False
+
+    def readPreviouslyFinishedFiles(self):
+        if os.path.isfile(GaiaDR2.filePreviouslyFinishedName):
+            self.openFilePreviouslyFinished(flag = 'r')
+            lines = GaiaDR2.filePreviouslyFinished.readlines()
+            self.closeFilePreviouslyFinished()
+            for line in lines:
+                GaiaDR2.filesPreviouslyFinished.append(line[0:line.find(' ')])
             return True
         return False
 
@@ -159,7 +179,7 @@ class GaiaDR2(object):
         moveStarsToXY.writeHeaderToOutFiles(GaiaDR2.keys,
                                             pixels,
                                             'gaiaDR2',
-                                            False,
+                                            GaiaDR2.append,
                                             '')
 
     def processGaiaDR2(self, iCombo):
@@ -172,26 +192,27 @@ class GaiaDR2(object):
             timeStart = time.time()
 
             inputFile = self.fileNameIn % (GaiaDR2.combinations[iCombo][0], GaiaDR2.combinations[iCombo][1])
-            subprocessResult = subprocess.check_output(['gunzip', inputFile+'.gz'])
-            print('subprocessResult = ',subprocessResult)
-            if not os.path.isfile(inputFile):
-                print "gaiaDR2MoveToXY.processGaiaDR2: ERROR: gaiaDR2 input file ",inputFile," not found"
-                STOP
+            if inputFile not in GaiaDR2.filesPreviouslyFinished:
+                subprocessResult = subprocess.check_output(['gunzip', inputFile+'.gz'])
+                print('subprocessResult = ',subprocessResult)
+                if not os.path.isfile(inputFile):
+                    print "gaiaDR2MoveToXY.processGaiaDR2: ERROR: gaiaDR2 input file ",inputFile," not found"
+                    STOP
 
-            data = csvFree.readCSVFile(inputFile)
+                data = csvFree.readCSVFile(inputFile)
 
-            # add Hammer x and y
-            self.addXY(data)
+                # add Hammer x and y
+                self.addXY(data)
 
-            moveStarsToXY.appendCSVDataToXYFiles(data,
-                                                 pixels,
-                                                 'gaiaDR2',
-                                                 GaiaDR2.ids,
-                                                 False,
-                                                 '',
-                                                 '')
+                moveStarsToXY.appendCSVDataToXYFiles(data,
+                                                     pixels,
+                                                     'gaiaDR2',
+                                                     GaiaDR2.ids,
+                                                     False,
+                                                     '',
+                                                     '')
 
-            subprocessResult = subprocess.check_output(['gzip', inputFile])
+                subprocessResult = subprocess.check_output(['gzip', inputFile])
 
             timeEnd = time.time()
             duration = timeEnd-timeStart
@@ -211,6 +232,7 @@ def main(argv):
     argv -- command line arguments
     """
     gal = GaiaDR2()
+    gal.readPreviouslyFinishedFiles()
     gal.getCombinations()
     gal.getInFileNames()
     gal.headerFile = gal.fileNameIn % (gal.combinations[0][0], gal.combinations[0][1])

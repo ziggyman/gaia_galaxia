@@ -23,6 +23,8 @@ struct CSVData{
 
     vector<string> getData(unsigned row);
 
+    vector< vector< string > > getData(vector<unsigned> const& rows) const;
+
     string getData(string const& keyword, int row) const;
 
     vector<string> getData(string const& keyword) const;
@@ -53,6 +55,7 @@ vector<int> countCharPerLine(string const& fileName, char const& character);
 void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile);
 
 CSVData readCSVFile(string const& fileName, bool const& removeBadLines=true);
+void writeCSVFile(CSVData const& dat, string const& fileName);
 vector<string> splitCSVLine(string const& line);
 
 vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVector);
