@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-
+#
 from multiprocessing import Pool
 import os
 import sys
@@ -38,10 +38,11 @@ pixels = ham.getPixels()
 
 def process(iFile):
     outFile = outFilesXMatchRoot % (pixels[iFile].xLow, pixels[iFile].xHigh, pixels[iFile].yLow, pixels[iFile].yHigh)
-    if not os.path.isfile(outFile):
+    if True:#not os.path.isfile(outFile):
         nFound = 0
 
         inFileXMatch = inFilesXMatchRoot % (pixels[iFile].xLow, pixels[iFile].xHigh, pixels[iFile].yLow, pixels[iFile].yHigh)
+        print('reading inFileXMatch = <'+inFileXMatch+'>)')
         csvXMatch = csvFree.readCSVFile(inFileXMatch, ',', True)
 
         csvOut = csvData.CSVData()

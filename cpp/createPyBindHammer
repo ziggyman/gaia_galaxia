@@ -1,10 +1,10 @@
-rm hammer2.so
-rm ../python/hammer2.so
-g++ -O3 -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` hammer.cc ../python/hammer.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -l mgl -Wno-c++11-extensions -o hammer2.so
-cp hammer2.so ../python/
+#rm hammer2.so
+#rm ../python/hammer2.so
+#g++ -O3 -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` hammer.cc ../python/hammer.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -l mgl -Wno-c++11-extensions -o hammer2.so
+#cp hammer2.so ../python/
 
-rm hammer3.so
-rm ../python/hammer3.so
-g++ -O3 -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` hammer.cc ../python/hammer.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -l mgl -Wno-c++11-extensions -o hammer3.so
-cp hammer3.so ../python/
+rm hammer.so
+rm ../python/hammer.so
+g++ -O3 -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` hammer.cc ../python/hammer.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -l mgl -Wno-c++11-extensions -o hammer.so
+cp hammer.so ../python/
 

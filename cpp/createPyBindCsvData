@@ -1,20 +1,20 @@
-rm csvData2.so
-rm ../python/csvData2.so
-g++ -g -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvData.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvData2.so
-cp csvData2.so ../python/
+#rm csvData2.so
+#rm ../python/csvData2.so
+#g++ -g -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvData.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvData2.so
+#cp csvData2.so ../python/
 
-rm csvFree2.so
-rm ../python/csvFree2.so
-g++ -g -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvFree.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvFree2.so
-cp csvFree2.so ../python/
+#rm csvFree2.so
+#rm ../python/csvFree2.so
+#g++ -g -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvFree.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvFree2.so
+#cp csvFree2.so ../python/
 
-rm csvData3.so
-rm ../python/csvData3.so
-g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvData.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvData3.so
-cp csvData3.so ../python/
+rm csvData.so
+rm ../python/csvData.so
+g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvData.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvData.so
+cp csvData.so ../python/
 
-rm csvFree3.so
-rm ../python/csvFree3.so
-g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvFree.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvFree3.so
-cp csvFree3.so ../python/
+rm csvFree.so
+rm ../python/csvFree.so
+g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvFree.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvFree.so
+cp csvFree.so ../python/
 

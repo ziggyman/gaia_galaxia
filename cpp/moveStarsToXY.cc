@@ -192,7 +192,7 @@ vector<string> gaiaXSimbadGetInputFileName(){
 vector<string> gaiaXSDSSGetInputFileName(){
     string dataDir("/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/");
     vector<string> inputFileNames(0);
-    inputFileNames.push_back(dataDir + ("1552971988347A.csv"));
+    inputFileNames.push_back(dataDir + ("GaiaXSDSS_mean_lb_xy.csv"));
     return inputFileNames;
 }
 

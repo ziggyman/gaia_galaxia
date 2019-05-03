@@ -21,20 +21,22 @@ class GaiaXSDSS(object):
     keys = []
     keyStr = ''
     releaseTractPatchCombinations = []
-    fileWorkingName = '/Volumes/yoda/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/workinOnFiles.txt'
+    fileWorkingName = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/workinOnFiles.txt'
     fileWorking = None
-    fileFinishedName = '/Volumes/yoda/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/finishedFiles.txt'
+    fileFinishedName = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/finishedFiles.txt'
     fileFinished = None
     filesFinished = []
     filesWorking = []
     ids = ['source_id']
     logContent = []
-    logFileName = '/Volumes/yoda/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/gaiaXSDSSMoveToXY.log'
+    logFileName = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/gaiaXSDSSMoveToXY.log'
+    dir = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/'
 
     def __init__(self):
-        dir = '/Volumes/yoda/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/'
-        self.fileNameIn = os.path.join(dir, 'TgasSource_%03d-%03d-%03d.csv')
-        self.headerFile = self.fileNameIn % (0, 0, 0)
+#        dir = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/'
+        self.fileNameIn = os.path.join(self.dir, 'GaiaXSDSS_mean_lb.csv')
+        self.headerFile = self.fileNameIn
+        self.inFileNames = [self.fileNameIn]
 
     def openFileWorking(self, flag='a'):
         GaiaXSDSS.fileWorking = open(GaiaXSDSS.fileWorkingName, flag)
@@ -104,25 +106,21 @@ class GaiaXSDSS(object):
         else:
             GaiaXSDSS.logContent = [['a',-1]]
 
-    def getReleaseTractPatchCombinations(self):
-        if len(GaiaXSDSS.releaseTractPatchCombinations) == 0:
-            for release in np.arange(0, 1, 1):
-                for tract in np.arange(0, 1, 1):
-                    for patch in np.arange(0, 16, 1):
-                        GaiaXSDSS.releaseTractPatchCombinations.append([release, tract, patch])
+#    def getReleaseTractPatchCombinations(self):
+#        if len(GaiaXSDSS.releaseTractPatchCombinations) == 0:
+#            for release in np.arange(0, 1, 1):
+#                for tract in np.arange(0, 1, 1):
+#                    for patch in np.arange(0, 16, 1):
+#                        GaiaXSDSS.releaseTractPatchCombinations.append([release, tract, patch])
 
     def getInFileNames(self):
-        if len(GaiaXSDSS.releaseTractPatchCombinations) == 0:
-            print 'ERROR: run GaiaXSDSS.getReleaseTractPatchCombinations() first'
-            STOP
-        for combo in GaiaXSDSS.releaseTractPatchCombinations:
-            GaiaXSDSS.inFileNames.append(self.fileNameIn % (combo[0], combo[1], combo[2]))
+        return GaiaXSDSS.inFileNames
 
     def addXY(self, data):
-        long = csvFree.convertStringVectorToDoubleVector(data.getData('l'))
+        long = np.array(csvFree.convertStringVectorToDoubleVector(data.getData('l')))
         ind=np.where(long < 0.0)[0]
         if len(ind) > 0:
-            print 'gaiaXSDSSMoveToXY.addXY: ind(where long < 0) = ',ind
+            print('gaiaXSDSSMoveToXY.addXY: ind(where long < 0) = ',ind)
             STOP
             long[ind]=long[ind] + 360.0
 
@@ -150,10 +148,12 @@ class GaiaXSDSS(object):
             self.getHeader()
 
         pixels = GaiaXSDSS.ham.getPixels()
+        print('GaiaXSDSS.keys = ',GaiaXSDSS.keys)
         moveStarsToXY.writeHeaderToOutFiles(GaiaXSDSS.keys,
                                             pixels,
                                             'gaiaXSDSS',
-                                            False)
+                                            False,
+                                            os.path.join(GaiaXSDSS.dir,'xy/'))
 
     def processGaiaXSDSS(self, iCombo):
         doIt = True
@@ -162,13 +162,11 @@ class GaiaXSDSS(object):
         pixels = GaiaXSDSS.ham.getPixels()
 
         if doIt:
-            release = GaiaXSDSS.releaseTractPatchCombinations[iCombo][0]
-            tract = GaiaXSDSS.releaseTractPatchCombinations[iCombo][1]
-            patch = GaiaXSDSS.releaseTractPatchCombinations[iCombo][2]
             timeStart = time.time()
-            inputFile = self.fileNameIn % (release, tract, patch)
+            inputFile = self.fileNameIn
+            print('working on <'+inputFile+'>')
             if not os.path.isfile(inputFile):
-                print "gaiaXSDSSMoveToXY.processGaiaXSDSS: ERROR: gaiaXSDSS input file ",inputFile," not found"
+                print("gaiaXSDSSMoveToXY.processGaiaXSDSS: ERROR: gaiaXSDSS input file ",inputFile," not found")
                 STOP
 
             data = csvFree.readCSVFile(inputFile)
@@ -180,10 +178,12 @@ class GaiaXSDSS(object):
                                                  pixels,
                                                  'gaiaXSDSS',
                                                  GaiaXSDSS.ids,
-                                                 False)
+                                                 False,
+                                                 'gaiaXSDSS',
+                                                 os.path.join(GaiaXSDSS.dir,'xy/'))
             timeEnd = time.time()
             duration = timeEnd-timeStart
-            print 'gaiaXSDSSMoveToXY.processGaiaXSDSS: ran file <', inputFile,'> in ',duration,' seconds'
+            print('gaiaXSDSSMoveToXY.processGaiaXSDSS: ran file <', inputFile,'> in ',duration,' seconds')
 
             self.writeToFileFinished(inputFile+' done in '+str(duration)+'s')
 
@@ -199,7 +199,7 @@ def main(argv):
     argv -- command line arguments
     """
     gal = GaiaXSDSS()
-    gal.getReleaseTractPatchCombinations()
+#    gal.getReleaseTractPatchCombinations()
     gal.getInFileNames()
     gal.getHeader()
     gal.writeHeaders()
@@ -221,11 +221,10 @@ def main(argv):
             print(e)
 
     if True:
-        p = Pool(processes=16)
-        iCombo = np.arange(len(GaiaXSDSS.releaseTractPatchCombinations))
-        random.shuffle(iCombo)
-        p.map(processGaiaXSDSS, iCombo)
-        p.close()
+#        p = Pool(processes=1)
+#        p.map(processGaiaXSDSS, [0])
+#        p.close()
+        processGaiaXSDSS(0)
 
 if __name__ == '__main__':
     main(sys.argv)

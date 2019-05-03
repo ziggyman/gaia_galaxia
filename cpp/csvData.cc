@@ -227,19 +227,27 @@ void CSVData::append(CSVData const& csv){
         data.push_back(csv.getData(i));
 }
 
-vector<int> CSVData::find(string const& keyword, string const& value) const{
+vector<int> CSVData::find(string const& keyword, string const& value, int startIndex) const{
+    cout << "CSVData::find: keyword = " << keyword << ", value = " << value << endl;
     unsigned keywordPos = findKeywordPos(keyword);
     vector<int> vecOut(0);
     bool found = false;
-    int i = 0;
-    for (auto it = data.begin(); it != data.end(); ++it, ++i){
+    int i = startIndex;
+    cout << "CSVData::find: i = " << to_string(i) << endl;
+    cout << "CSVData::find: this->size() = " << to_string(this->size()) << endl;
+    for (auto it = data.begin()+startIndex; it != data.end(); ++it, ++i){
+        cout << "CSVData::find: it = " << it - data.begin() << endl;
         if ((*it)[keywordPos].compare(value) == 0){
             vecOut.push_back(i);
             found = true;
+            cout << "CSVData::find: value <" << value << "> found at position " << to_string(i) << endl;
         }
     }
-    if (found)
+    if (found){
+        cout << "CSVData::find: found == True" << endl;
         return vecOut;
+    }
+    cout << "CSVData::find: found == False" << endl;
     vecOut.push_back(-1);
     return vecOut;
 }
@@ -336,25 +344,35 @@ CSVData CSVData::combineMultipleEntries(string const& key, vector<string> const&
     cout << "combineMultipleEntries: keywordPos = " << pos << endl;
 
     std::ofstream myfile;
-    myfile.open(filename);
-
-    ///write header
-    string outStr = header[0];
-    for (int i=1; i<header.size(); i++){
-        outStr += ","+header[i];
+    string outStr;
+    if (is_file_exist(filename)){
+        CSVData csvIn = readCSVFile(filename, ',', true);
+        for (int i = 0; i < csvIn.size(); ++i)
+            done.push_back(csvIn.getData(key, i));
+        myfile.open(filename, fstream::app);
     }
-    outStr += "\n";
-    myfile << outStr;
+    else{
+        myfile.open(filename, fstream::out);
+
+        ///write header
+        outStr = header[0];
+        for (int i=1; i<header.size(); i++){
+            outStr += ","+header[i];
+        }
+        outStr += "\n";
+        myfile << outStr;
+    }
 
     /// for each row in data
     int iRow = 0;
     for (auto it=data.begin(); it!=data.end(); ++it, ++iRow){
-        vector<int> positions = find(key, (*it)[pos]);
-        cout << "combineMultipleEntries: iRow = " << iRow << endl;
         /// check if already done
         if ((done.size() == 0) || (::find(done.begin(), done.end(), (*it)[pos]) == done.end())){
             cout << "combineMultipleEntries: object not done yet" << endl;
             csvOut.append(*it);
+
+            vector<int> positions = find(key, (*it)[pos], iRow);
+            cout << "combineMultipleEntries: iRow = " << iRow << endl;
 
             /// if multiple entries exist for this object
 //            std::pair< bool, int > found = findInVector(multipleEntries.first, (*it)[pos]);
@@ -510,9 +528,16 @@ CSVData readCSVFile(string const& fileName, char const& delimiter, bool const& r
                 continue;
             }
             if (nCommas != csvData.header.size()-1){
-                cout << "readCSVFile: ERROR: nCommas = " << nCommas << " != csvData.header.size()-1 = " << csvData.header.size()-1 << endl;
+                cout << "readCSVFile: " << fileName << ": ERROR: nCommas = " << nCommas << " != csvData.header.size()-1 = " << csvData.header.size()-1 << endl;
                 cout << "previousLine = " << previousLine << endl;
                 cout << "line = " << line << endl;
+                string tmpStr(line);
+                for (int k=0; k<=nCommas; ++k){
+                    cout << "header[" << k << "] = " << csvData.header[k];
+                    string datStr = line.substr(0,tmpStr.find(","));
+                    tmpStr = tmpStr.substr(tmpStr.find(",")+1,tmpStr.size());
+                    cout << ": data = " << datStr << endl;
+                }
                 if (!removeBadLines)
                     exit(EXIT_FAILURE);
             }

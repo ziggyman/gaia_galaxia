@@ -1,6 +1,7 @@
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 import csv
+import hammer
 import numpy as np
 
 # convert ra and dec (degrees) to ICRS (FK5 epoch=2000) l and b
@@ -36,7 +37,7 @@ def readCSVToDict(filename):
     for row in reader:
         if iLine == 0:
             keys = row
-            print len(keys),' keys found'
+            print(len(keys),' keys found')
         else:
             values.append(row)
         iLine += 1
@@ -67,7 +68,7 @@ def writeDictToCSV(dic, filename, header=None):
 def add_lb_to_csv_file(fname_in, ra_key, dec_key, fname_out = None):
     dic = readCSVToDict(fname_in)
     header = readCSVHeader(fname_in)
-    print 'header = ',header
+    print('header = ',header)
 
     ra = [float(i) for i in dic[ra_key]]
     dec = [float(i) for i in dic[dec_key]]
@@ -86,8 +87,8 @@ def add_lb_to_csv_file(fname_in, ra_key, dec_key, fname_out = None):
 #    l = lb[:][0]
 #    b = lb[:][1]
 
-#    print 'l = ',l
-#    print 'b = ',b
+#    print(''l = ',l
+#    print(''b = ',b
 
     if fname_out is None:
         fname_out = fname_in
@@ -105,3 +106,42 @@ def addHeader(filename, header):
         f.write(headerstr)
         for line in lines:
             f.write(line)
+
+def add_xy_to_csv_file(fname_in, l_key, b_key, x_key, y_key, fname_out = None):
+    dic = readCSVToDict(fname_in)
+    header = readCSVHeader(fname_in)
+    print('header = ',header)
+
+    l = [float(i) for i in dic[l_key]]
+    b = [float(i) for i in dic[b_key]]
+
+    ham = hammer.Hammer()
+
+    xy = ham.lonLatToXY(l, b)
+#        lb = radec2lb(91.61798222751897, 64.92579518769703)#149.15740521759471,19.845469389765825
+#        l.append(float(lb.l/u.degree))
+#        b.append(float(lb.b/u.degree))
+
+    print('type(xy) = ',type(xy))
+    print('len(xy) = ',len(xy))
+    print('type(xy[0]) = ',type(xy[0]))
+    print('len(xy[0]) = ',len(xy[0]))
+    print('l[0] = ',l[0],', b[0] = ',b[0],': x[0] = ',xy[0][0],', y[0] = ',xy[1][0])
+    xyTest = ham.lonLatToXY(l[0],b[0])
+    print('lonLatToXY(',l[0],',',b[0],') = xyTest.x = ',xyTest.x,', xyTest.y = ',xyTest.y)
+
+    dic[x_key] = [str(a) for a in xy[0]]
+    dic[y_key] = [str(a) for a in xy[1]]
+
+    header.append(x_key)
+    header.append(y_key)
+
+#    l = lb[:][0]
+#    b = lb[:][1]
+
+#    print(''l = ',l
+#    print(''b = ',b
+
+    if fname_out is None:
+        fname_out = fname_in
+    writeDictToCSV(dic, fname_out, header)

@@ -26,6 +26,7 @@ PYBIND11_MODULE(csvData, m) {
         .def("append", (void (CSVData::*)(vector< string > const&)) &CSVData::append)
         .def("append", (void (CSVData::*)(CSVData const&)) &CSVData::append)
         .def("find", (vector<int> (CSVData::*)(string const&, string const&) const) &CSVData::find)
+        .def("find", (vector<int> (CSVData::*)(string const&, string const&, int) const) &CSVData::find)
         .def("findMultipleEntries", (std::pair< vector< string >, vector< vector< unsigned > > > (CSVData::*)(string const&) const) &CSVData::findMultipleEntries)
         .def("combineMultipleEntries", (void (CSVData::*)(string const&, vector<string> const&) const) &CSVData::combineMultipleEntries)
     ;

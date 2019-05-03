@@ -64,7 +64,7 @@ struct CSVData{
 
     /// find value in column <keyword>
     /// returns index of first occurance of value if found, otherwise returns -1
-    vector<int> find(string const& keyword, string const& value) const;
+    vector<int> find(string const& keyword, string const& value, int startIndex=0) const;
 
     void printHeader() const;
 /*    void setDataSize(int nCols, int nStars){
@@ -74,6 +74,12 @@ struct CSVData{
         return;
     }*/
 };
+
+inline bool is_file_exist(string const& fileName)
+{
+    std::ifstream infile(fileName.c_str());
+    return infile.good();
+}
 
 vector<string> readHeader(string const& fileName, char const& delimiter=',');
 
