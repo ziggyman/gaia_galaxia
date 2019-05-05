@@ -23,7 +23,7 @@ path = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/'
 fnameList = path+'xyfiles.list'
 
 fnameGaiaRoot = '/Volumes/obiwan/azuri/data/gaia/dr2/xy/GaiaSource_'
-fNameXMatchRoot = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_'
+fNameXMatchRoot = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f.csv'
 
 nStarsDone = 0
 
@@ -142,7 +142,7 @@ def processSimbadStar(iStar):
 #        print('read ',csvGaia.size(),' stars from')
     index, dist = getStarWithMinDist(csvGaia, ra, dec, iStar)
     print('minimum distance = ',dist,': index = ',index)
-    if dist < maxAngularDistance:
+    if True:#dist < maxAngularDistance:
         #search for star in gaia X simbad file
         fnameGaia = fNameXMatchRoot % (pix.xLow, pix.xHigh, pix.yLow, pix.yHigh)
         csvGaiaXMatch = csvFree.readCSVFile(fnameGaia)
@@ -225,7 +225,7 @@ if not os.path.isfile(simbadXGaiaFile):
     p.close()
 #    csvSimbad = findSimbadStarsInGaia(simbadData)
 #    csvFree.writeCSVFile(csvSimbad, simbadXGaiaFile)
-STOP
+#STOP
 
 def crossMatch(simbadFile, gaiaFile):
     simbadData = csvFree.readCSVFile(simbadFile)
@@ -278,10 +278,11 @@ def process(fileNumber):
     #dat = csvFree.readCSVFile(fname)
     fnameGaia = fnameGaiaRoot+getPixel(fname)+'.csv'
 
-    keywordsToFind = [[['B','V','R'],'phot_bp_mean_mag','rv_template_logg'],
-                      #['u','g','r','phot_bp_mean_mag','rv_template_logg'],
-                      #['r','i','z','phot_rp_mean_mag','rv_template_logg'],
-                      [['R'],'phot_rp_mean_mag','rv_template_logg'],
+    keywordsToFind = [#[['B','V','R'],'phot_bp_mean_mag','rv_template_logg'],
+                      #[['u','g','r'],'phot_bp_mean_mag','rv_template_logg'],
+                      [['g','r'],'phot_bp_mean_mag','rv_template_logg'],
+                      #[['r','i','z'],'phot_rp_mean_mag','rv_template_logg'],
+                      #[['R'],'phot_rp_mean_mag','rv_template_logg'],
                       ]
 #    fnameOut = fname[0:fname.rfind('.')]
 #    for key in keywordsToFind[3]:
@@ -342,7 +343,8 @@ if True:
         fnames = f.read().splitlines()
 
     p = Pool(processes=16)
-    iCombo = range(len(fnames))
+    iCombo = np.arange(0,len(fnames),1)
+    print('iCombo = ',iCombo)
     random.shuffle(iCombo)
 
     p.map(process, iCombo)

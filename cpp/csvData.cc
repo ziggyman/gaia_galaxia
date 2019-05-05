@@ -213,6 +213,11 @@ void CSVData::append(vector<string> const& newLine){
     data.push_back(newLine);
 }
 
+void CSVData::append(vector< vector< string > > const& newLines){
+    for (auto it=newLines.begin(); it!=newLines.end(); ++it)
+        this->append(*it);
+}
+
 void CSVData::append(CSVData const& csv){
     if (header != csv.header){
         string message = "";
@@ -235,6 +240,10 @@ vector<int> CSVData::find(string const& keyword, string const& value, int startI
     int i = startIndex;
     cout << "CSVData::find: i = " << to_string(i) << endl;
     cout << "CSVData::find: this->size() = " << to_string(this->size()) << endl;
+    if (this->size() <= startIndex){
+        vecOut.push_back(-1);
+        return vecOut;
+    }
     for (auto it = data.begin()+startIndex; it != data.end(); ++it, ++i){
         cout << "CSVData::find: it = " << it - data.begin() << endl;
         if ((*it)[keywordPos].compare(value) == 0){

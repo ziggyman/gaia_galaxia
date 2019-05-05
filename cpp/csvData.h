@@ -49,6 +49,8 @@ struct CSVData{
 
     void append(vector<string> const& newLine);
 
+    void append(vector< vector< string > > const& newLines);
+
     void append(CSVData const& csv);
 
     void removeRow(unsigned row);
@@ -63,7 +65,7 @@ struct CSVData{
     CSVData combineMultipleEntries(string const& key, vector<string> const& keysToCombine, string const& filename) const;
 
     /// find value in column <keyword>
-    /// returns index of first occurance of value if found, otherwise returns -1
+    /// returns indices of all occurances of value if found, otherwise returns [-1]
     vector<int> find(string const& keyword, string const& value, int startIndex=0) const;
 
     void printHeader() const;

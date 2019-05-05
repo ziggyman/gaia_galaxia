@@ -28,11 +28,15 @@ ham = hammer.Hammer()
 pixels = ham.getPixels()
 
 keywordsToFindSimbad = [[['u','g','r'],'phot_bp_mean_mag','rv_template_logg'],
+                        [['g','r'],'phot_bp_mean_mag','rv_template_logg'],
                         [['r','i','z'],'phot_rp_mean_mag','rv_template_logg'],
                        ]
 keywordsToFindSDSS = [[['umag','gmag','rmag'],'phot_bp_mean_mag','rv_template_logg'],
+                      [['gmag','rmag'],'phot_bp_mean_mag','rv_template_logg'],
                       [['rmag','imag','zmag'],'phot_rp_mean_mag','rv_template_logg'],
                      ]
+
+idKeyword = 'source_id'
 
 # data: dictionary
 def getGoodStarIndices(data, keywords):
@@ -55,6 +59,29 @@ def getGoodStarIndices(data, keywords):
                 isGood = False
         if isGood:
             goodStars.append(i)
+    return goodStars
+
+def getGoodStarIndicesFromBoth(dataA, idKeywordA, keywordsA, dataB, idKeywordB, keywordsB):
+#    print('getGoodStarIndices: data.header = ',data.header)
+#    print('getGoodStarIndices: keywords = <',keywords,'>')
+    goodStars = []
+
+    for iStarA in range(dataA.size()):
+        isGood = True
+        idStar = dataA.getData(idKeywordA, iStarA)
+        print('searching for star with id '+idStar+' in dataset B')
+        iStarB = dataB.find(idKeywordB, idStar)[0]
+        if iStarB >= 0:
+            print('star with id '+idStar+' found in dataset B')
+            for a,b in [idKeywordA[0],idKeywordB[0]]:
+                if (dataA.getData[a,iStarA] == '') and (dataB.getData[b,iStarB] == ''):
+                    isGood = False
+            for a,b in [idKeywordA[1:],idKeywordB[1:]]:
+                if (dataA.getData[a,iStarA] == '') and (dataB.getData[b,iStarB] == ''):
+                    isGood = False
+        if isGood:
+            print('star with id '+idStar+' is good')
+            goodStars.append([iStarA,iStarB])
     return goodStars
 
 def getPixel(fName):
@@ -82,7 +109,7 @@ def process(iPix):
 
             fnameOut = fnameOutRoot % (pixels[iPix].xLow, pixels[iPix].xHigh, pixels[iPix].yLow, pixels[iPix].yHigh, keyStr)
 
-            if not os.path.isfile(fnameOut):
+            if True:#not os.path.isfile(fnameOut):
                 keyStrSimbad = keysSimbad[0][0]
                 for key in keysSimbad[0][1:]:
                     keyStrSimbad += '_'+key
@@ -113,75 +140,106 @@ def process(iPix):
                 print('csvDataOut.header = ',len(csvDataOut.header),': ',csvDataOut.header)
                 print(' ')
 
-                goodStarsGaiaXSimbad = getGoodStarIndices(csvGaiaXSimbad, keywordsToFindSimbad[iKeys])
-                print('found ',len(goodStarsGaiaXSimbad),' good stars out of ',csvGaiaXSimbad.size(),' stars')
-                print('goodStarsGaiaXSimbad = ',goodStarsGaiaXSimbad)
-                rowsOut = []
-                if len(goodStarsGaiaXSimbad) > 0:
-                    rowsOut = csvGaiaXSimbad.getData(goodStarsGaiaXSimbad)
-                    print('len(goodStarsGaiaXSimbad) > 0: len(rowsOut) = ',len(rowsOut),', len(rowsOut[0]) = ',len(rowsOut[0]))
-                    for iKey in np.arange(len(csvGaiaXSimbad.header), len(csvDataOut.header),1):
-                        print('iKey = ',iKey)
-                        for iRowOut in range(len(rowsOut)):
-                            rowsOut[iRowOut].append('')
-                            print('len(rowsOut[',iRowOut,']) = ',len(rowsOut[iRowOut]))
-                print('rowsOut = ',len(rowsOut))
-                if len(rowsOut) > 0:
-                    print('len(rowsOut[0]) = ',len(rowsOut[0]))
-                    if len(rowsOut[0]) != len(csvDataOut.header):
-                        print('ERROR: len(rowsOut[0])=',len(rowsOut[0]),' != len(csvDataOut.header)=',len(csvDataOut.header))
-                isBad = False
-                for iRrow in range(len(rowsOut)):
-                    if len(rowsOut[iRrow]) != len(csvDataOut.header):
-                        print('ERROR: len(rowsOut[',iRrow,'])=',len(rowsOut[iRrow]),' != len(csvDataOut.header)=',len(csvDataOut.header))
-                        isBad = True
-                if isBad:
-                    STOP
-                if len(rowsOut) > 0:
-                    csvDataOut.data = rowsOut
+                for goodRun in [0,1]:
+                    goodStarsGaiaXSimbad = []
+                    goodStarsGaiaXSDSS = []
+                    if goodRun == 0:
+                        goodStarsGaiaXSimbad = getGoodStarIndices(csvGaiaXSimbad, keywordsToFindSimbad[iKeys])
+                        goodStarsGaiaXSDSS = getGoodStarIndices(csvGaiaXSDSS, keywordsToFindSDSS[iKeys])
+                    else:
+                        goodStarsBoth = getGoodStarIndicesFromBoth(csvGaiaXSimbad,
+                                                                   idKeyword,
+                                                                   keywordsToFindSimbad[iKeys],
+                                                                   csvGaiaXSDSS,
+                                                                   idKeyword,
+                                                                   keywordsToFindSDSS[iKeys])
+                        goodStarsGaiaXSimbad = [xx[0] for xx in goodStarsBoth]
+                        goodStarsGaiaXSDSS = [xx[1] for xx in goodStarsBoth]
 
-    #            print('csvGaiaXSimbad.getData(0)[0] = ',csvGaiaXSimbad.getData(0)[0])
-    #            print('csvGaiaXSimbad.getData(',csvGaiaXSimbad.header[0],',0) = ',csvGaiaXSimbad.getData(csvGaiaXSimbad.header[0],0))
-    #            STOP
+                    print('found ',len(goodStarsGaiaXSimbad),' good stars out of ',csvGaiaXSimbad.size(),' stars')
+                    print('goodStarsGaiaXSimbad = ',goodStarsGaiaXSimbad)
 
+                    print('len(goodStarsGaiaXSDSS) = ',len(goodStarsGaiaXSDSS))
 
-                goodStarsGaiaXSDSS = getGoodStarIndices(csvGaiaXSDSS, keywordsToFindSDSS[iKeys])
-                print('len(goodStarsGaiaXSDSS) = ',len(goodStarsGaiaXSDSS))
-                for iStar in range(len(goodStarsGaiaXSDSS)):
-                    print('iStar = ',iStar)
-                    posFoundInCsvOut = csvDataOut.find('source_id',csvGaiaXSDSS.getData('source_id',goodStarsGaiaXSDSS[iStar]), 0)
-                    print('posFoundInCsvOut = ',posFoundInCsvOut)
-                    if posFoundInCsvOut[0] < 0:# star iStar NOT found in csvDataOut
-                        rowOut = []
-                        print('star ',iStar,' with source_id=<'+csvGaiaXSDSS.getData('source_id',goodStarsGaiaXSDSS[iStar])+'> from GaiaXSDSS NOT found in GaiaXSimbad')
-                        print('csvDataOut.header = ',len(csvDataOut.header),': ',csvDataOut.header)
-                        for key in csvDataOut.header:
-                            if key in csvGaiaXSDSS.header:
-                                rowOut.append(csvGaiaXSDSS.getData(key,goodStarsGaiaXSDSS[iStar]))
-                            else:
-                                rowOut.append('')
-                        print('not found: rowOut = ',len(rowOut),': ',rowOut)
-                        if len(rowOut) != len(csvDataOut.header):
-                            print('ERROR: len(rowOut)=',len(rowOut),' != len(csvDataOut.header)=',len(csvDataOut.header))
-                            STOP
-                        csvDataOut.append(rowOut)
-                        print('not found: csvDataOut = ',csvDataOut.size(),': last row = ',csvDataOut.data[csvDataOut.size()-1])
-                    else: # star iStar WAS found in csvDataOut
-                        print('star ',iStar,' with source_id=<'+csvGaiaXSDSS.getData('source_id',goodStarsGaiaXSDSS[iStar])+'> from GaiaXSDSS found in csvDataOut (GaiaXSimbad)')
-                        print('csvGaiaXSDSS.header = ',len(csvGaiaXSDSS.header),': ',csvGaiaXSDSS.header)
-                        print(' ')
-                        print('csvGaiaXSimbad.header = ',len(csvGaiaXSimbad.header),': ',csvGaiaXSimbad.header)
-                        print(' ')
-                        print('csvDataOut.header = ',len(csvDataOut.header),': ',csvDataOut.header)
-                        print(' ')
-                        print('csvDataOut.header[len(csvGaiaXSimbad.header):] = ',len(csvDataOut.header[len(csvGaiaXSimbad.header):]),': ',csvDataOut.header[len(csvGaiaXSimbad.header):])
+                    rowsOut = []
+                    if len(goodStarsGaiaXSimbad) > 0:
+                        rowsOut = csvGaiaXSimbad.getData(goodStarsGaiaXSimbad)
+                        print('len(goodStarsGaiaXSimbad) > 0: len(rowsOut) = ',len(rowsOut),', len(rowsOut[0]) = ',len(rowsOut[0]))
+                        for iKey in np.arange(len(csvGaiaXSimbad.header), len(csvDataOut.header),1):
+#                            print('iKey = ',iKey)
+                            for iRowOut in range(len(rowsOut)):
+                                rowsOut[iRowOut].append('')
+#                                print('len(rowsOut[',iRowOut,']) = ',len(rowsOut[iRowOut]))
+                    print('rowsOut = ',len(rowsOut))
+                    if len(rowsOut) > 0:
+                        print('len(rowsOut[0]) = ',len(rowsOut[0]))
+                        if len(rowsOut[0]) != len(csvDataOut.header):
+                            print('ERROR: len(rowsOut[0])=',len(rowsOut[0]),' != len(csvDataOut.header)=',len(csvDataOut.header))
+                    isBad = False
+                    for iRrow in range(len(rowsOut)):
+                        if len(rowsOut[iRrow]) != len(csvDataOut.header):
+                            print('ERROR: len(rowsOut[',iRrow,'])=',len(rowsOut[iRrow]),' != len(csvDataOut.header)=',len(csvDataOut.header))
+                            isBad = True
+                    if isBad:
+                        STOP
+                    if len(rowsOut) > 0:
+                        if goodRun == 0:
+                            csvDataOut.data = rowsOut
 
-                        for key in csvDataOut.header:#[len(csvGaiaXSimbad.header):]:
-                            if key in csvGaiaXSDSS.header:
-                                print('key = ',key)
-                                for i in range(len(posFoundInCsvOut)):
-                                    csvDataOut.setData(key,posFoundInCsvOut[i],csvGaiaXSDSS.getData(key,goodStarsGaiaXSDSS[iStar]))
-                    print('csvDataOut[',csvDataOut.size()-1,'] = ',csvDataOut.getData(csvDataOut.size()-1))
+        #            print('csvGaiaXSimbad.getData(0)[0] = ',csvGaiaXSimbad.getData(0)[0])
+        #            print('csvGaiaXSimbad.getData(',csvGaiaXSimbad.header[0],',0) = ',csvGaiaXSimbad.getData(csvGaiaXSimbad.header[0],0))
+        #            STOP
+
+                    for iStar in range(len(goodStarsGaiaXSDSS)):
+                        print('iStar = ',iStar)
+                        posFoundInCsvOut = csvDataOut.find('source_id',csvGaiaXSDSS.getData('source_id',goodStarsGaiaXSDSS[iStar]), 0)
+                        print('posFoundInCsvOut = ',posFoundInCsvOut)
+                        if posFoundInCsvOut[0] < 0:# star iStar NOT found in csvDataOut
+                            rowOut = []
+                            print('star ',iStar,' with source_id=<'+csvGaiaXSDSS.getData('source_id',goodStarsGaiaXSDSS[iStar])+'> from GaiaXSDSS NOT found in GaiaXSimbad')
+                            print('csvDataOut.header = ',len(csvDataOut.header),': ',csvDataOut.header)
+                            for key in csvDataOut.header:
+                                if key in csvGaiaXSDSS.header:
+                                    rowOut.append(csvGaiaXSDSS.getData(key,goodStarsGaiaXSDSS[iStar]))
+                                else:
+                                    rowOut.append('')
+                            print('not found: rowOut = ',len(rowOut),': ',rowOut)
+                            if len(rowOut) != len(csvDataOut.header):
+                                print('ERROR: len(rowOut)=',len(rowOut),' != len(csvDataOut.header)=',len(csvDataOut.header))
+                                STOP
+                            csvDataOut.append(rowOut)
+                            print('not found: csvDataOut = ',csvDataOut.size(),': last row = ',csvDataOut.data[csvDataOut.size()-1])
+                        else: # star iStar WAS found in csvDataOut
+                            print('star ',iStar,' with source_id=<'+csvGaiaXSDSS.getData('source_id',goodStarsGaiaXSDSS[iStar])+'> from GaiaXSDSS found in csvDataOut (GaiaXSimbad)')
+                            print('csvGaiaXSDSS.header = ',len(csvGaiaXSDSS.header),': ',csvGaiaXSDSS.header)
+                            print(' ')
+                            print('csvGaiaXSimbad.header = ',len(csvGaiaXSimbad.header),': ',csvGaiaXSimbad.header)
+                            print(' ')
+                            print('csvDataOut.header = ',len(csvDataOut.header),': ',csvDataOut.header)
+                            print(' ')
+                            print('csvDataOut.header[len(csvGaiaXSimbad.header):] = ',len(csvDataOut.header[len(csvGaiaXSimbad.header):]),': ',csvDataOut.header[len(csvGaiaXSimbad.header):])
+
+                            for key in csvDataOut.header:#[len(csvGaiaXSimbad.header):]:
+                                if key in csvGaiaXSDSS.header:
+                                    print('key = ',key)
+                                    for i in range(len(posFoundInCsvOut)):
+                                        if goodRun == 0:
+                                            csvDataOut.setData(key,posFoundInCsvOut[i],csvGaiaXSDSS.getData(key,goodStarsGaiaXSDSS[iStar]))
+                                        else:
+                                            posFound = -1
+                                            sourceId = csvGaiaXSDSS.getData(idKeyword,goodStarsGaiaXSDSS[iStar])
+                                            keywordPosOut = csvOut.findKeywordPos(idKeyword)
+                                            for iPosB in range(len(rowsOut)):
+                                                if rowsOut[iPosB][keywordPosOut] == sourceId:
+                                                    posFound = iPosB
+                                                    break
+                                            rowsOut[posFound][keywordPosOut] = csvGaiaXSDSS.getData(key,goodStarsGaiaXSDSS[iStar])
+                            print('csvDataOut.size() = ',csvDataOut.size())
+                            if goodRun == 1:
+                                csvDataOut.append(rowsOut)
+                                print('csvDataOut.size() = ',csvDataOut.size())
+                                STOP
+                        print('csvDataOut[',csvDataOut.size()-1,'] = ',csvDataOut.getData(csvDataOut.size()-1))
                 print('writing file <'+fnameOut+'>')
                 csvFree.writeCSVFile(csvDataOut, fnameOut)
 
@@ -213,9 +271,9 @@ if False:
                     process(iPix)
                     STOP
 
-#iPix = range(len(pixels))
-#p = Pool(processes=16)
-#p.map(process, iPix)
-#p.close()
-for iPix in range(len(pixels)):
-    process(iPix)
+iPix = range(len(pixels))
+p = Pool(processes=16)
+p.map(process, iPix)
+p.close()
+#for iPix in range(len(pixels)):
+#    process(iPix)
