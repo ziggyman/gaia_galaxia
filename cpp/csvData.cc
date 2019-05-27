@@ -211,6 +211,7 @@ void CSVData::append(vector<string> const& newLine){
                 + to_string(newLine.size()) + " != header.size() = " + to_string(header.size()));
     }
     data.push_back(newLine);
+    cout << "new line appended to this->data: this->size() = " << size() << endl;
 }
 
 void CSVData::append(vector< vector< string > > const& newLines){
@@ -232,20 +233,25 @@ void CSVData::append(CSVData const& csv){
         data.push_back(csv.getData(i));
 }
 
-vector<int> CSVData::find(string const& keyword, string const& value, int startIndex) const{
-    cout << "CSVData::find: keyword = " << keyword << ", value = " << value << endl;
+vector<int> CSVData::find(string const& keyword, string const& value, long startIndex) const{
+    cout << "CSVData::find: keyword = " << keyword << ", value = " << value << ", startIndex = " << to_string(startIndex) << endl;
     unsigned keywordPos = findKeywordPos(keyword);
     vector<int> vecOut(0);
     bool found = false;
-    int i = startIndex;
-    cout << "CSVData::find: i = " << to_string(i) << endl;
+    int startIndexTemp = startIndex;
+    if (startIndexTemp < 0){
+        cout << "CSVData::find: PROBLEM: startIndex < 0" << endl;
+        startIndexTemp = 0;
+    }
+    long i = startIndexTemp;
+    cout << "CSVData::find: i = " << to_string(startIndexTemp) << endl;
     cout << "CSVData::find: this->size() = " << to_string(this->size()) << endl;
-    if (this->size() <= startIndex){
+    if ((this->size() == 0) || (this->size() <= startIndexTemp)){
         vecOut.push_back(-1);
         return vecOut;
     }
-    for (auto it = data.begin()+startIndex; it != data.end(); ++it, ++i){
-        cout << "CSVData::find: it = " << it - data.begin() << endl;
+    for (auto it = data.begin()+startIndexTemp; it != data.end(); ++it, ++i){
+//        cout << "CSVData::find: it = " << it - data.begin() << endl;
         if ((*it)[keywordPos].compare(value) == 0){
             vecOut.push_back(i);
             found = true;
@@ -355,7 +361,7 @@ CSVData CSVData::combineMultipleEntries(string const& key, vector<string> const&
     std::ofstream myfile;
     string outStr;
     if (is_file_exist(filename)){
-        CSVData csvIn = readCSVFile(filename, ',', true);
+        CSVData csvIn = readCSVFile(filename, ",", true);
         for (int i = 0; i < csvIn.size(); ++i)
             done.push_back(csvIn.getData(key, i));
         myfile.open(filename, fstream::app);
@@ -436,22 +442,32 @@ void CSVData::printHeader() const{
     cout << endl;
 }
 
-vector<string> readHeader(string const& fileName, char const& delimiter){
+vector<string> split(string const& str, string const& delimiter){
+    vector<string> elems;
+    size_t pos = 0;
+    string token;
+    string s(str);
+    size_t nTokens = 0;
+    while ((pos = s.find(delimiter)) != string::npos){
+        token = s.substr(0,pos);
+//        cout << "split: token " << nTokens << " = <" << token << ">" << endl;
+        elems.push_back(token);
+        s.erase(0,pos+delimiter.length());
+        ++nTokens;
+//        cout << s << ".find(" << delimiter << ") = " << s.find(delimiter) << endl;
+    }
+//    cout << "s = <" << s << ">" << endl;
+    elems.push_back(s);
+    return elems;
+}
+
+vector<string> readHeader(string const& fileName, string const& delimiter){
     ifstream inStream(fileName);
-    vector<string> header(0);
-    string substring;
-    if (inStream.is_open()){
-        string line;
-        if (getline(inStream, line)){
-            stringstream lineStream(line.c_str());
-            while(lineStream.good()){
-                getline(lineStream, substring, delimiter);
-                header.push_back(substring);
-//                cout << "readHeader: header[" << header.size()-1 << "] = " << header[header.size()-1] << endl;
-            }
-        }
-        inStream.close();
-        cout << "readHeader: inStream closed" << endl;
+    vector<string> header;
+    string line;
+    if (getline(inStream, line)){
+        header = split(line, delimiter);
+        cout << "header.size() = " << header.size() << endl;
     }
     else{
         cout << "ERROR: Could not open file <" << fileName << ">" << endl;
@@ -483,18 +499,42 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
     outFile.write(strToWrite.c_str(), strlen(strToWrite.c_str()));
     string endOfLine("\n");
     outFile.write(endOfLine.c_str(), strlen(endOfLine.c_str()));
+    cout << "writeStrVecToFile: wrote line <" << strToWrite << "> to outFile" << endl;
     return;
 }
 
-CSVData readCSVFile(string const& fileName, char const& delimiter, bool const& removeBadLines){
+int countCommasInLine(string const& line){
+    char delimiter = ',';
+    return count(line.begin(), line.end(), delimiter);
+}
+
+int countCommas(string const& fileName){
+    ifstream inStream(fileName);
+    string line;
+    int nCommas = 0;
+    int nCommasLast=0;
+    int iLine = 0;
+    while (getline(inStream, line)){
+        nCommas = countCommasInLine(line);
+        cout << "csvData::countCommas: nCommas = " << nCommas << endl;
+        if ((iLine > 0) && (nCommas != nCommasLast)){
+            cout << "csvData: count Commas: ERROR: nCommasLast(=" << nCommasLast << ") != nCommas(=" << nCommas << ")" << endl;
+        }
+        nCommasLast = nCommas;
+        iLine += 1;
+    }
+//    nCommas = count(substring.begin(), substring.end(), ',');
+    return nCommas;
+}
+
+CSVData readCSVFile(string const& fileName, string const& delimiter, bool const& removeBadLines){
     ifstream inStream(fileName);
     if (!inStream.is_open()){
         cout << "file with name <" << fileName << "> is not open" << endl;
         exit(EXIT_FAILURE);
     }
+    int nBadLines = 0;
     CSVData csvData;
-    int pos;
-    string substring;
     struct timeval start, end;
 
     gettimeofday(&start, NULL);
@@ -508,83 +548,63 @@ CSVData readCSVFile(string const& fileName, char const& delimiter, bool const& r
             if (!isEven(nQuotes)){
                 throw std::runtime_error("found uneven number of quotes in line <"+line+">");
             }
-            if (nQuotes > 0){
-                stringstream lineStream(line.c_str());
-                while(lineStream.good()){
-                    getline(lineStream, substring, '"');
-//                    cout << "header: pos = " << pos << ": substring = " << substring << endl;
-                    nCommas += count(substring.begin(), substring.end(), ',');
-                    if (lineStream.good())
-                        getline(lineStream, substring, '"');
-                }
-            }
-            else
-                nCommas = count(line.begin(), line.end(), delimiter);
-//            cout << "line contains " << nCommas << " kommas" << endl;
+            string lineSplit(line);
+//            if (nQuotes > 0){
+//                vector<string> quotes = split(lineSplit,"\"");
+//                for (size_t iS=0; iS<quotes.size(); ++iS)
+//                    nCommas += split(quotes[iS], ",").size();
+//            }
+//            else
+            vector<string> elems = split(lineSplit,delimiter);
+            nCommas = elems.size()-1;//count(line.begin(), line.end(), delimiter);
+            //cout << "line contains " << nCommas << " commas" << endl;
+            lineSplit = line;
             if (iLine == 0){
-                stringstream lineStream(line.c_str());
-                pos = 0;
-                while(lineStream.good()){
-                    getline(lineStream, substring, delimiter);
-//                    cout << "header: pos = " << pos << ": substring = " << substring << endl;
-                    csvData.header.push_back(substring);
-//                    cout << "pos = " << pos << ": added " << csvData.header[csvData.header.size()-1] << " to header" << endl;
-                    pos++;
-                }
+                csvData.header = elems;
                 iLine = 1;
                 previousLine = line;
                 cout << "readCSVFile: " << fileName << " contains " << csvData.header.size() << " columns" << endl;
                 continue;
             }
             if (nCommas != csvData.header.size()-1){
-                cout << "readCSVFile: " << fileName << ": ERROR: nCommas = " << nCommas << " != csvData.header.size()-1 = " << csvData.header.size()-1 << endl;
-                cout << "previousLine = " << previousLine << endl;
-                cout << "line = " << line << endl;
-                string tmpStr(line);
-                for (int k=0; k<=nCommas; ++k){
-                    cout << "header[" << k << "] = " << csvData.header[k];
-                    string datStr = line.substr(0,tmpStr.find(","));
-                    tmpStr = tmpStr.substr(tmpStr.find(",")+1,tmpStr.size());
-                    cout << ": data = " << datStr << endl;
+                if (removeBadLines){
+                    cout << "readCSVFile: " << fileName << ": ERROR: nCommas = " << nCommas << " != csvData.header.size()-1 = " << csvData.header.size()-1 << endl;
+                    cout << "previousLine = " << previousLine << ": " << count(previousLine.begin(), previousLine.end(), delimiter.c_str()[0]) << " commas" << endl;
+                    cout << "line = " << line << ": " << count(line.begin(), line.end(), delimiter.c_str()[0]) << " commas" << endl;
+                    int iStop = nCommas > csvData.header.size() ? nCommas : csvData.header.size();
+                    for (int k=0; k<=iStop; ++k){
+                        if (k < csvData.header.size())
+                            cout << "header[" << k << "] = " << csvData.header[k] << ": ";
+                        if (k < elems.size())
+                            cout << "data = " << elems[k];
+                        if (csvData.size() > 0)
+                            if (k < csvData.data[csvData.size()-1].size())
+                            cout << ": previous data = " << csvData.data[csvData.size()-1][k];
+                        cout << endl;
+                    }
                 }
-                if (!removeBadLines)
-                    exit(EXIT_FAILURE);
+                nBadLines++;
+                if (!removeBadLines){
+                    vector<string> dataLine(elems);
+                    csvData.data.push_back(dataLine);
+                    previousLine = line;
+//                    exit(EXIT_FAILURE);
+                }
             }
             else{
-                vector<string> dataLine(0);
-                stringstream lineStream(line.c_str());
-                pos = 0;
-                if (nQuotes > 0){
-                    while(lineStream.good()){
-                        getline(lineStream, substring, '"');
-                        if (lineStream.good())//There was a quote, remove the last comma before the quote
-                            substring = substring.substr(0,substring.length()-1);
-    //                    cout << "header: substring = " << substring << endl;
-                        stringstream subStream(substring);
-                        while (subStream.good()){
-                            getline(subStream, substring, delimiter);
-    //                        cout << "header: pos = " << pos << ": substring = " << substring << endl;
-                            dataLine.push_back(substring);
-                            pos++;
-                        }
-                        if (lineStream.good()){
-                            getline(lineStream, substring, '"');
-    //                        cout << "header: pos = " << pos << ": substring = " << substring << endl;
-                            dataLine.push_back(substring);
-                            pos++;
-                            if (lineStream.good())
-                                getline(lineStream, substring, delimiter);//Remove first comma after the 2nd quote
-                        }
-                    }
-                }
-                else{
-                    while(lineStream.good()){
-                        getline(lineStream, substring, delimiter);
-        //                cout << "pos = " << pos << ": substring = " << substring << endl;
-                        dataLine.push_back(substring);
-                        pos++;
-                    }
-                }
+                vector<string> dataLine(elems);
+//                lineSplit = line;
+//                if (nQuotes > 0){
+//                    vector<string> quotes = split(lineSplit,"\"");
+//                    for (size_t iS=0; iS<quotes.size(); ++iS){
+//                        vector<string> dataLineTemp = split(quotes[iS], to_string(delimiter));
+//                        for (size_t iD=0; iD<dataLineTemp.size(); ++iD)
+//                            dataLine.push_back(dataLineTemp[iD]);
+//                    }
+//                }
+//                else{
+//                    dataLine = split(lineSplit,to_string(delimiter));
+//                }
                 if (dataLine.size() != csvData.header.size()){
                     cout << "readCSVFile: ERROR: dataLine.size() = " << dataLine.size() << " != csvData.header.size() = " << csvData.header.size() << endl;
                     cout << "line = " << line << endl;
@@ -610,7 +630,7 @@ CSVData readCSVFile(string const& fileName, char const& delimiter, bool const& r
 }
 
 CSVData readCSVFile(string const& fileName){
-    return readCSVFile(fileName, ',', true);
+    return readCSVFile(fileName, ",", true);
 }
 
 void writeCSVFile(CSVData const& dat, string const& fileName){
@@ -748,9 +768,9 @@ CSVData crossMatch(CSVData const& csvDataA, CSVData const& csvDataB, string cons
 //        cout << "crossMatch: searching for star number " << iA << " out of " << lenA << " stars in data set A" << endl;
         valA = csvDataA.getData(key, iA);
         size_t iB = std::find(valsB.begin(), valsB.end(), valA) - valsB.begin();
-//        cout << "crossMatch: iB = " << iB << ", valsB.size() = " << valsB.size() << endl;
+        cout << "crossMatch: iB = " << iB << ", valsB.size() = " << valsB.size() << ", iB = " << iB << endl;
         if (iB != valsB.size()){
-//            cout << "crossMatch: found <" << valA << "> in data set B" << endl;
+            cout << "crossMatch: found <" << valA << "> in data set B at position " << to_string(iB) << endl;
             for (size_t iHeader=0; iHeader<headerA.size(); ++iHeader){
                 lineOut[csvDataOut.findKeywordPos(headerA[iHeader])] = csvDataA.getData(headerA[iHeader], iA);
             }

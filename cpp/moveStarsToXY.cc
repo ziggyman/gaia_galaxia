@@ -86,6 +86,13 @@ vector<string> gaiaGetInputFileNamesFromLonLat(){
     return inputFileNames;
 }
 
+vector<string> gaiaXSimbadIGetInputFileName(){
+    string dataDir("/Volumes/obiwan/azuri/data/gaia/x-match/simbadI/");
+    vector<string> inputFileNames(0);
+    inputFileNames.push_back(dataDir + ("simbad_ImagXGaia.csv"));
+    return inputFileNames;
+}
+
 vector<string> gaiaXSimbadGetInputFileName(){
     string dataDir("/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/");
     vector<string> inputFileNames(0);
@@ -239,6 +246,11 @@ vector<string> getOutFileNames(vector<Pixel> const& pixels,
         if (dirOut.compare("") == 0)
             dirOut = gaiaXSimbadGetDataDirOut();
     }
+    else if (whichOne.compare("gaiaXSimbadI") == 0){
+        fileNameOutRoot = gaiaXSimbadIGetFileNameOutRoot();
+        if (dirOut.compare("") == 0)
+            dirOut = gaiaXSimbadIGetDataDirOut();
+    }
     else if (whichOne.compare("gaiaXSDSS") == 0){
         fileNameOutRoot = gaiaXSDSSGetFileNameOutRoot();
         if (dirOut.compare("") == 0)
@@ -299,6 +311,50 @@ void galaxiaMoveStarsFromLonLatToXY(){
     moveStarsToXY("galaxia");
 }
 
+int appendCSVDataToFile(CSVData const& csvData,
+                        string const& fileName,
+                        string const& lockName){
+    cout << "appendCSVDataToFile: Adding " << csvData.size() << " lines to " << fileName << endl;
+    int fd = lockFile(fileName,
+                        lockName);
+
+    time_t start, end;
+    time (&start); // note time before execution
+
+    int nStarsWritten = 0;
+
+    std::shared_ptr<ofstream> outFile(new ofstream);
+
+    for (int iStar=0; iStar<csvData.size(); ++iStar){
+        try{
+            outFile->exceptions(ofstream::failbit | ofstream::badbit);
+
+            if (!outFile->is_open()){
+                outFile->open(fileName, ofstream::app);
+            }
+            cout << "appendCSVDataToFile: writing csvData.data[" << iStar << "] to " << fileName << endl;
+            writeStrVecToFile(csvData.data[iStar], *outFile);
+            ++nStarsWritten;
+            cout << "appendCSVDataToFile: wrote " << csvData.size() << " stars to " << fileName << endl;
+        }
+        catch (const std::exception& e) { // reference to the base of a polymorphic object
+            std::cout << e.what(); // information from length_error printed
+            throw;
+        }
+    }
+    cout << "appendCSVDataToFile: wrote " << nStarsWritten << " stars" << endl;
+    closeFileAndDeleteLock(*outFile,
+                            lockName,
+                            fd);
+    time (&end); // note time after execution
+
+    CSVData csvTemp = readCSVFile(fileName);
+    cout << "csvTemp.size() = " << csvTemp.size() << endl;
+
+    cout << "appendCSVDataToFile: time taken for appendCSVDataToFile(): " << end-start << " s" << endl;
+    return nStarsWritten;
+}
+
 int appendCSVDataToXYFiles(CSVData const& csvData,
                            vector<Pixel> const& pixels,
                            string const& whichOne,
@@ -311,7 +367,7 @@ int appendCSVDataToXYFiles(CSVData const& csvData,
 
     vector< std::shared_ptr< ofstream > > const& outFiles = getOutFiles(pixels);
     vector<string> const& outFileNames = getOutFileNames(pixels, whichOne, outputDir);
-    cout << "moveStarsToXY.appendCSVDataToXYFiles: outFileNames[0] = " << outFileNames[0] << endl;
+//    cout << "moveStarsToXY.appendCSVDataToXYFiles: outFileNames[0] = " << outFileNames[0] << endl;
 
     vector< string > locks(0);
     vector< int > lockFds(0);
@@ -422,6 +478,7 @@ int appendCSVDataToXYFiles(CSVData const& csvData,
                                             lockSuffix);
                         }
                         if (doWrite){
+                            cout << "writing data to " << outFileNames[iPix] << endl;
                             writeStrVecToFile(csvData.data[iStar], *(outFiles[iPix]));
                             ++nStarsWritten;
                         }
@@ -499,6 +556,12 @@ void moveStarsToXY(string const& whichOne){
         dataDirOut = gaiaXSimbadGetDataDirOut();
         inputFileNames = gaiaXSimbadGetInputFileName();
         fileNameOutRoot = gaiaXSimbadGetFileNameOutRoot();
+        ids.push_back("source_id");
+    }
+    else if (whichOne.compare("gaiaXSimbadI") == 0){
+        dataDirOut = gaiaXSimbadIGetDataDirOut();
+        inputFileNames = gaiaXSimbadIGetInputFileName();
+        fileNameOutRoot = gaiaXSimbadIGetFileNameOutRoot();
         ids.push_back("source_id");
     }
     else if (whichOne.compare("gaiaXSDSS") == 0){

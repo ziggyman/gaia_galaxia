@@ -9,25 +9,18 @@ from sklearn import linear_model
 
 from gaiaxsimbad import calcY,getGiantsAndDwarfs
 
-colorSystems = ['ugriz']#,'Johnson_Cousins']
-#colorSystem = colorSystems[0]
-
-
 #GaiaDR2+Simbad+SDSS/xy/GaiaXSimbad+SDSS_2.793072-2.810749_0.141421-0.159099_u_g_r_umag_gmag_rmag_phot_bp_mean_mag_rv_template_logg.csv
-fNameGaiaXSimbadA = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2+Simbad+SDSS/xy/GaiaXSimbad+SDSS_%.6f-%.6f_%.6f-%.6f_%s.csv'
-#fNameGaiaXSimbadA = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/temp/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_%s.csv'
+fNameIn = '/Volumes/obiwan/azuri/data/simbad/simbad_ImagXGaia.csv.bak'
+fNameGaiaXSimbadA = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_%s.csv'
 fNameGaiaXSimbadB = '/Volumes/obiwan/azuri/data/gaia/x-match/simbadI/xy/GaiaXSimbadI_%.6f-%.6f_%.6f-%.6f.csv'
 
-fNameGaiaXSimbadA_Jc = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_%s.csv'
+xForGBP = [['B','SimbadB'],['V','SimbadV'],['R','SimbadR'],'phot_bp_mean_mag','rv_template_logg']
+xForGRP = [['R','SimbadR'],['I','SimbadI'],'phot_rp_mean_mag','rv_template_logg']
+xForG = [['B','SimbadB'],['V','SimbadV'],['R','SimbadR'],['I','SimbadI'],'phot_g_mean_mag','rv_template_logg']
 
-#required x values for certain GAIA passband
-xForGBP = [['g','gmag'],['r','rmag'],'phot_bp_mean_mag','rv_template_logg']
-xForGRP = [['r','rmag'],['i','imag'],['z','zmag'],'phot_rp_mean_mag','rv_template_logg']
-xForG = [['g','gmag'],['r','rmag'],['i','imag'],['z','zmag'],'phot_g_mean_mag','rv_template_logg']
-
-xForGBP_Jc = [['B','SimbadB'],['V','SimbadV'],['R','SimbadR'],'phot_bp_mean_mag','rv_template_logg']
-xForGRP_Jc = [['R','SimbadR'],['I','SimbadI'],'phot_rp_mean_mag','rv_template_logg']
-xForG_Jc = [['B','SimbadB'],['V','SimbadV'],['R','SimbadR'],['I','SimbadI'],'phot_g_mean_mag','rv_template_logg']
+xForGBP = [['B','SimbadB'],['V','SimbadV'],['R','SimbadR'],'phot_bp_mean_mag','rv_template_logg']
+xForGRP = [['R','SimbadR'],['R','SimbadI'],'phot_rp_mean_mag','rv_template_logg']
+xForG = [['B','SimbadB'],['V','SimbadV'],['R','SimbadR'],['R','SimbadI'],'phot_g_mean_mag','rv_template_logg']
 
 ham = hammer.Hammer()
 pixels = ham.getPixels()
@@ -63,7 +56,6 @@ def getGoodStarIndices(csvIn, requiredKeywords):
     return indicesOut
 
 def getXY(csvIn, requiredKeywords, indicesIn, nDegree):
-    print('getXY: requiredKeywords = ',requiredKeywords)
     x = []
     y = []
     nBoth = 0
@@ -103,17 +95,17 @@ def getXY(csvIn, requiredKeywords, indicesIn, nDegree):
     print('both = ',both)
     return [x,y]
 
-if True:
-    for colorSystem in colorSystems:
-        print('colorSystem = '+colorSystem)
-        if colorSystem == 'Johnson_Cousins':
-            xKeysSystem = [xForGBP_Jc,xForGRP_Jc,xForG_Jc]
-            fNameInA = fNameGaiaXSimbadA_Jc
-        else:
-            xKeysSystem = [xForGRP]#, xForG]#xForGBP,
-            fNameInA = fNameGaiaXSimbadA
-            if (xKeysSystem[0][0][0] == 'r') and (xKeysSystem[0][1][0] == 'i') and (xKeysSystem[0][2][0] == 'z'):
-                fNameInA = os.path.join(fNameInA[:fNameInA.rfind('/')]+'.bak',fNameInA[fNameInA.rfind('/')+1:])
+with open(fNameGaiaXSimbadA[:fNameGaiaXSimbadA.rfind('/')+1]+'resultsSimbadI.txt','w') as f:
+    csvIn = csvFree.readCSVFile(fNameIn,',',True)
+    xKeysSystem = [xForGBP, xForGRP, xForG]
+    for xKeys in xKeysSystem:
+        goodStarIndices = getGoodStarIndices(csvIn, xKeys)
+        print('goodStarIndices = ',goodStarIndices)
+        STOP
+
+    if False:
+        xKeysSystem = [xForGBP, xForGRP, xForG]
+        fNameInA = fNameGaiaXSimbadA
         print('fNameInA = <'+fNameInA)
         iKeys = 0
         for xKeys in xKeysSystem:
@@ -137,44 +129,34 @@ if True:
                 inFile = fNameInA
                 fNameOut = fNameInA[:fNameInA.rfind('/')+1]+'GaiaXSimbad+SDSS_'+suffix+'.csv'
             csvGood = None
-            if True:#not os.path.isfile(fNameOut):
+            if not os.path.isfile(fNameOut):
                 csvGood = csvData.CSVData()
-                print('csvGood constructed')
                 headerSet = False
                 nStars = 0
                 for pix in pixels:
                     if colorSystem == 'ugriz':
                         inFile = fNameInA % (pix.xLow, pix.xHigh, pix.yLow, pix.yHigh, suffix)
-                    print('checking for ',inFile)
-                    if os.path.isfile(inFile):
-                        print('reading inFile <'+inFile+'>')
-                        csvIn = csvFree.readCSVFile(inFile,',',True)
-                        print('csvIn.size() = ',csvIn.size())
-                        print('len(csvIn.data) = ',len(csvIn.data))
-                        if csvIn.size() > 0:
-                            if not headerSet:
-                                csvGood.header = csvIn.header
-                                headerSet = True
-                                print('csvGood.header set to ',csvGood.header)
-                            nStars += csvIn.size()
-                            goodStarIndices = getGoodStarIndices(csvIn, xKeys)
-                            print('goodStarIndices = ',goodStarIndices)
-                            if len(goodStarIndices) > 0:
-                                print('csvGood.header = ',csvGood.header)
-                                print('csvIn.header = ',csvIn.header)
-                                csvGood.append(csvIn.getData(goodStarIndices))
-                                print('csvGood.size() = ',csvGood.size())
-                if csvGood.size() == 0:
-                    print('ERROR: csvGood.size() = 0')
-                    STOP
+                    print('reading inFile <'+inFile+'>')
+                    csvIn = csvFree.readCSVFile(inFile,',',True)
+                    if not headerSet:
+                        csvGood.header = csvIn.header
+                        headerSet = True
+                    print('csvIn.size() = ',csvIn.size())
+                    print('len(csvIn.data) = ',len(csvIn.data))
+                    if csvIn.size() > 0:
+                        nStars += csvIn.size()
+                        goodStarIndices = getGoodStarIndices(csvIn, xKeys)
+                        print('goodStarIndices = ',goodStarIndices)
+                        if len(goodStarIndices) > 0:
+                            csvGood.append(csvIn.getData(goodStarIndices))
+                            print('csvGood.size() = ',csvGood.size())
+
                 csvFree.writeCSVFile(csvGood, fNameOut)
                 print(csvGood.size(),' good stars out of ',nStars)
 
             else:
                 csvGood = csvFree.readCSVFile(fNameOut,',',True)
-            if csvGood.size() == 0:
-                print('ERROR: no good stars found')
-                STOP
+
             dwarfs, giants = getGiantsAndDwarfs(csvGood, range(csvGood.size()))
             print('len(dwarfs) = ',len(dwarfs),'len(giants) = ',len(giants))
 
@@ -187,9 +169,8 @@ if True:
             #    print('xGiants = ',len(xGiants),': ',xGiants)
             #    print('yGiants = ',len(yGiants),': ',yGiants)
 
-                yKey = xKeys[len(xKeys)-2]
-                xKeysOne = [x[0] for x in xKeys[0:len(xKeys)-2]]
-                print('yKey = <'+yKey+'>, xKeysOne = ',xKeysOne)
+                yKey = xKeys[3]
+                xKeysOne = [x[0] for x in xKeys[0:3]]
                 for stars in ['dwarfs', 'giants']:
                     print('Calculating '+stars)
                     indicesTemp = None
@@ -213,10 +194,9 @@ if True:
                     yTest = []
                     indices = []
                     indicesTest = []
-                    print('len(xDat) = ',len(xDat),', len(yDat) = ',len(yDat))
                     for k in np.arange(0,len(indicesTemp),1):
                         print('k = ',k)
-                        if float(k) / 10. == int(float(k)/10.):#use as test data
+                        if float(k) / 100. == int(float(k)/100.):#use as test data
                             xTest.append(xDat[k])
                             yTest.append(yDat[k])
                             indicesTest.append(k)
@@ -295,22 +275,12 @@ if True:
                             plt.ylabel('G_BP difference (measured - calcuated)')
                         elif yKey == 'phot_rp_mean_mag':
                             plt.ylabel('G_RP difference (measured - calcuated)')
-                        title = stars + ' ' + str(nDegree)
-                        if nDegree == 1:
-                            title += 'st'
-                        elif nDegree == 2:
-                            title += 'nd'
-                        elif nDegree == 3:
-                            title += 'rd'
-                        else:
-                            title += 'th'
-                        title += ' degree polynomial'
+                        title = stars + ' ' + str(nDegree) + th + ' degree polynomial'
                         plt.title(title)
                         plotname = fNameInA[:fNameInA.rfind('/')+1]
                         for xKey in xKeysOne:
                             plotname += xKey
-                        print('yKey = ',yKey,', stars = ',stars,', str(nDegree) = ',str(nDegree))
-                        plotname += '_'+yKey+'_'+stars+'_'+str(nDegree)+'thDegree'
+                        plotname += '_'+yKey+'_'+stars+'_'+str(nDegree)+th+'Degree'
                         plotname += '.pdf'
                         plt.savefig(plotname, format='pdf', frameon=False, bbox_inches='tight', pad_inches=0.1)
                         plt.show()
@@ -334,16 +304,7 @@ if True:
                         else:
                             print('Could not identify yKey')
                             STOP
-                        title = stars+' '+str(nDegree)
-                        if nDegree == 1:
-                            title += 'st'
-                        elif nDegree == 2:
-                            title += 'nd'
-                        elif nDegree == 3:
-                            title += 'rd'
-                        else:
-                            title += 'th'
-                        title += ' degree polynomial'
+                        title = stars+' '+str(nDegree)+th+' degree polynomial'
                         plt.title(title)
                         plotname = fNameInA[:fNameInA.rfind('/')+1]
                         for xKey in xKeysOne:
@@ -353,12 +314,7 @@ if True:
                         plt.savefig(plotname, format='pdf', frameon=False, bbox_inches='tight', pad_inches=0.1)
                         plt.show()
 
-                        with open(fNameGaiaXSimbadA[:fNameGaiaXSimbadA.rfind('/')+1]+'results.txt','a') as f:
-                            rowToWrite = plotname+': coeffs = '
-                            for coeff in coeffs:
-                                rowToWrite += str(coeff)+', '
-                            rowToWrite += '\n'
-                            f.write(rowToWrite)
-                            f.write(plotname+': mean difference = '+str(mean)+', stddev = '+str(stdev)+'\n')
+                        f.write(plotname+': coeffs = ',coeffs,'\n')
+                        f.write(plotname+': mean difference = '+str(mean)+', stddev = '+str(stdev)+'\n')
             iKeys += 1
     #                STOP

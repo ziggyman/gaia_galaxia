@@ -36,7 +36,7 @@ int openAndLockFile(vector< std::shared_ptr< ofstream > > const& outFiles,
     int fd = open( lockName.c_str(), O_RDWR | O_CREAT | O_EXCL, 0666 );
     if (fd == -1){
         time_t start, end;
-        cout << "waiting for file <" << outFileNames[iPix] << "> to become available" << endl;
+        cout << "openAndLockFile: waiting for file <" << outFileNames[iPix] << "> to become available" << endl;
         time (&start); // note time before execution
         closeFilesAndDeleteLocks(filesOpened, locks, lockFds);
 

@@ -16,6 +16,8 @@ boost::format gaiaTgasGetFileNameOutRoot();
 
 boost::format gaiaXSimbadGetFileNameOutRoot();
 
+boost::format gaiaXSimbadIGetFileNameOutRoot();
+
 boost::format gaiaXSDSSGetFileNameOutRoot();
 
 string modelGetDataDirOut();
@@ -27,6 +29,8 @@ string gaiaGetDataDirOut();
 string gaiaDR2GetDataDirOut();
 
 string gaiaXSimbadGetDataDirOut();
+
+string gaiaXSimbadIGetDataDirOut();
 
 string gaiaXSDSSGetDataDirOut();
 

@@ -24,6 +24,7 @@ vector<string> gaiaDR2GetInputFileNames();
 vector<string> gaiaTgasGetInputFileNames();
 vector<string> gaiaGetInputFileNamesFromLonLat();
 vector<string> gaiaXSimbadGetInputFileName();
+vector<string> gaiaXSimbadIGetInputFileName();
 vector<string> gaiaXSDSSGetInputFileName();
 
 vector< std::shared_ptr< ofstream > > getOutFiles(vector<Pixel> const& pixels);
@@ -39,6 +40,11 @@ void writeHeaderToOutFiles(vector<string> const& header,
                            string const& dataDirOut = "");
 //                           vector<string> const& outFileNames,
 //                           vector< std::shared_ptr< ofstream > > const& outFiles);
+
+
+int appendCSVDataToFile(CSVData const& csvData,
+                        string const& fileName,
+                        string const& lockName);
 
 int appendCSVDataToXYFiles(CSVData const& csvData,
                             vector<Pixel> const& pixels,

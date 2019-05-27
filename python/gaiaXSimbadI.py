@@ -19,11 +19,15 @@ ham = hammer.Hammer()
 pixels = ham.getPixels()
 
 keywordsToFindSimbad = [[['SimbadB','SimbadV','SimbadR'],'phot_bp_mean_mag','rv_template_logg'],
+                        [['SimbadB','SimbadV'],'phot_bp_mean_mag','rv_template_logg'],
                         [['SimbadR','SimbadI'],'phot_rp_mean_mag','rv_template_logg'],
+                        [['SimbadB','SimbadV','SimbadR','SimbadI'],'phot_g_mean_mag','rv_template_logg'],
                        ]
 keywordsToFindGaia = [[['B','V','R'],'phot_bp_mean_mag','rv_template_logg'],
+                      [['B','V'],'phot_bp_mean_mag','rv_template_logg'],
                       [['R','I'],'phot_rp_mean_mag','rv_template_logg'],
-                     ]
+                     [['B','V','R','I'],'phot_g_mean_mag','rv_template_logg'],
+                      ]
 
 # data: dictionary
 def getGoodStarIndices(data, keywords):
@@ -64,12 +68,12 @@ def process(iPix):
         for iKeys in range(len(keywordsToFindSimbad)):
             print('iKeys = ',iKeys)
             keysSimbad = keywordsToFindSimbad[iKeys]
-            keysSDSS = keywordsToFindSDSS[iKeys]
+            keysGaia = keywordsToFindGaia[iKeys]
 
             keyStr = keysSimbad[0][0]
             for key in keysSimbad[0][1:]:
                 keyStr += '_'+key
-            for key in keysSDSS[0]:
+            for key in keysGaia[0]:
                 keyStr += '_'+key
             for key in keysSimbad[1:]:
                 keyStr += '_'+key
@@ -88,7 +92,7 @@ def process(iPix):
                 print('csvGaiaXSimbad.header = ',len(csvGaiaXSimbad.header),': ',csvGaiaXSimbad.header)
                 print(' ')
 
-                fNameGaiaXSDSS = fNameGaiaXSDSSRoot % (pixels[iPix].xLow, pixels[iPix].xHigh, pixels[iPix].yLow, pixels[iPix].yHigh)
+                fNameGaiaXGaia = fNameGaiaXSDSSRoot % (pixels[iPix].xLow, pixels[iPix].xHigh, pixels[iPix].yLow, pixels[iPix].yHigh)
     #            print('fNameGaiaXSDSS = <'+fNameGaiaXSDSS+'>')
                 csvGaiaXSDSS = csvFree.readCSVFile(fNameGaiaXSDSS,',',True)
                 print('csvGaiaXSDSS.header = ',len(csvGaiaXSDSS.header),': ',csvGaiaXSDSS.header)

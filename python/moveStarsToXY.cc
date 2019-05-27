@@ -9,4 +9,5 @@ PYBIND11_MODULE(moveStarsToXY, m) {
     m.def("getOutFileNames", &getOutFileNames);
     m.def("writeHeaderToOutFiles", &writeHeaderToOutFiles);
     m.def("appendCSVDataToXYFiles", &appendCSVDataToXYFiles);
+    m.def("appendCSVDataToFile", &appendCSVDataToFile);
 }

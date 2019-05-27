@@ -19,6 +19,7 @@ from myUtils import hmsToDeg,dmsToDeg,raDecToLonLat,getPixel,angularDistance
 #os.system("/Users/azuri/entwicklung/python/myUtils.py")# import getDate, findClosestDate,...
 
 #parameters
+doIt = False
 maxAngularDistance = 3.0
 path = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/'
 fnameList = path+'xyfiles.list'
@@ -45,14 +46,17 @@ def readImags(fname):
                     RA = RA[0:RA.rfind(' ')]
                     RA = RA.strip(' ')
                     RA = RA.replace(' ',':')
-                    lst.append(str(hmsToDeg(RA)))
+                    raDeg = str(hmsToDeg(RA))
+                    lst.append(raDeg)
 
                     DEC = cols[3][cols[3].find(' ')+1:]
                     DEC = DEC[DEC.find(' ')+1:]
                     DEC = DEC[DEC.find(' ')+1:]
                     DEC = DEC.strip(' ')
                     DEC = DEC.replace(' ',':')
-                    lst.append(str(dmsToDeg(DEC)))
+                    decDeg = str(dmsToDeg(DEC))
+                    lst.append(decDeg)
+                    print('RA = ',RA,', DEC = ',DEC,': raDeg = ',raDeg,', decDeg = ',decDeg)
 
                     lst.append(str(cols[4].replace(' ','').replace('~','')))
                     lst.append(str(cols[5].replace(' ','').replace('~','')))
@@ -60,17 +64,17 @@ def readImags(fname):
                     lst.append(str(cols[7].replace(' ','').replace('~','')))
                     lst.append(str(cols[8].replace(' ','').replace('~','')))
                     data.append(lst)
-    print('data.size() = ',data.size())
+    print('data = ',data.size(),': ',data)
     return data
 
 def getStarWithMinDist(gaiaData, ra, dec, iStar=0):
     dist = None
     index = None
     print('gaiaData.header = ',gaiaData.header)
-    for i in range(gaiaData.size()):
+    for i in np.arange(0,gaiaData.size(),1):
 #        print('gaiaData.getData(',i,') = ',gaiaData.getData(i))
 #        print('gaiaData.getData(parallax,',i,') = ',gaiaData.getData('parallax',i))
-        if gaiaData.getData('parallax',i) != '':
+        if False:# gaiaData.getData('parallax',i) != '':
             parallax = float(gaiaData.getData('parallax',i))
             if parallax < 0.:
                 parallax = 0.1
@@ -93,8 +97,10 @@ def getStarWithMinDist(gaiaData, ra, dec, iStar=0):
 #            print('c_epoch2000.ra = ',type(c_epoch2000.ra),': ',dir(c_epoch2000.ra),': ',c_epoch2000.ra)
 #            print('c_epoch2000.ra.deg = ',c_epoch2000.ra.deg)
             thisDist = angularDistance(ra, dec, c_epoch2000.ra.deg, c_epoch2000.dec.deg) * 3600.
-        else:
-            thisDist = angularDistance(ra, dec, float(gaiaData.getData('ra',i)), float(gaiaData.getData('dec',i))) * 3600.
+#        else:
+        print('i = ',i,': gaiaData.getData(',i,') = ',gaiaData.getData(i))
+        print('i = ',i,': ra = ',ra,', dec = ',dec,", gaiaData.getData('ra',i) = ",gaiaData.getData('ra',i),", gaiaData.getData('dec',i) = ",gaiaData.getData('dec',i))
+        thisDist = angularDistance(ra*u.degree, dec*u.degree, float(gaiaData.getData('ra',i))*u.degree, float(gaiaData.getData('dec',i))*u.degree) * 3600.
         if (dist is None):
             dist = thisDist
             index = i
@@ -107,23 +113,25 @@ def getStarWithMinDist(gaiaData, ra, dec, iStar=0):
             return [index, dist]
     return [index, dist]
 
-simbadXGaiaFile = '/Volumes/obiwan/azuri/data/simbad/simbad_ImagXGaia.csv'
-simbadData = readImags('/Volumes/obiwan/azuri/data/simbad/simbad_Imag_20000stars.txt')
-print('simbadData.header = ',simbadData.header)
-#def findSimbadStarsInGaia(simbadData):
-simbadKeyWords = ['SimbadU','SimbadB','SimbadV','SimbadR','SimbadI']
-ham = hammer.Hammer()
-pixels = ham.getPixels()
-fnameGaia = fNameXMatchRoot % (pixels[0].xLow, pixels[0].xHigh, pixels[0].yLow, pixels[0].yHigh)
-print('fnameGaia = <'+fnameGaia+'>')
-csvGaia = csvFree.readCSVFile(fnameGaia)
-csvSimbad = csvData.CSVData()
-csvSimbad.header = csvGaia.header
-print('len(csvSimbad.header) = ',len(csvSimbad.header))
-for simbadKeyWord in simbadKeyWords:
-    csvSimbad.addColumn(simbadKeyWord)
-    print('csvSimbad.header[',len(csvSimbad.header)-1,'] = <'+csvSimbad.header[len(csvSimbad.header)-1]+'>')
-print('len(csvSimbad.header) = ',len(csvSimbad.header))
+if doIt:
+    simbadXGaiaFile = '/Volumes/obiwan/azuri/data/simbad/simbad_ImagXGaia.csv'
+    simbadData = readImags('/Volumes/obiwan/azuri/data/simbad/simbad_Imag_20000stars.txt')
+    print('simbadData.header = ',simbadData.header)
+    #def findSimbadStarsInGaia(simbadData):
+    simbadKeyWords = ['SimbadU','SimbadB','SimbadV','SimbadR','SimbadI']
+    ham = hammer.Hammer()
+    pixels = ham.getPixels()
+    fnameGaia = fNameXMatchRoot % (pixels[0].xLow, pixels[0].xHigh, pixels[0].yLow, pixels[0].yHigh)
+    print('fnameGaia = <'+fnameGaia+'>')
+    csvGaia = csvFree.readCSVFile(fnameGaia)
+    csvSimbad = csvData.CSVData()
+    csvSimbad.header = csvGaia.header
+    print('csvSimbad.header = ',len(csvSimbad.header),': ',csvSimbad.header)
+    for simbadKeyWord in simbadKeyWords:
+        csvSimbad.addColumn(simbadKeyWord)
+        print('csvSimbad.header[',len(csvSimbad.header)-1,'] = <'+csvSimbad.header[len(csvSimbad.header)-1]+'>')
+    print('csvSimbad.header = ',len(csvSimbad.header),': ',csvSimbad.header)
+    STOP
 
 def processSimbadStar(iStar):
 #    print('started processSimbadStar: nStarsDone = ',nStarsDone,'processSimbadStar: csvSimbad.size() = ',csvSimbad.size())
@@ -157,11 +165,11 @@ def processSimbadStar(iStar):
                 keywordPos = csvSimbad.findKeywordPos(gaiaKeyWord)
                 csvSimbad.setData(gaiaKeyWord, csvSimbad.size()-1, csvGaiaXMatch.getData(gaiaKeyWord, indexXMatch))
                 print('xMatch found: csvSimbad.data[',csvSimbad.size()-1,', ',gaiaKeyWord,'] = ',csvSimbad.data[csvSimbad.size()-1][keywordPos])
-        else:
-            for gaiaKeyWord in csvGaia.header:
-                keywordPos = csvSimbad.findKeywordPos(gaiaKeyWord)
-                csvSimbad.setData(gaiaKeyWord, csvSimbad.size()-1, csvGaia.getData(gaiaKeyWord, index))
-                print('xMatch not found: csvSimbad.data[',csvSimbad.size()-1,', ',gaiaKeyWord,'] = ',csvSimbad.data[csvSimbad.size()-1][keywordPos])
+#        else:
+        for gaiaKeyWord in csvGaia.header:
+            keywordPos = csvSimbad.findKeywordPos(gaiaKeyWord)
+            csvSimbad.setData(gaiaKeyWord, csvSimbad.size()-1, csvGaia.getData(gaiaKeyWord, index))
+            print('xMatch not found: csvSimbad.data[',csvSimbad.size()-1,', ',gaiaKeyWord,'] = ',csvSimbad.data[csvSimbad.size()-1][keywordPos])
         for simbadKeyWord in simbadKeyWords:
             keywordPos = csvSimbad.findKeywordPos(simbadKeyWord)
             csvSimbad.setData(simbadKeyWord, csvSimbad.size()-1, simbadData.getData(simbadKeyWord, iStar))
@@ -210,7 +218,7 @@ def processSimbadStar(iStar):
 #    print(nStarsDone,' stars finished')
 
 
-if not os.path.isfile(simbadXGaiaFile):
+if doIt and (not os.path.isfile(simbadXGaiaFile)):
 #    x = [float(a) for a in simbadData.getData('RA')]
 #    y = [float(a) for a in simbadData.getData('DEC')]
 #    print('x = ',len(x),': ',x)
@@ -227,7 +235,6 @@ if not os.path.isfile(simbadXGaiaFile):
     p.close()
 #    csvSimbad = findSimbadStarsInGaia(simbadData)
 #    csvFree.writeCSVFile(csvSimbad, simbadXGaiaFile)
-STOP
 
 def crossMatch(simbadFile, gaiaFile):
     simbadData = csvFree.readCSVFile(simbadFile)
@@ -338,7 +345,7 @@ def process(fileNumber):
             print('writing file <'+fnameOut+'>')
             csvFree.writeCSVFile(csvData, fnameOut)
 
-if True:
+if False:
     """cross-match (Simbad x Gaia) with GAIA DR2"""
     with open(fnameList) as f:
         fnames = f.read().splitlines()

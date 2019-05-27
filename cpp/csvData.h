@@ -2,6 +2,7 @@
 #define __CSVDATA_H__
 
 #include <iostream>
+#include <iterator>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -66,7 +67,7 @@ struct CSVData{
 
     /// find value in column <keyword>
     /// returns indices of all occurances of value if found, otherwise returns [-1]
-    vector<int> find(string const& keyword, string const& value, int startIndex=0) const;
+    vector<int> find(string const& keyword, string const& value, long startIndex=0) const;
 
     void printHeader() const;
 /*    void setDataSize(int nCols, int nStars){
@@ -83,13 +84,15 @@ inline bool is_file_exist(string const& fileName)
     return infile.good();
 }
 
-vector<string> readHeader(string const& fileName, char const& delimiter=',');
+vector<string> split(string const& s, string const& delimiter);
+
+vector<string> readHeader(string const& fileName, string const& delimiter=",");
 
 vector<int> countCharPerLine(string const& fileName, char const& character);
 
 void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile);
 
-CSVData readCSVFile(string const& fileName, char const& delimiter, bool const& removeBadLines);
+CSVData readCSVFile(string const& fileName, string const& delimiter, bool const& removeBadLines);
 CSVData readCSVFile(string const& fileName);
 
 void writeCSVFile(CSVData const& dat, string const& fileName);
@@ -115,5 +118,9 @@ template < typename T >
 std::pair<bool, int> findInVector(const std::vector<T> & vecOfElements, const T& element);
 
 double mean(vector< double > const& valVec);
+
+int countCommasInLine(string const& line);
+
+int countCommas(string const& fileName);
 
 #endif

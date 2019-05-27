@@ -13,6 +13,8 @@ boost::format obsGetFileNameOutRoot(string const& whichOne){
         return gaiaTgasGetFileNameOutRoot();
     else if (whichOne.compare("gaiaXSimbad") == 0)
         return gaiaXSimbadGetFileNameOutRoot();
+    else if (whichOne.compare("gaiaXSimbadI") == 0)
+        return gaiaXSimbadIGetFileNameOutRoot();
     else
         throw std::runtime_error("obsGetFileNameOutRoot: ERROR: whichOne = <"+whichOne+"> not recognized");
 }
@@ -27,6 +29,10 @@ boost::format gaiaTgasGetFileNameOutRoot(){
 
 boost::format gaiaXSimbadGetFileNameOutRoot(){
     return boost::format("GaiaXSimbad_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+}
+
+boost::format gaiaXSimbadIGetFileNameOutRoot(){
+    return boost::format("GaiaXSimbadI_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 }
 
 boost::format gaiaXSDSSGetFileNameOutRoot(){
@@ -45,6 +51,8 @@ string obsGetDataDirOut(string const& whichOne){
         return gaiaTgasGetDataDirOut();
     else if (whichOne.compare("gaiaXSimbad") == 0)
         return gaiaXSimbadGetDataDirOut();
+    else if (whichOne.compare("gaiaXSimbadI") == 0)
+        return gaiaXSimbadIGetDataDirOut();
     else
         throw std::runtime_error("obsGetDataDirOut: ERROR: whichOne = <"+whichOne+"> not recognized");
 }
@@ -63,6 +71,10 @@ string gaiaTgasGetDataDirOut(){
 
 string gaiaXSimbadGetDataDirOut(){
     return "/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/";
+}
+
+string gaiaXSimbadIGetDataDirOut(){
+    return "/Volumes/obiwan/azuri/data/gaia/x-match/simbadI/xy/";
 }
 
 string gaiaXSDSSGetDataDirOut(){
