@@ -23,11 +23,11 @@ class GaiaDR2(object):
     keys = []
     keyStr = ''
     combinations = []
-    fileWorkingName = '/Volumes/obiwan/azuri/data/gaia/dr2/workinOnFiles.txt'
+    fileWorkingName = '/Volumes/work/azuri/data/gaia/dr2/workinOnFiles.txt'
     fileWorking = None
-    filePreviouslyFinishedName = '/Volumes/obiwan/azuri/data/gaia/dr2/previouslyFinishedFiles.txt'
+    filePreviouslyFinishedName = '/Volumes/work/azuri/data/gaia/dr2/previouslyFinishedFiles.txt'
     filePreviouslyFinished = None
-    fileFinishedName = '/Volumes/obiwan/azuri/data/gaia/dr2/finishedFiles.txt'
+    fileFinishedName = '/Volumes/work/azuri/data/gaia/dr2/finishedFiles.txt'
     fileFinished = None
     filesPreviouslyFinished = []
     filesFinished = []
@@ -35,10 +35,10 @@ class GaiaDR2(object):
     ids = ['source_id']
     headerFile = ''
     logContent = []
-    logFileName = '/Volumes/obiwan/azuri/data/gaia/dr2/gaiaDR2MoveToXY.log'
+    logFileName = '/Volumes/work/azuri/data/gaia/dr2/gaiaDR2MoveToXY.log'
 
     def __init__(self):
-        dir = '/Volumes/obiwan/azuri/data/gaia/dr2/cdn.gea.esac.esa.int/Gaia/gdr2/gaia_source/csv'
+        dir = '/Volumes/work/azuri/data/gaia/dr2/cdn.gea.esac.esa.int/Gaia/gdr2/gaia_source/csv'
         self.fileNameIn = os.path.join(dir, 'GaiaSource_%s_%s.csv')
 
     def openFileWorking(self, flag='a'):
@@ -127,7 +127,7 @@ class GaiaDR2(object):
 
     def getCombinations(self):
         if len(GaiaDR2.combinations) == 0:
-            inFile = '/Volumes/obiwan/azuri/data/gaia/dr2/cdn.gea.esac.esa.int/Gaia/gdr2/gaia_source/csv/csvFiles.list'
+            inFile = '/Volumes/work/azuri/data/gaia/dr2/cdn.gea.esac.esa.int/Gaia/gdr2/gaia_source/csv/csvFiles.list'
             with open(inFile) as f:
                 content = f.readlines()
             # remove whitespace characters like `\n` at the end of each line
@@ -139,16 +139,16 @@ class GaiaDR2(object):
 
     def getInFileNames(self):
         if len(GaiaDR2.combinations) == 0:
-            print 'ERROR: run GaiaDR2.getCombinations() first'
+            print('ERROR: run GaiaDR2.getCombinations() first')
             STOP
         for combo in GaiaDR2.combinations:
             GaiaDR2.inFileNames.append(self.fileNameIn % (combo[0], combo[1]))
 
     def addXY(self, data):
-        long = csvFree.convertStringVectorToDoubleVector(data.getData('l'))
+        long = np.array(csvFree.convertStringVectorToDoubleVector(data.getData('l')))
         ind=np.where(long < 0.0)[0]
         if len(ind) > 0:
-            print 'gaiaDR2MoveToXY.addXY: ind(where long < 0) = ',ind
+            print('gaiaDR2MoveToXY.addXY: ind(where long < 0) = ',ind)
             STOP
             long[ind]=long[ind] + 360.0
 
@@ -160,7 +160,8 @@ class GaiaDR2(object):
 
     def getHeader(self):
 
-        GaiaDR2.keys = csvFree.readHeader(self.headerFile)
+        print('type(self.headerFile) = ',type(self.headerFile))
+        GaiaDR2.keys = csvFree.readHeader(self.headerFile,',')
         GaiaDR2.keys.append(GaiaDR2.ham.getKeyWordHammerX())
         GaiaDR2.keys.append(GaiaDR2.ham.getKeyWordHammerY())
 
@@ -196,7 +197,7 @@ class GaiaDR2(object):
                 subprocessResult = subprocess.check_output(['gunzip', inputFile+'.gz'])
                 print('subprocessResult = ',subprocessResult)
                 if not os.path.isfile(inputFile):
-                    print "gaiaDR2MoveToXY.processGaiaDR2: ERROR: gaiaDR2 input file ",inputFile," not found"
+                    print('gaiaDR2MoveToXY.processGaiaDR2: ERROR: gaiaDR2 input file ',inputFile,' not found')
                     STOP
 
                 data = csvFree.readCSVFile(inputFile)
@@ -216,7 +217,7 @@ class GaiaDR2(object):
 
             timeEnd = time.time()
             duration = timeEnd-timeStart
-            print 'gaiaDR2MoveToXY.processGaiaDR2: ran file <', inputFile,'> in ',duration,' seconds'
+            print('gaiaDR2MoveToXY.processGaiaDR2: ran file <', inputFile,'> in ',duration,' seconds')
 
             self.writeToFileFinished(inputFile+' done in '+str(duration)+'s')
 

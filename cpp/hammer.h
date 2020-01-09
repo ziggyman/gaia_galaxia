@@ -5,6 +5,7 @@
 #include <iostream>
 #include <math.h>
 //#include <mgl2/mgl.h>
+#include <stdexcept>
 #include <vector>
 
 #define PI 3.14159265

@@ -51,15 +51,15 @@ string CSVData::getData(string const& keyword, unsigned row) const{
     int headerPos = findKeywordPos(keyword);
     if (headerPos < 0){
         /// mayge it's the G color...
-        if (keyword.compare("G") == 0){
+//        if (keyword.compare("G") == 0){
             /// TODO: here we should actually require the G values to be present
             /// somewhere as a vector and not calculate it again each time
             /// for the whole data set. For now it works but it will be
             /// extremely slow if we ask for the G values of lots of rows...
-            return to_string(getGaiaG(*this)[row]);
-        }
-        else
-            throw std::runtime_error("CSVData::getData: ERROR: keyword <" + keyword + "> not found");
+//            return to_string(getGaiaG(*this)[row]);
+//        }
+//        else
+        throw std::runtime_error("CSVData::getData: ERROR: keyword <" + keyword + "> not found");
     }
     if (size() == 0){
         throw std::runtime_error("CSVData::getData(int): ERROR: data is empty");
@@ -76,12 +76,12 @@ vector<string> CSVData::getData(string const& keyword) const{
     int headerPos = findKeywordPos(keyword);
     if (headerPos < 0){
         /// mayge it's the G color...
-        if (keyword.compare("G") == 0){
+//        if (keyword.compare("G") == 0){
             /// a little complicated returning a string vector of a double vector
             /// only to convert it to float or double again later...
-            return convertDoubleVectorToStringVector(getGaiaG(*this));
-        }
-        else
+//            return convertDoubleVectorToStringVector(getGaiaG(*this));
+//        }
+//        else
             throw std::runtime_error("CSVData::getData: ERROR: keyword <" + keyword + "> not found");
     }
 //    cout << "CSVData.getData(): size() = " << size() << endl;
@@ -199,6 +199,23 @@ void CSVData::addColumn(string const& colName, vector<double> const& colData){
 //            throw std::runtime_error("let's exit");
     }
 //        return data;
+}
+
+void CSVData::removeColumn(string const& colName){
+    int keywordPos = findKeywordPos(colName);
+    header.erase(header.begin()+keywordPos);
+    for (auto itData=data.begin(); itData != data.end(); ++itData){
+        itData->erase(itData->begin()+keywordPos);
+    }
+}
+
+void CSVData::renameColumn(string const& oldName, string const& newName){
+    int keywordPos = findKeywordPos(oldName);
+    if (keywordPos < 0){
+        throw std::runtime_error("CSVData::renameColumn: ERROR: oldName = "
+                + oldName + " not found in header");
+    }
+    header[keywordPos] = newName;
 }
 
 int CSVData::size() const{
@@ -499,7 +516,7 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile){
     outFile.write(strToWrite.c_str(), strlen(strToWrite.c_str()));
     string endOfLine("\n");
     outFile.write(endOfLine.c_str(), strlen(endOfLine.c_str()));
-    cout << "writeStrVecToFile: wrote line <" << strToWrite << "> to outFile" << endl;
+//    cout << "writeStrVecToFile: wrote line <" << strToWrite << "> to outFile" << endl;
     return;
 }
 
@@ -548,13 +565,14 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
             if (!isEven(nQuotes)){
                 throw std::runtime_error("found uneven number of quotes in line <"+line+">");
             }
+            line = replaceDelimiterInsideQuotes(line, delimiter);
             string lineSplit(line);
-//            if (nQuotes > 0){
-//                vector<string> quotes = split(lineSplit,"\"");
-//                for (size_t iS=0; iS<quotes.size(); ++iS)
-//                    nCommas += split(quotes[iS], ",").size();
-//            }
-//            else
+///            if (nQuotes > 0){
+///                vector<string> quotes = split(lineSplit,"\"");
+///                for (size_t iS=0; iS<quotes.size(); ++iS)
+///                    nCommas += split(quotes[iS], ",").size();
+///            }
+///            else
             vector<string> elems = split(lineSplit,delimiter);
             nCommas = elems.size()-1;//count(line.begin(), line.end(), delimiter);
             //cout << "line contains " << nCommas << " commas" << endl;
@@ -787,7 +805,7 @@ CSVData crossMatch(CSVData const& csvDataA, CSVData const& csvDataB, string cons
     return csvDataOut;
 }
 
-vector<double> getGaiaG(CSVData const& csvData){
+/*vector<double> getGaiaG(CSVData const& csvData){
     vector<string> filters = splitCSVLine(modelGetFilters());
 //    cout << "filters = [";
 //    for (auto i: filters) cout << i << ", ";
@@ -830,7 +848,7 @@ vector<double> getGaiaG(CSVData const& csvData){
     }
     cout << "getGaiaG: min(gaiaG) = " << *min_element(gaiaG.begin(), gaiaG.end()) << ", max(gaiaG) = " << *max_element(gaiaG.begin(), gaiaG.end()) << endl;
     return gaiaG;
-}
+}*/
 
 bool isEven(int n){
     return (n % 2 == 0);
@@ -855,4 +873,32 @@ template std::pair<bool, int> findInVector(const std::vector<string> &, const st
 double mean(vector< double > const& valVec){
     double sum = std::accumulate(valVec.begin(), valVec.end(), 0.0);
     return sum / valVec.size();
+}
+
+string replaceDelimiterInsideQuotes(const string& line, const string& delimiter){
+    int nQuotes = count(line.begin(), line.end(), '"');
+    if (!isEven(nQuotes)){
+        throw std::runtime_error("replaceDelimiterInsideQuotes: found uneven number of quotes in line <"+line+">");
+    }
+    string lineOut;
+    string delimiterReplacement = ";";
+    if (delimiter.compare(";") == 0)
+        delimiterReplacement = ",";
+    if (nQuotes > 0){
+        string lineSplit(line);
+        while(count(lineSplit.begin(), lineSplit.end(),'"') > 0){
+            lineOut += lineSplit.substr(0,lineSplit.find('"'));
+            lineSplit = lineSplit.substr(lineSplit.find('"')+1,lineSplit.length());
+            string insideQuotes = lineSplit.substr(0,lineSplit.find('"'));
+            while(insideQuotes.find(delimiter) != string::npos)
+                insideQuotes.replace(insideQuotes.find(delimiter), strlen(delimiter.c_str()), delimiterReplacement);
+            lineOut += insideQuotes;
+            lineSplit = lineSplit.substr(lineSplit.find('"')+1,lineSplit.length());
+        }
+        lineOut += lineSplit;
+    }
+    else{
+        lineOut = line;
+    }
+    return lineOut;
 }

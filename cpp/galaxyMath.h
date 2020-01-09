@@ -1,6 +1,7 @@
 #ifndef __GALAXYMATH_H__
 #define __GALAXYMATH_H__
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <random>
@@ -81,6 +82,14 @@ double degToRad(double deg);
  * @brief convert radian to degree
  */
 double radToDeg(double rad);
+
+/**
+ * @brief convert Ra and Dec to l and b
+ * @param ra
+ * @param dec
+ * @return 
+ */
+pair<double, double> raDecToLB(double ra, double dec);
 
 /**
  * @brief convert proper motions from Equatorial Coordinates ra and dec to Galactic Coordinates l and b
@@ -167,4 +176,26 @@ T standardDeviation(vector< T > const& a);
  */
 template< typename T >
 vector< T > pow(vector< T > const& a, int n);
+
+/**
+ * @brief : return a [X,Y,Z] unit vector in ICRS Coordinates from Right ascension alpha
+ *          and Declination delta
+ * @param alpha : Right ascension
+ * @param delta : declination
+ * @return : [X_ICRS, Y_ICRS, Z_ICRS] of unit length
+ */
+template< typename T >
+vector< T > getICRSUnitVector(T const& alpha, T const& delta );
+//vector< double > getICRSUnitVector(double const& alpha, double const& delta );
+
+/**
+ * @brief : return a [X,Y,Z] unit vector in Galactic Coordinates from Galactic Longitude l
+ *          and Galactic Latitude b
+ * @param l : Galactic longitude
+ * @param b : Galactic latitude
+ * @return : [X_Gal, Y_Gal, Z_Gal] of unit length
+ */
+template< typename T >
+vector< T > getGalUnitVector(T const& l, T const& b );
+
 #endif

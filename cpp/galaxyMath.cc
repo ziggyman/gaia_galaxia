@@ -169,6 +169,12 @@ double radToDeg(double deg){
     return deg * 360.0 / (2.0 * M_PI);
 }
 
+pair<double, double> raDecToLB(double ra, double dec){
+    double b = asin((sin(dec) * cos(degToRad(62.6))) - (cos(dec) * sin(ra - degToRad(282.25)) * sin(degToRad(62.6))));
+    double l = acos(cos(dec) * cos(ra - degToRad(282.25)) / cos(b)) + degToRad(33.0);
+    return pair<double, double>(l, b);
+}
+
 pair<double, double> muRaDecToMuLB(double muRa, double muDec, double ra, double dec){
 //    double b = asin((sin(dec) * cos(degToRad(62.6))) - (cos(dec) * sin(ra - degToRad(282.25)) * sin(degToRad(62.6))));
 //    double l = acos(cos(dec) * cos(ra - degToRad(282.25)) / cos(b)) + degToRad(33.0);
@@ -439,3 +445,23 @@ vector< T > pow(vector< T > const& a, int n){
     return res;
 }
 template vector< double > pow(vector< double > const&, int);
+
+template< typename T >
+vector< T > getICRSUnitVector(T const& alpha, T const& delta ){
+    vector<T> result(3);
+    result[0] = cos(alpha) * cos(delta);
+    result[1] = sin(alpha) * cos(delta);
+    result[2] = sin(delta);
+
+    return result;
+}
+template vector< float > getICRSUnitVector(float const&, float const& );
+template vector< double > getICRSUnitVector(double const&, double const& );
+
+template< typename T >
+vector< T > getGalUnitVector(T const& l, T const& b ){
+    return getICRSUnitVector(l,b);
+}
+template vector< float > getGalUnitVector(float const&, float const& );
+template vector< double > getGalUnitVector(double const&, double const& );
+

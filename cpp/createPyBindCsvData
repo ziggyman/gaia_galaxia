@@ -10,11 +10,11 @@
 
 rm csvData.so
 rm ../python/csvData.so
-g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvData.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvData.so
+g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` csvData.cc ../python/csvData.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvData.so
 cp csvData.so ../python/
 
 rm csvFree.so
 rm ../python/csvFree.so
-g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvFree.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvFree.so
+g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` csvData.cc ../python/csvFree.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvFree.so
 cp csvFree.so ../python/
 

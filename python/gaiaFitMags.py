@@ -14,14 +14,15 @@ colorSystems = ['ugriz']#,'Johnson_Cousins']
 
 
 #GaiaDR2+Simbad+SDSS/xy/GaiaXSimbad+SDSS_2.793072-2.810749_0.141421-0.159099_u_g_r_umag_gmag_rmag_phot_bp_mean_mag_rv_template_logg.csv
-fNameGaiaXSimbadA = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2+Simbad+SDSS/xy/GaiaXSimbad+SDSS_%.6f-%.6f_%.6f-%.6f_%s.csv'
-#fNameGaiaXSimbadA = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/temp/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_%s.csv'
-fNameGaiaXSimbadB = '/Volumes/obiwan/azuri/data/gaia/x-match/simbadI/xy/GaiaXSimbadI_%.6f-%.6f_%.6f-%.6f.csv'
+fNameGaiaXSimbadA = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2+Simbad+SDSS/xy/GaiaXSimbad+SDSS_%.6f-%.6f_%.6f-%.6f_%s.csv'
+#fNameGaiaXSimbadA = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/temp/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_%s.csv'
+fNameGaiaXSimbadB = '/Volumes/external/azuri/data/gaia/x-match/simbadI/xy/GaiaXSimbadI_%.6f-%.6f_%.6f-%.6f.csv'
 
-fNameGaiaXSimbadA_Jc = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_%s.csv'
+fNameGaiaXSimbadA_Jc = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f_%s.csv'
 
 #required x values for certain GAIA passband
-xForGBP = [['g','gmag'],['r','rmag'],'phot_bp_mean_mag','rv_template_logg']
+xForGBP = [['u','umag'],['g','gmag'],['r','rmag'],'phot_bp_mean_mag','rv_template_logg']
+#xForGBP = [['g','gmag'],['r','rmag'],'phot_bp_mean_mag','rv_template_logg']
 xForGRP = [['r','rmag'],['i','imag'],['z','zmag'],'phot_rp_mean_mag','rv_template_logg']
 xForG = [['g','gmag'],['r','rmag'],['i','imag'],['z','zmag'],'phot_g_mean_mag','rv_template_logg']
 
@@ -110,7 +111,7 @@ if True:
             xKeysSystem = [xForGBP_Jc,xForGRP_Jc,xForG_Jc]
             fNameInA = fNameGaiaXSimbadA_Jc
         else:
-            xKeysSystem = [xForGRP]#, xForG]#xForGBP,
+            xKeysSystem = [xForGBP]#,xForG, xForGRP]#xForGBP,
             fNameInA = fNameGaiaXSimbadA
             if (xKeysSystem[0][0][0] == 'r') and (xKeysSystem[0][1][0] == 'i') and (xKeysSystem[0][2][0] == 'z'):
                 fNameInA = os.path.join(fNameInA[:fNameInA.rfind('/')]+'.bak',fNameInA[fNameInA.rfind('/')+1:])
@@ -286,10 +287,12 @@ if True:
                         distTest = []
                         for i in range(len(indicesTest)):
                             distTest.append(float(csvGood.getData('angDist', indicesTest[i])))
-                        plt.scatter(dist, yDiff, c='b')
+                        markersize=3.
+                        plt.scatter(dist, yDiff, c='b', s=markersize)
         #                print('len(distTest) = ',len(distTest))
         #                print('len(yDiffTest) = ',len(yDiffTest))
-                        plt.scatter(distTest, yDiffTest, c='g')
+                        plt.scatter(distTest, yDiffTest, c='g', s=markersize)
+                        #plt.contour(dist, yDiff)
                         plt.xlabel('angular distance')
                         if yKey == 'phot_bp_mean_mag':
                             plt.ylabel('G_BP difference (measured - calcuated)')
@@ -315,7 +318,8 @@ if True:
                         plt.savefig(plotname, format='pdf', frameon=False, bbox_inches='tight', pad_inches=0.1)
                         plt.show()
 
-                        plt.scatter(yTest, yCalc, c='b')
+                        plt.scatter(yTest, yCalc, c='b', s=markersize)
+                        #plt.contour(yTest, yCalc)
                         plt.plot([np.min(yTest)-0.5, np.max(yTest)+0.5],[np.min(yTest)-0.5, np.max(yTest)+0.5])
                         plt.xlim([np.min(yTest)-0.5, np.max(yTest)+0.5])
                         plt.ylim([np.min(yTest)-0.5, np.max(yTest)+0.5])
@@ -353,8 +357,9 @@ if True:
                         plt.savefig(plotname, format='pdf', frameon=False, bbox_inches='tight', pad_inches=0.1)
                         plt.show()
 
+                        print('len(x) = ',len(x),', len(xTest) = ',len(xTest))
                         with open(fNameGaiaXSimbadA[:fNameGaiaXSimbadA.rfind('/')+1]+'results.txt','a') as f:
-                            rowToWrite = plotname+': coeffs = '
+                            rowToWrite = plotname+': nStars = '+str(len(x))+', nTestStars = '+str(len(xTest))+': coeffs = '
                             for coeff in coeffs:
                                 rowToWrite += str(coeff)+', '
                             rowToWrite += '\n'

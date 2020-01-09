@@ -124,34 +124,34 @@ def run():
         if highExtinction:
             #'GaiaXSimbad_-1.255114--1.237437_-0.017678--0.000000.csv'
             #'GaiaXSimbad_-0.000000-0.017678_-0.035355--0.017678.csv','GaiaXSimbad_-0.000000-0.017678_-0.053033--0.035355.csv','GaiaXSimbad_-0.000000-0.017678_-0.070711--0.053033.csv'
-            fnameTest = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_1.449569-1.467247_-0.000000-0.017678.csv'
-            fname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_1.449569-1.467247_-0.017678--0.000000.csv'
+            fnameTest = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_1.449569-1.467247_-0.000000-0.017678.csv'
+            fname = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_1.449569-1.467247_-0.017678--0.000000.csv'
         else:
         # low extinction fields
-            #fname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_0.813173-0.830850_0.707107-0.724784.csv'
-            #fnameTest = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_1.007627-1.025305_-0.494975--0.477297.csv'
+            #fname = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_0.813173-0.830850_0.707107-0.724784.csv'
+            #fnameTest = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_1.007627-1.025305_-0.494975--0.477297.csv'
             #'GaiaXSimbad_0.176777-0.194454_1.272792-1.290470.csv'
             #'GaiaXSimbad_0.017678-0.035355_-0.070711--0.053033.csv'
-            fname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_-1.219759--1.202081_-0.583363--0.565685.csv'
-            fnameTest = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_-1.219759--1.202081_-0.601041--0.583363.csv'
+            fname = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_-1.219759--1.202081_-0.583363--0.565685.csv'
+            fnameTest = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_-1.219759--1.202081_-0.601041--0.583363.csv'
             #'GaiaXSimbad_-1.202081--1.184404_-0.583363--0.565685.csv', 'GaiaXSimbad_-1.202081--1.184404_-0.601041--0.583363.csv', 'GaiaXSimbad_-1.202081--1.184404_-0.618718--0.601041.csv'
             #'GaiaXSimbad_-1.184404--1.166726_-0.601041--0.583363.csv','GaiaXSimbad_-1.184404--1.166726_-0.618718--0.601041.csv','GaiaXSimbad_-1.184404--1.166726_-0.636396--0.618718.csv'
             #'GaiaXSimbad_-0.795495--0.777817_-0.760140--0.742462.csv','GaiaXSimbad_-0.795495--0.777817_-0.777817--0.760140.csv','GaiaXSimbad_-0.795495--0.777817_-0.795495--0.777817.csv'
             #'GaiaXSimbad_-0.777817--0.760140_-0.760140--0.742462.csv','GaiaXSimbad_-0.777817--0.760140_-0.777817--0.760140.csv','GaiaXSimbad_-0.777817--0.760140_-0.795495--0.777817.csv'
             #'GaiaXSimbad_-0.760140--0.742462_-0.777817--0.760140.csv','GaiaXSimbad_-0.760140--0.742462_-0.795495--0.777817.csv'
-        #    fname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_0.282843-0.300520_-1.166726--1.149049.csv'
-        #    fnameTest = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_-0.000000-0.017678_-1.396536--1.378858.csv'
-        #    fnameTest = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_0.282843-0.300520_-1.149049--1.131371.csv'
+        #    fname = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_0.282843-0.300520_-1.166726--1.149049.csv'
+        #    fnameTest = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_-0.000000-0.017678_-1.396536--1.378858.csv'
+        #    fnameTest = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_0.282843-0.300520_-1.149049--1.131371.csv'
 
-        fnameGaiaXSimbadRoot = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f'
-        #fnameGaiaRoot = '/Volumes/obiwan/azuri/data/gaia/dr2/xy/GaiaSource_'
+        fnameGaiaXSimbadRoot = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/GaiaXSimbad_%.6f-%.6f_%.6f-%.6f'
+        #fnameGaiaRoot = '/Volumes/external/azuri/data/gaia/dr2/xy/GaiaSource_'
         ham = hammer.Hammer()
         pixels = ham.getPixels()
 
         """fit G_BP as a function of B, V, and R"""
-        xKeyWords = [['R','I'],['B','V','R','I']]#['g','r','i','z'],['B','V','R'],['g','r'],['r','i','z'],
-        yKeyWords = ['phot_rp_mean_mag', 'phot_g_mean_mag']#'phot_g_mean_mag','phot_bp_mean_mag', 'phot_bp_mean_mag', 'phot_rp_mean_mag',
-        resultFile = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/gaiaxsimbad_results.txt'
+        xKeyWords = [['B','V','R'],['g','r'],['r','i','z'],['g','r','i','z'],['R','I'],['B','V','R','I'],]#
+        yKeyWords = ['phot_bp_mean_mag', 'phot_bp_mean_mag', 'phot_rp_mean_mag','phot_g_mean_mag','phot_rp_mean_mag', 'phot_g_mean_mag',]#
+        resultFile = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/gaiaxsimbad_results.txt'
 #        with open(resultFile,'a') as f:
         if True:
             for iKey in range(len(yKeyWords)):
@@ -184,7 +184,7 @@ def run():
                                 dat.append(csvFree.readCSVFile(fname))
                         k += 1.
 
-                fnameOut = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/allStars'
+                fnameOut = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/allStars'
                 for key in xKeys:
                     fnameOut = fnameOut + '_' + key
                 fnameOut = fnameOut + '_' + yKey + '_rv_template_logg.csv'
@@ -265,17 +265,27 @@ def run():
                             distTest = []
                             for i in range(len(indicesTest)):
                                 distTest.append(float(datTest.getData('angDist', indicesTest[i])))
-                            plt.scatter(dist, yDiff, c='b')
+                            plt.scatter(dist, yDiff, c='b', s=3)
             #                print('len(distTest) = ',len(distTest))
             #                print('len(yDiffTest) = ',len(yDiffTest))
-                            plt.scatter(distTest, yDiffTest, c='g')
+                            plt.scatter(distTest, yDiffTest, c='g', s=3)
                             plt.xlabel('angular distance')
                             if yKey == 'phot_bp_mean_mag':
                                 plt.ylabel('G_BP difference (measured - calcuated)')
                             elif yKey == 'phot_rp_mean_mag':
                                 plt.ylabel('G_RP difference (measured - calcuated)')
-                            plt.title(stars)
-                            plotname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/'
+                            title = stars+' '+str(degree)
+                            if degree == 1:
+                                title += 'st'
+                            elif degree == 2:
+                                title += 'nd'
+                            elif degree == 3:
+                                title += 'rd'
+                            else:
+                                title += 'th'
+                            title += ' degree polynomial'
+                            plt.title(title)
+                            plotname = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/'
                             for xKey in xKeys:
                                 plotname += xKey
                             plotname += '_'+yKey+'_'+stars
@@ -284,7 +294,7 @@ def run():
                             plt.savefig(plotname, format='pdf', frameon=False, bbox_inches='tight', pad_inches=0.1)
                             plt.show()
 
-                            plt.scatter(yTest, yCalc, c='b')
+                            plt.scatter(yTest, yCalc, c='b', s=3)
                             plt.plot([np.min(yTest)-0.5, np.max(yTest)+0.5],[np.min(yTest)-0.5, np.max(yTest)+0.5])
                             plt.xlim([np.min(yTest)-0.5, np.max(yTest)+0.5])
                             plt.ylim([np.min(yTest)-0.5, np.max(yTest)+0.5])
@@ -300,8 +310,18 @@ def run():
                             else:
                                 plt.xlabel('G measured')
                                 plt.ylabel('G calcuated')
-                            plt.title(stars)
-                            plotname = '/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/'
+                            title = stars+' '+str(degree)
+                            if degree == 1:
+                                title += 'st'
+                            elif degree == 2:
+                                title += 'nd'
+                            elif degree == 3:
+                                title += 'rd'
+                            else:
+                                title += 'th'
+                            title += ' degree polynomial'
+                            plt.title(title)
+                            plotname = '/Volumes/external/azuri/data/gaia/x-match/GaiaDR2xSimbad/'
                             for xKey in xKeys:
                                 plotname += xKey
                             plotname += '_'+yKey+'_'+stars
@@ -318,7 +338,7 @@ def run():
                             else:
                                 plotname += ' '+str(degree)+'th'
                             plotname += ' degree'
-                            outLine += ':'
+                            outLine += ': '+str(len(x))+' stars, '+str(len(xTest))+' test stars:'
                             outLine += ' coeffs=['
                             for iCoeff in np.arange(0,len(clf[0])):
                                 outLine += str(clf[0][iCoeff])+', '

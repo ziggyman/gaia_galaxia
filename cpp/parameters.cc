@@ -58,11 +58,11 @@ string obsGetDataDirOut(string const& whichOne){
 }
 
 string gaiaGetDataDirOut(){
-    return "/Volumes/obiwan/azuri/data/gaia/xy/";
+    return "/Volumes/work/azuri/data/gaia/xy/";
 }
 
 string gaiaDR2GetDataDirOut(){
-    return "/Volumes/obiwan/azuri/data/gaia/dr2/xy/";
+    return "/Volumes/work/azuri/data/gaia/dr2/xy/";
 }
 
 string gaiaTgasGetDataDirOut(){
@@ -70,15 +70,15 @@ string gaiaTgasGetDataDirOut(){
 }
 
 string gaiaXSimbadGetDataDirOut(){
-    return "/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/";
+    return "/Volumes/work/azuri/data/gaia/x-match/GaiaDR2xSimbad/xy/";
 }
 
 string gaiaXSimbadIGetDataDirOut(){
-    return "/Volumes/obiwan/azuri/data/gaia/x-match/simbadI/xy/";
+    return "/Volumes/work/azuri/data/gaia/x-match/simbadI/xy/";
 }
 
 string gaiaXSDSSGetDataDirOut(){
-    return "/Volumes/obiwan/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/xy/";
+    return "/Volumes/work/azuri/data/gaia/x-match/GaiaDR2distXSDSS12/xy/";
 }
 
 string obsGetFilter(){

@@ -1,10 +1,13 @@
 #ifndef __FILESANDLOCKS_H__
 #define __FILESANDLOCKS_H__
 
+#include <algorithm>
 #include <cstdio>
 #include <fcntl.h>
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <memory>
 #include <sys/file.h>
 #include <string>
 #include <unistd.h>

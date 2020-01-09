@@ -1,16 +1,20 @@
 #ifndef __CSVDATA_H__
 #define __CSVDATA_H__
 
+#include <algorithm>
+#include <cmath>
+#include <cstring>
 #include <iostream>
 #include <iterator>
 #include <fstream>
+#include <random>
 #include <sstream>
 #include <string>
 #include <sys/time.h>
 #include <vector>
 
-#include "galaxyMath.h"
-#include "parameters.h"
+//#include "galaxyMath.h"
+//#include "parameters.h"
 
 using namespace std;
 
@@ -55,6 +59,10 @@ struct CSVData{
     void append(CSVData const& csv);
 
     void removeRow(unsigned row);
+
+    void removeColumn(string const& colName);
+
+    void renameColumn(string const& oldName, string const& newName);
 
     /// find multiple entries with the same value for key
     /// return: first: vector of multiple values found
@@ -107,7 +115,7 @@ void appendFile(string const& inFileName, string const& outFileName);
 
 CSVData crossMatch(CSVData const& csvDataA, CSVData const& csvDataB, string const& key);
 
-vector<double> getGaiaG(CSVData const& csvData);
+//vector<double> getGaiaG(CSVData const& csvData);
 
 bool isEven(int n);
 
@@ -122,5 +130,7 @@ double mean(vector< double > const& valVec);
 int countCommasInLine(string const& line);
 
 int countCommas(string const& fileName);
+
+string replaceDelimiterInsideQuotes(const string& line, const string& delimiter);
 
 #endif
