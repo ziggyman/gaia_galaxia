@@ -237,17 +237,16 @@ void CSVData::append(vector< vector< string > > const& newLines){
 }
 
 void CSVData::append(CSVData const& csv){
-    if (header != csv.header){
-        string message = "";
-        for (int i=0; i<header.size(); ++i){
-            if (header[i].compare(csv.header[i]) != 0){
-                message += "header[" + to_string(i) + "] = "+header[i] + " != csv.header[" + to_string(i) + "] = "+csv.header[i];
-            }
-        }
-        throw std::runtime_error("CSVData::append: ERROR: headers are not the same: "+message);
+    for (unsigned i = 0; i < header.size(); ++i){
+        if (std::find(csv.header.begin(), csv.header.end(),header[i]) == csv.header.end())
+            throw std::runtime_error("CSVData::append: ERROR: headers are not the same: header keyword <"+header[i]+"> not found in csv");
     }
-    for (unsigned i = 0; i < csv.size(); ++i)
-        data.push_back(csv.getData(i));
+    for (unsigned i = 0; i < csv.size(); ++i){
+        vector<string> newLine(0);
+        for (unsigned j = 0; j < csv.header.size(); ++j)
+            newLine.push_back(csv.getData(header[j],i));
+        data.push_back(newLine);
+    }
 }
 
 vector<int> CSVData::find(string const& keyword, string const& value, long startIndex) const{

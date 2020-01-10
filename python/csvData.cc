@@ -23,6 +23,7 @@ PYBIND11_MODULE(csvData, m) {
         .def("addColumn", (void (CSVData::*)(string const&, vector< double > const&)) &CSVData::addColumn)
         .def("addColumn", (void (CSVData::*)(string const&)) &CSVData::addColumn)
         .def("removeColumn", (void (CSVData::*)(string const&)) &CSVData::removeColumn)
+        .def("removeRow", (void (CSVData::*)(unsigned)) &CSVData::removeRow)
         .def("renameColumn", (void (CSVData::*)(string const&, string const&)) &CSVData::renameColumn)
         .def("size", (int (CSVData::*)() const) &CSVData::size)
         .def("append", (void (CSVData::*)(vector< string > const&)) &CSVData::append)
