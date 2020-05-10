@@ -1,0 +1,4 @@
+rm galaxyMath.so
+rm ../python/galaxyMath.so
+g++ -O3 -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` galaxyMath.cc ../python/galaxyMath.cc -I/opt/local/include -L/usr/local/lib -l mgl -Wno-c++11-extensions -o galaxyMath.so
+cp galaxyMath.so ../python/

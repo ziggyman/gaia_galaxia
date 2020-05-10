@@ -133,4 +133,6 @@ int countCommas(string const& fileName);
 
 string replaceDelimiterInsideQuotes(const string& line, const string& delimiter);
 
+bool invalidChar(char c);
+void stripUnicode(string & str);
 #endif

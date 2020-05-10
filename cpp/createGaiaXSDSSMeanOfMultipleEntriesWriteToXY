@@ -1,0 +1,1 @@
+g++ -O3 -std=c++11 hammer.cc parameters.cc galaxyMath.cc csvData.cc gaiaXSDSSMeanOfMultipleEntriesWriteToXY.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o gaiaXSDSSMeanOfMultipleEntriesWriteToXY

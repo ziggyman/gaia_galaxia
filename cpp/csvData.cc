@@ -228,7 +228,7 @@ void CSVData::append(vector<string> const& newLine){
                 + to_string(newLine.size()) + " != header.size() = " + to_string(header.size()));
     }
     data.push_back(newLine);
-    cout << "new line appended to this->data: this->size() = " << size() << endl;
+    //cout << "new line appended to this->data: this->size() = " << size() << endl;
 }
 
 void CSVData::append(vector< vector< string > > const& newLines){
@@ -561,8 +561,12 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
         while (getline(inStream, line)){
             int nCommas = 0;
             int nQuotes = count(line.begin(), line.end(), '"');
-            if (!isEven(nQuotes)){
-                throw std::runtime_error("found uneven number of quotes in line <"+line+">");
+            while (!isEven(nQuotes)){
+                string newLine;
+                getline(inStream, newLine);
+                line += newLine;
+                nQuotes = count(line.begin(), line.end(), '"');
+//                throw std::runtime_error("found uneven number of quotes ("+to_string(nQuotes)+") in line <"+line+">");
             }
             line = replaceDelimiterInsideQuotes(line, delimiter);
             string lineSplit(line);
@@ -573,6 +577,8 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
 ///            }
 ///            else
             vector<string> elems = split(lineSplit,delimiter);
+            for (auto itElem=elems.begin(); itElem!=elems.end(); ++itElem)
+                stripUnicode(*itElem);
             nCommas = elems.size()-1;//count(line.begin(), line.end(), delimiter);
             //cout << "line contains " << nCommas << " commas" << endl;
             lineSplit = line;
@@ -900,4 +906,13 @@ string replaceDelimiterInsideQuotes(const string& line, const string& delimiter)
         lineOut = line;
     }
     return lineOut;
+}
+
+bool invalidChar (char c)
+{
+    return !(c>=0 && c <128);
+}
+void stripUnicode(string & str)
+{
+    str.erase(remove_if(str.begin(),str.end(), invalidChar), str.end());
 }
