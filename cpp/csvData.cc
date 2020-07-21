@@ -559,6 +559,7 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
         int iLine = 0;
         string line, previousLine;
         while (getline(inStream, line)){
+//            cout << "readCSVFile: line = <" << line << ">" << endl;
             int nCommas = 0;
             int nQuotes = count(line.begin(), line.end(), '"');
             while (!isEven(nQuotes)){

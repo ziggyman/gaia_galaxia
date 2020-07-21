@@ -190,6 +190,8 @@ public:
     string getKeyWordHammerX() const{return _KeyWordHammerX;}
     string getKeyWordHammerY() const{return _KeyWordHammerY;}
 
+    vector<Pixel> getPixelsSmallTowardsCenter();
+    
 private:
     vector<LonLatXY> _OuterLimits;
     vector<XY> _OuterLimitsXY;

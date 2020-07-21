@@ -58,6 +58,8 @@ vector< pair< float, float > > getHistogramLimits(int const& nBars,
                                                   float const& xMin,
                                                   float const& xMax);
 
+vector<double> getGaiaG(CSVData const& csvData);
+
 /**
  * @brief Return number of stars per bin
  * @param pixelsIn Vector of pixels for which to calculate the histogram

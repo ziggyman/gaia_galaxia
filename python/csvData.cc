@@ -16,6 +16,7 @@ PYBIND11_MODULE(csvData, m) {
         .def("getData", (vector<vector< string > > (CSVData::*)(vector<unsigned> const&) const) &CSVData::getData)
         .def("getData", (vector<string> (CSVData::*)(unsigned)) &CSVData::getData)
         .def("getData", (string (CSVData::*)(string const&, unsigned) const) &CSVData::getData)
+        .def("getData", (vector<string> (CSVData::*)(string const&, vector<unsigned> const&) const) &CSVData::getData)
         .def("getData", (vector<string> (CSVData::*)(string const&) const) &CSVData::getData)
         .def("setData", (void (CSVData::*)(vector< vector< string > > &)) &CSVData::setData)
         .def("setData", (void (CSVData::*)(string const&, unsigned, string const&)) &CSVData::setData)

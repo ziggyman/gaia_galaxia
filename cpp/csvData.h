@@ -115,8 +115,6 @@ void appendFile(string const& inFileName, string const& outFileName);
 
 CSVData crossMatch(CSVData const& csvDataA, CSVData const& csvDataB, string const& key);
 
-//vector<double> getGaiaG(CSVData const& csvData);
-
 bool isEven(int n);
 
 /// find first occurance of <element> in <vecOfElements>

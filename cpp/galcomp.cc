@@ -304,3 +304,48 @@ void makeHistogram(vector<Pixel> const& pixelsIn,
 
 }
 */
+
+vector<double> getGaiaG(CSVData const& csvData){
+    vector<string> filters = splitCSVLine(modelGetFilters());
+//    cout << "filters = [";
+//    for (auto i: filters) cout << i << ", ";
+//    cout << "]" << endl;
+    vector<double> gaiaG(0);
+
+    if (getPhotometricSystem().compare("SDSS") == 0){
+        vector<double> sdss_g;
+        vector<double> sdss_r;
+        vector<double> sdss_i;
+        for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
+            if (itFilter->compare("g") == 0)
+                sdss_g = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("g")));
+            else if (itFilter->compare("g") == 0)
+                sdss_r = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("r")));
+            else if (itFilter->compare("i") == 0)
+                sdss_i = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("i")));
+        }
+
+    //    cout << "getGaiaG: min(sdss_g) = " << *min_element(sdss_g.begin(), sdss_g.end()) << ", max(sdss_g) = " << *max_element(sdss_g.begin(), sdss_g.end()) << endl;
+        gaiaG = calcGaiaGFromgri(sdss_g, sdss_r, sdss_i);
+    }
+    else if (getPhotometricSystem().compare("UBV") == 0){
+        vector<double> ubv_b;
+        vector<double> ubv_v;
+        vector<double> ubv_i;
+        for (auto itFilter = filters.begin(); itFilter != filters.end(); ++itFilter){
+            if (itFilter->compare("B") == 0){
+                ubv_b = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("B")));
+            }
+            else if (itFilter->compare("V") == 0){
+                ubv_v = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("V")));
+            }
+            else if (itFilter->compare("I") == 0){
+                ubv_i = convertStringVectorToDoubleVector(csvData.getData(modelGetFilterKeyWord("I")));
+            }
+        }
+
+        gaiaG = calcGaiaGFromVI(ubv_v, ubv_i);
+    }
+    cout << "getGaiaG: min(gaiaG) = " << *min_element(gaiaG.begin(), gaiaG.end()) << ", max(gaiaG) = " << *max_element(gaiaG.begin(), gaiaG.end()) << endl;
+    return gaiaG;
+}

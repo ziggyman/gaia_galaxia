@@ -260,3 +260,44 @@ vector<Pixel> Hammer::getPixels(){
     }
     return pixels;
 }
+
+vector<Pixel> Hammer::getPixelsSmallTowardsCenter(){
+    /// running calcOuterLimits()
+    calcOuterLimits();
+
+    vector<Pixel> pixels(0);
+    pixels.reserve(_NPixX*_NPixY);
+    Pixel pix;
+    double xStep = (_OuterLimitsXY[1].x-_OuterLimitsXY[0].x)/_NPixX;
+    double yStep = (_OuterLimitsXY[1].y-_OuterLimitsXY[0].y)/_NPixY;
+    for (double xPosLeft=_OuterLimitsXY[0].x; xPosLeft<_OuterLimitsXY[1].x; xPosLeft+=xStep){
+        for (double yPosBottom=_OuterLimitsXY[0].y; yPosBottom<_OuterLimitsXY[1].y; yPosBottom+=yStep){
+            if ((pix.xLow > -0.05) and (pix.xHigh < 0.05) and (pix.yLow > -0.02) and (pix.yHigh < 0.02)){
+                for (unsigned ix=0; ix!=2; ++ix){
+                    for (unsigned iy=0; iy!=2; ++iy){
+                        pix.xLow = xPosLeft + (ix * xStep / 2.);
+                        pix.xHigh = xPosLeft + (ix * xStep / 2.) + (xStep / 2.);
+                        pix.yLow = yPosBottom + (iy * yStep / 2.);
+                        pix.yHigh = yPosBottom + (iy * yStep / 2.) + (yStep / 2.);
+                        if (isInside(pix.xLow, pix.yLow) || isInside(pix.xLow, pix.yHigh) ||
+                            isInside(pix.xHigh, pix.yLow) || isInside(pix.xHigh, pix.yHigh)){
+                            pixels.push_back(pix);
+                        }
+                        //cout << string("pixels[") << to_string(pixels.size()-1) << string("] = ") << pixels[pixels.size()-1] << endl;
+                    }
+                }
+            }
+            else{
+                pix.xLow = xPosLeft;
+                pix.xHigh = xPosLeft + xStep;
+                pix.yLow = yPosBottom;
+                pix.yHigh = yPosBottom + yStep;
+                if (isInside(pix.xLow, pix.yLow) || isInside(pix.xLow, pix.yHigh) ||
+                    isInside(pix.xHigh, pix.yLow) || isInside(pix.xHigh, pix.yHigh)){
+                    pixels.push_back(pix);
+                }
+            }
+        }
+    }
+    return pixels;
+}
