@@ -221,7 +221,7 @@ def splitPixelFile(pix):
                     with open(newFileNames[3],'w') as nf4:
                         nf4.write(header)
                         for i in range(csvData.size()):
-                            xy = XY(csvData.getData('hammerX',i),csvData.getData('hammerY',i))
+                            xy = XY(float(csvData.getData('hammerX',i)),float(csvData.getData('hammerY',i)))
                             for iPix in range(len(newPixels)):
                                 if newPixels[iPix].isInside(xy):
                                     if iPix == 0:
@@ -266,7 +266,7 @@ def compareProperMotions():
                     if tmpPix.isInside(xy):
                         print('found old pixel containing xy = ',xy)
                         splitPixelFile(tmpPix)
-                STOP
+#                STOP
 
             gaiaFileName = gaiaFileNameGen % (pixels[iPixel].xLow, pixels[iPixel].xHigh, pixels[iPixel].yLow, pixels[iPixel].yHigh)
             print('gaiaFileName = '+gaiaFileName)
@@ -277,9 +277,22 @@ def compareProperMotions():
                 print('gaiaFileName = '+gaiaFileName)
                 if not os.path.isfile(gaiaFileName):
                     print('ERROR: gaiaFileName '+gaiaFileName+' does not exist')
-                    STOP
+                    xy = XY(pixels[iPixel].xLow+0.0000001,pixels[iPixel].yLow+0.0000001)
+                    for tmpPix in pixelsOld:
+                        if tmpPix.isInside(xy):
+                            print('found old pixel containing xy = ',xy)
+                            splitPixelFile(tmpPix)
+                    gaiaFileName = gaiaFileNameGen % (pixels[iPixel].xLow, pixels[iPixel].xHigh, pixels[iPixel].yLow, pixels[iPixel].yHigh)
+                    hasXYZ = False
+                    if not os.path.isfile(gaiaFileName):
+                        gaiaFileName = gaiaFileName[:-4]+'_xyz.csv'
+                        hasXYZ = True
+                        print('gaiaFileName = '+gaiaFileName)
+                        if not os.path.isfile(gaiaFileName):
+                            print('ERROR: gaiaFileName '+gaiaFileName+' does not exist')
+                            STOP
                 gaiaData = csvFree.readCSVFile(gaiaFileName)
-            else:
+            if not hasXYZ:
                 gaiaData = process(gaiaFileName)
             nStarsGaia = gaiaData.size()
             pmVec = csvFree.convertStringVectorToDoubleVector(gaiaData.getData('pmXGal'))
