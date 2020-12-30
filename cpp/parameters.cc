@@ -20,7 +20,7 @@ boost::format obsGetFileNameOutRoot(string const& whichOne){
 }
 
 boost::format gaiaGetFileNameOutRoot(){
-    return boost::format("GaiaSource_%06f-%06f_%06f-%06f.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+    return boost::format("GaiaSource_%06f-%06f_%06f-%06f_xyz.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 }
 
 boost::format gaiaTgasGetFileNameOutRoot(){
@@ -41,7 +41,7 @@ boost::format gaiaXSDSSGetFileNameOutRoot(){
 
 string modelGetDataDirOut(){
 //    return "/Volumes/yoda/azuri/data/galaxia/xy_ubv_Vlt13/";
-    return "/Volumes/yoda/azuri/data/galaxia/ubv_Vlt21.5_1.0/xy/";
+    return "/Volumes/discovery/azuri/data/galaxia/ubv_Vlt21.5_1.0/xy/";
 }
 
 string obsGetDataDirOut(string const& whichOne){
@@ -58,15 +58,15 @@ string obsGetDataDirOut(string const& whichOne){
 }
 
 string gaiaGetDataDirOut(){
-    return "/Volumes/work/azuri/data/gaia/xy/";
+    return "/Volumes/discovery/azuri/data/gaia/dr2/xy/";
 }
 
 string gaiaDR2GetDataDirOut(){
-    return "/Volumes/work/azuri/data/gaia/dr2/xy/";
+    return "/Volumes/discovery/azuri/data/gaia/dr2/xy/";
 }
 
 string gaiaTgasGetDataDirOut(){
-    return "/Volumes/yoda/azuri/data/gaia-tgas/xy/";
+    return "/Volumes/discovery/azuri/data/gaia-tgas/xy/";
 }
 
 string gaiaXSimbadGetDataDirOut(){

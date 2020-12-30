@@ -734,15 +734,15 @@ vector<string> convertDoubleVectorToStringVector(vector<double> const& doubleVec
 
 vector<string> splitCSVLine(string const& line, char const& delimiter){
     string tmpStr(line);
-    cout << "splitCSVLine: tmpStr = " << tmpStr << endl;
+    cout << "splitCSVLine: tmpStr = " << tmpStr << ", delimiter = " << delimiter << endl;
     vector<string> out(0);
-    size_t kommaPos = tmpStr.find(to_string(delimiter));
+    size_t kommaPos = tmpStr.find(delimiter);
     cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
     while (kommaPos != string::npos){
         out.push_back(tmpStr.substr(0,kommaPos));
         tmpStr = tmpStr.substr(kommaPos+1);
         cout << "splitCSVLine: tmpStr = " << tmpStr << endl;
-        kommaPos = tmpStr.find(to_string(delimiter));
+        kommaPos = tmpStr.find(delimiter);
         cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
     }
     out.push_back(tmpStr);

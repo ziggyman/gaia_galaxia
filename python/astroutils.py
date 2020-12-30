@@ -3,6 +3,8 @@ from astropy.coordinates import SkyCoord
 import csv
 import hammer
 import numpy as np
+import subprocess
+import os
 
 # convert ra and dec (degrees) to ICRS (FK5 epoch=2000) l and b
 def radec2lb(ra, dec):
@@ -145,3 +147,60 @@ def add_xy_to_csv_file(fname_in, l_key, b_key, x_key, y_key, fname_out = None):
     if fname_out is None:
         fname_out = fname_in
     writeDictToCSV(dic, fname_out, header)
+
+def calcDistFromGaiaParallax(parallax,eParallax,gLon,gLat):
+    # Input data
+    # Specify either l,b or rlen. Set other to NA. rlen takes precedence.
+    # parallax    = 1 # parallax in mas (corrected for any zeropoint offset; +0.029mas in the catalogue)
+    # eParallax  = abs(0.2*w) # parallax uncertainty in mas
+    # glon = 340 # Galactic longitude in degrees (0 to 360)
+    # glat =  45 # Galactic latitude (-90 to +90)
+    rlen =  "NA" # length scale in pc
+    # Plotting parameters in pc
+    # rlo,rhi are range for computing normalization of posterior
+    # rplotlo, rplothi are plotting range (computed automatically if set to NA)
+    rlo = 0
+    rhi = 1e5
+    rplotlo = "NA"
+    rplothi = "NA"
+
+    # Define command and arguments
+    command = 'Rscript'
+    path2script = '/Users/azuri/entwicklung/r/Gaia-DR2-distances/run_distest_single.R'
+
+    # Variable number of args in a list
+    args = [str(parallax),str(eParallax),str(gLon),str(gLat),rlen,str(rlo),str(rhi),rplotlo,rplothi]
+
+    # Build subprocess command
+    cmd = [command, path2script] + args
+
+    # Get current working dir
+    cwd = os.getcwd()
+
+    # Set current working dir to path2script
+    os.chdir(path2script[:path2script.rfind('/')])
+
+    # check_output will run the command and store to result
+    x = subprocess.check_output(cmd, universal_newlines=True)
+
+    # Re set current working dir to original
+    os.chdir(cwd)
+
+    print('Returned:',type(x),': ',x)
+    lines = x.split('\n')
+    found = False
+    keywords = []
+    values = []
+    for line in lines:
+        if found:
+            values = line.split(' ')
+            print('dist = ',values[0])
+            found = False
+        if line.split(' ')[0] == 'rest[pc]':
+            found = True
+            keywords = line.split(' ')
+    result = {}
+    for i in range(len(keywords)):
+        result[keywords[i]:values[i]]
+    print('result = ',result)
+    return result

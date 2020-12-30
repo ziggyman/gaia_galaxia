@@ -42,7 +42,7 @@ void simulateObservation(vector<Pixel> const& pixels,
                          string const& filter,
                          string const& whichGaia);
 
-void comparePixel(vector<Pixel> const& pixels, 
+void comparePixel(vector<Pixel> const& pixels,
                   Pixel const& xyWindow,
                   string const& keyWord,
                   string const& whichObs);
@@ -66,25 +66,23 @@ vector<double> getGaiaG(CSVData const& csvData);
  * @param xyWindow xyWindow for which to calculate the histogram
  * @param whichOne Name of data set
  * @param keyWord  Key word for which to calculate the histogram
- * @param limits   Vector of pairs of lower and upper limits for each bin 
- *
+ * @param limits   Vector of pairs of lower and upper limits for each bin
+ */
 vector<int> getHistogram(vector<Pixel> const& pixelsIn,
                          Pixel const& xyWindow,
                          string const& whichOne,
                          string const& keyWord,
                          vector< pair< float, float > > limits);
 
-**
+/**
  * @brief
- * @param 
- *
+ * @param
+ */
 void makeHistogram(vector<Pixel> const& pixelsIn,
                    Pixel const& xyWindow,
-                   string const& whichOne,
+                   vector<string> const& whichOnes,
                    string const& keyWord,
-                   int const& nBars,
-                   float const& xMin,
-                   float const& xMax,
+                   vector< pair< float, float > > limits,
                    string const& outFileName);
-*/
+
 #endif

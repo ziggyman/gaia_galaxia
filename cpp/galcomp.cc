@@ -235,7 +235,7 @@ vector< pair< float, float > > getHistogramLimits(int const& nBars,
     cout << "makeHistogram: xMax = " << xMax << ", limits[" << nBars - 1 << "].second = " << limits[nBars-1].second << endl;
     return limits;
 }
-/*
+
 string getHeaderKeyWord(string const& keyWord,
                         string const& whichOne){
     if ((whichOne.compare("gaia") == 0) or (whichOne.compare("gaiaTgas") == 0))
@@ -258,15 +258,15 @@ vector<int> getHistogram(vector<Pixel> const& pixelsIn,
 
     string headerKeyWord = getHeaderKeyWord(keyWord, whichOne);
 
-    vector<float> data;
+    vector<double> data;
     if (headerKeyWord.compare("G") == 0){
         if ((whichOne.compare("gaia") == 0) or (whichOne.compare("gaiaTgas") == 0))
-            data = stars.getData(headerKeyWord);
+            data = convertStringVectorToDoubleVector(stars.getData(headerKeyWord));
         else
             data = getGaiaG(stars);
     }
     else
-        data = stars.getData(headerKeyWord);
+        data = convertStringVectorToDoubleVector(stars.getData(headerKeyWord));
 
     vector<int> histogram(limits.size(), int(0));
 
@@ -294,7 +294,7 @@ void makeHistogram(vector<Pixel> const& pixelsIn,
     auto itWhichOne = whichOnes.begin();
     for (auto itHist = histograms.begin(); itHist != histograms.end(); ++itHist, ++itWhichOne){
         *itHist = getHistogram(pixelsIn,
-                               xyWindow
+                               xyWindow,
                                *itWhichOne,
                                keyWord,
                                limits);
@@ -303,7 +303,7 @@ void makeHistogram(vector<Pixel> const& pixelsIn,
 
 
 }
-*/
+
 
 vector<double> getGaiaG(CSVData const& csvData){
     vector<string> filters = splitCSVLine(modelGetFilters());

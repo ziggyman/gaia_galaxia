@@ -37,9 +37,9 @@ class GalCompTest : public ::testing::Test {
 };
 
 // Tests that the Galcomp::Bar() method does Abc.
-TEST_F(GalCompTest, testReadCSVFile) {
+/*TEST_F(GalCompTest, testReadCSVFile) {
     cout << "running testReadCSVFile" << endl;
-    string fileName("/Volumes/yoda/azuri/data/gaia-tgas/xy/TgasSource_-0.000000-0.017678_-0.601041--0.583363.csv");
+    string fileName("/Volumes/discovery/azuri/data/gaia/dr2/xy/GaiaSource_-0.000000-0.017678_-0.601041--0.583363_xyz.csv");
     CSVData csvData = readCSVFile(fileName);
     cout << "csvData.header.size() = " << csvData.header.size() << ", csvData.data.size() = "
             << csvData.data.size() << ", csvData.data[0].size() = " << csvData.data[0].size() << endl;
@@ -50,7 +50,7 @@ TEST_F(GalCompTest, testReadCSVFile) {
 
 TEST_F(GalCompTest, testGetData){
     cout << "running testGetData" << endl;
-    string fileName("/Volumes/yoda/azuri/data/gaia-tgas/xy/TgasSource_-0.000000-0.017678_-0.601041--0.583363.csv");
+    string fileName("/Volumes/discovery/azuri/data/gaia/dr2/xy/GaiaSource_-0.000000-0.017678_-0.601041--0.583363_xyz.csv");
     CSVData csvData = readCSVFile(fileName);
     string l = csvData.getData(string("l"), 0);
     ASSERT_NE(l, string(""));
@@ -90,7 +90,7 @@ TEST_F(GalCompTest, testCalcIcFromBVg){
     vector<double> ubv_i_calc = calcIcFromBVg(ubv_b, ubv_v, log_g);
     vector<double> diff = difference(ubv_i, ubv_i_calc);
     cout << "testCalcIcFromBVg: mean(ubv_i - ubv_i_calc) = " << mean(diff) << ", sDev(ubv_i - ubv_i_calc) = " << standardDeviation(diff) << endl;
-}
+}*/
 
 TEST_F(GalCompTest, testComparePixel){
     Hammer hammer;
@@ -117,7 +117,7 @@ TEST_F(GalCompTest, testComparePixel){
     comparePixel(pixels,
                  xyWindow,
                  keyWord,
-                 "gaiaTgas");
+                 "gaia");
 }
 
 TEST_F(GalCompTest, testHistogram){
@@ -138,15 +138,19 @@ TEST_F(GalCompTest, testHistogram){
     float xMin = 5.0;
     float xMax = 21.0;
 
-    vector< pair< float, float > > limits = getHistogramLimits(int const& nBars,
-                                                               float const& xMin,
-                                                               float const& xMax);
+    vector< pair< float, float > > limits = getHistogramLimits(nBars,
+                                                               xMin,
+                                                               xMax);
 
     vector<int> hist = getHistogram(pixels,
                                     xyWindow,
                                     whichOne,
                                     keyWord,
                                     limits);
+    for (int i=0; i<hist.size(); i++){
+      cout << "hist[" << i << "]  = " << hist[i] << endl;
+
+    }
 }
 
 //TEST_F(GalCompTest, testGaiaMoveStarsToXY){
