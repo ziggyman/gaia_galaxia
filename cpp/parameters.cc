@@ -20,7 +20,7 @@ boost::format obsGetFileNameOutRoot(string const& whichOne){
 }
 
 boost::format gaiaGetFileNameOutRoot(){
-    return boost::format("GaiaSource_%06f-%06f_%06f-%06f_xyz.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
+    return boost::format("GaiaSource_%06f-%06f_%06f-%06f_xyz_dist.csv");// % (float(minX), float(maxX), float(minY), float(maxY))
 }
 
 boost::format gaiaTgasGetFileNameOutRoot(){
@@ -58,11 +58,11 @@ string obsGetDataDirOut(string const& whichOne){
 }
 
 string gaiaGetDataDirOut(){
-    return "/Volumes/discovery/azuri/data/gaia/dr2/xy/";
+    return "/Volumes/discovery/azuri/data/gaia/dr2_distances/xy/";
 }
 
 string gaiaDR2GetDataDirOut(){
-    return "/Volumes/discovery/azuri/data/gaia/dr2/xy/";
+    return "/Volumes/discovery/azuri/data/gaia/dr2_distances/xy/";
 }
 
 string gaiaTgasGetDataDirOut(){
@@ -206,11 +206,11 @@ string obsGetHeaderKeyWord(string const& keyWord){
         return "parallax";
     else if (keyWord.compare("error_parallax"))
         return "parallax_error";
-/*    else if (keyWord.compare(""))
-        return "";
-    else if (keyWord.compare(""))
-        return "";
-    else if (keyWord.compare(""))
+    else if (keyWord.compare("gLon"))
+        return "l";
+    else if (keyWord.compare("gLat"))
+        return "b";
+    /*else if (keyWord.compare(""))
         return "";*/
     else
         throw std::runtime_error("obsGetHeaderKeyWord: ERROR: unknown keyWord <"+keyWord+">");
