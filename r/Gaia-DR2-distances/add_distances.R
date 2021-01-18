@@ -50,7 +50,7 @@ for (i in 1:length(ws)) {
     rhi <- 1e5
     rplotlo <- NA
     rplothi <- NA
-    res <- getDistFromGaia(w=w, wsd=wsd, glon=glon, glat=glat, calcIfBimod=TRUE)
+    res <- getDistFromGaia(w=w, wsd=wsd, glon=glon, glat=glat, calcIfBimod=FALSE)
 #    print(c("res = ",res))
 #    print(c("res$result_flag = ",res$result_flag))
     data$`rEst[pc]`[[i]] <- res[1]#$`rEst[pc]`

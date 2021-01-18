@@ -148,21 +148,21 @@ void Hammer::calcOuterLimits(){
     return;
 }
 
-vector<LonLatXY> Hammer::getOuterLimits(){
-    if (_OuterLimits[0].lonLat.lon == 0.0)
-        calcOuterLimits();
+vector<LonLatXY> Hammer::getOuterLimits() const{
+//    if (_OuterLimits[0].lonLat.lon == 0.0)
+//        calcOuterLimits();
     return _OuterLimits;
 }
 
-vector<XY> Hammer::getOuterLimitsXY(){
-    if (_OuterLimitsXY[0].x == 0.0)
-        calcOuterLimits();
+vector<XY> Hammer::getOuterLimitsXY() const{
+//    if (_OuterLimitsXY[0].x == 0.0)
+//        calcOuterLimits();
     return _OuterLimitsXY;
 }
 
-bool Hammer::isInside(double x, double y){
-    if (_OuterLimits.size() == 0)
-        calcOuterLimits();
+bool Hammer::isInside(double x, double y) const{
+//    if (_OuterLimits.size() == 0)
+//        calcOuterLimits();
     if ((x < _OuterLimitsXY[0].x) || (x > _OuterLimitsXY[1].x)){
         if (Debug_isInside)
             cout << "x < _OuterLimitsXY[0].x) || (x > _OuterLimitsXY[1].x" << endl;
@@ -237,10 +237,7 @@ void Hammer::plotGrid(string plotName) const{
     return;
 }
 */
-vector<Pixel> Hammer::getPixels(){
-    /// running calcOuterLimits()
-    calcOuterLimits();
-
+vector<Pixel> Hammer::getPixels() const{
     vector<Pixel> pixels(0);
     pixels.reserve(_NPixX*_NPixY);
     Pixel pix;
@@ -261,10 +258,7 @@ vector<Pixel> Hammer::getPixels(){
     return pixels;
 }
 
-vector<Pixel> Hammer::getPixelsSmallTowardsCenter(){
-    /// running calcOuterLimits()
-    calcOuterLimits();
-
+vector<Pixel> Hammer::getPixelsSmallTowardsCenter() const{
     vector<Pixel> pixels(0);
     pixels.reserve(_NPixX*_NPixY);
     Pixel pix;
@@ -300,4 +294,19 @@ vector<Pixel> Hammer::getPixelsSmallTowardsCenter(){
         }
     }
     return pixels;
+}
+
+Pixel Hammer::getPixelContaining(XY const xy, bool const smallerPixelsTowardsCenter) const{
+    vector<Pixel> pixels;
+    if (smallerPixelsTowardsCenter){
+        pixels = getPixelsSmallTowardsCenter();
+    }
+    else{
+        pixels = getPixels();
+    }
+    for (unsigned i=0; i<pixels.size(); i++){
+        if (isInside(pixels[i],xy))
+            return pixels[i];
+    }
+    return Pixel(0.,0.,0.,0.);
 }

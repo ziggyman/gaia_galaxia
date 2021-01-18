@@ -1,1 +1,1 @@
-../../gaia_galaxia/python/testGaiaAddDistances.py
+../../python/testGaiaAddDistances.py

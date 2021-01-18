@@ -327,8 +327,10 @@ getDistFromGaia <- function(w=w, wsd=wsd, glon=glon, glat=glat, calcIfBimod=FALS
     }
     sphharm <- sphharm.basis(glon, glat, lmax=sqrt(mod$rank)-1)
     #print("sphharm loaded, modelisloaded=TRUE")
-    #print(c("sphharm = ",sphharm,": data.frame(sphharm) = ",data.frame(sphharm)))
+    #print(c("sphharm = ",sphharm))
     #print(c("mod = ",mod))
+    #debug(predict(mod, data.frame(sphharm)))
+    #print(c("pred = ",pred))
     rlen <- 10^(predict(mod, data.frame(sphharm))) # call *must* have "data.frame(sphharm)" in it
     #print(c("rlen = ",rlen))
   }
@@ -363,6 +365,7 @@ getDistFromGaia <- function(w=w, wsd=wsd, glon=glon, glat=glat, calcIfBimod=FALS
     failMessage <- rHDI$message
   }
   if(rHDI$code==-1) { # valid HDI failure, find quantiles
+    return(c(NA, NA, NA, NA, NA, NA))
     rQuant <- quantile.distpost3(w=w, wsd=wsd, rlen=rlen,
                        rInit=rMode, rStep=rMode/2,
                        probs=c( 0.5, (1-HDIprob)/2, (1+HDIprob)/2 ),
@@ -378,16 +381,16 @@ getDistFromGaia <- function(w=w, wsd=wsd, glon=glon, glat=glat, calcIfBimod=FALS
   }
 
   # Print summary statistics
-  cat("w[mas] wsd[mas] wsd/w  glon[deg] glat[deg]\n")
-  cat(1e3*w, 1e3*wsd, wsd/w, " ", glon, glat, "\n\n")
-  cat("rest[pc] rlo[pc] rhi[pc] rlen[pc] result_flag modality_flag\n")
-  cat(rRes[1:3], rlen, as.integer(rRes[4]), as.integer(rRes[5]), "\n\n")
-  if(rRes[4]==1) {
-    cat("HDI: probability contained, #steps to find:", HDIinfo, "\n")
-  }
-  if(rRes[5]==2) {
-    cat("Bimodal: modes at", modes, "\n")
-  }
+  #cat("w[mas] wsd[mas] wsd/w  glon[deg] glat[deg]\n")
+  #cat(1e3*w, 1e3*wsd, wsd/w, " ", glon, glat, "\n\n")
+  #cat("rest[pc] rlo[pc] rhi[pc] rlen[pc] result_flag modality_flag\n")
+  #cat(rRes[1:3], rlen, as.integer(rRes[4]), as.integer(rRes[5]), "\n\n")
+  #if(rRes[4]==1) {
+  #  cat("HDI: probability contained, #steps to find:", HDIinfo, "\n")
+  #}
+  #if(rRes[5]==2) {
+  #  cat("Bimodal: modes at", modes, "\n")
+  #}
   if(!is.na(failMessage)) {
     cat(failMessage, "\n")
   }

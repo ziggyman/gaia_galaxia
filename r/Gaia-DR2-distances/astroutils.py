@@ -1,1 +1,1 @@
-../../gaia_galaxia/python/astroutils.py
+../../python/astroutils.py

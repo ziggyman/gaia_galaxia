@@ -39,6 +39,8 @@ struct Pixel{
     double yLow;
     double yHigh;
 
+    Pixel() : xLow(0.0), xHigh(0.0), yLow(0.0), yHigh(0.0){}
+    Pixel(double xl, double xh, double yl, double yh) : xLow(xl), xHigh(xh), yLow(yl), yHigh(yh){}
     /**
      * @brief Check if xy is inside pixel
      * @param pixel Pixel to check if xy position is inside
@@ -68,7 +70,7 @@ struct Pixel{
 struct LonLat{
     double lon;
     double lat;
-    
+
     LonLat() : lon(0.0), lat(0.0){}
     LonLat(double l, double b): lon(l), lat(b){}
 };
@@ -83,7 +85,7 @@ public:
     /**
      * @brief Standard Constructor
      * @param deg
-     * @return 
+     * @return
      */
     Hammer()
       : _OuterLimits(2*1800+2),
@@ -95,7 +97,9 @@ public:
         _KeyWordHammerX("hammerX"),
         _KeyWordHammerY("hammerY"),
         Debug_isInside(false)
-    {}
+    {
+        calcOuterLimits();
+    }
 
     ~Hammer(){}
 
@@ -120,9 +124,9 @@ public:
      * @param x x-coordinate
      * @param y y-coordinate
      */
-    bool isInside(double x, double y);
+    bool isInside(double x, double y) const;
 
-    bool isInside(XY const& xy){
+    bool isInside(XY const& xy) const{
         return isInside(xy.x, xy.y);
     }
 
@@ -139,7 +143,16 @@ public:
     /**
      * @brief return pixels within outer Hammer sphere limits
      */
-    vector<Pixel> getPixels();
+    vector<Pixel> getPixels() const;
+
+    vector<Pixel> getPixelsSmallTowardsCenter() const;
+
+    /**
+    * @brief return pixel containing XY
+    * @param xy: XY object with the coordinates to find the pixel containing these
+    * @param smallerPixelsTowardsCenter: bool: use the smaller pixels towards the Galactic Center?
+    **/
+    Pixel getPixelContaining(XY const xy, bool const smallerPixelsTowardsCenter=true) const;
 
     /**
      * @brief Convert longitude and latitude to the Hammer Projection x and y
@@ -181,8 +194,8 @@ public:
         return rad * 180.0 / PI;
     }
 
-    vector<LonLatXY> getOuterLimits();
-    vector<XY> getOuterLimitsXY();
+    vector<LonLatXY> getOuterLimits() const;
+    vector<XY> getOuterLimitsXY() const;
     bool getDebug_isInside() const{return Debug_isInside;}
 
     void setDebug_isInside(bool const setDebug){Debug_isInside = setDebug;}
@@ -190,8 +203,6 @@ public:
     string getKeyWordHammerX() const{return _KeyWordHammerX;}
     string getKeyWordHammerY() const{return _KeyWordHammerY;}
 
-    vector<Pixel> getPixelsSmallTowardsCenter();
-    
 private:
     vector<LonLatXY> _OuterLimits;
     vector<XY> _OuterLimitsXY;
@@ -204,7 +215,7 @@ private:
 
     const string _KeyWordHammerX;
     const string _KeyWordHammerY;
-    
+
     bool Debug_isInside;
 
 };
