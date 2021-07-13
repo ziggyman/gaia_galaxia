@@ -60,8 +60,8 @@ def abs2app(data,noext=False,dered=False,corr=False,append=False):
         ebv=ebv*_extcorr(data['exbv_schlegel_inf'])
 
     aebv=_aebv_factor()
-    j=0L
-    for temp in data.keys():
+    j=0
+    for temp in list(data.keys()):
         temp1=temp.lower()
         if temp1 in aebv:
 #            print temp

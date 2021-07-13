@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(csvFree, m) {
+PYBIND11_MODULE(csvFree2, m) {
     m.doc() = "pybind11 csvFree plugin"; // optional module docstring
 
     m.def("readHeader", (vector<string> (*)(string const&, string const&)) &readHeader);

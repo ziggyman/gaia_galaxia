@@ -189,7 +189,7 @@ def calcDistFromGaiaParallax(parallax,eParallax,gLon,gLat,doPlot=False):
 
     # Define command and arguments
     command = 'Rscript'
-    path2script = '/Users/azuri/entwicklung/r/Gaia-DR2-distances/run_distest_single.R'
+    path2script = '/Users/azuri/entwicklung/gaia_galaxia/r/Gaia-DR2-distances/run_distest_single.R'
 
     # Variable number of args in a list
     args = [str(parallax),str(eParallax),str(gLon),str(gLat),rlen,str(rlo),str(rhi),rplotlo,rplothi]

@@ -412,7 +412,7 @@ int appendCSVDataToXYFiles(CSVData const& csvData,
                         time_t findStart, findEnd;
                         time (&findStart); // note time before execution
 
-                        string lockName = "/var/lock/lock_" + to_string(iPix) + lockSuffix;
+                        string lockName = "/Users/azuri/lock/lock_" + to_string(iPix) + lockSuffix;
                         if (outFiles[iPix]->is_open())
                             closeFilesAndDeleteLocks(filesOpened,
                                                      locks,

@@ -1,0 +1,11 @@
+rm moveStarsToXY2.so
+rm ../python/moveStarsToXY2.so
+g++ -o3 -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` moveStarsToXY.cc parameters.cc filesAndLocks.cc csvData.cc hammer.cc ../python/moveStarsToXY2.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o moveStarsToXY2.so
+cp moveStarsToXY2.so ../python/
+
+#rm moveStarsToXY.so
+#rm ../python/moveStarsToXY.so
+#clang++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` moveStarsToXY.cc parameters.cc filesAndLocks.cc csvData.cc hammer.cc ../python/moveStarsToXY.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -Wno-c++11-extensions -o moveStarsToXY.so
+##g++ -o3 -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` moveStarsToXY.cc parameters.cc filesAndLocks.cc csvData.cc hammer.cc ../python/moveStarsToXY.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -l mgl -Wno-c++11-extensions -o moveStarsToXY.so
+#cp moveStarsToXY.so ../python/
+

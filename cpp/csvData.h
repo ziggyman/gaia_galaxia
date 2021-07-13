@@ -78,6 +78,8 @@ struct CSVData{
     vector<int> find(string const& keyword, string const& value, long startIndex=0) const;
 
     void printHeader() const;
+
+    void sort(vector<unsigned> const& indices);
 /*    void setDataSize(int nCols, int nStars){
         data.resize(nCols);
         for (auto itDat=data.begin(); itDat!=data.end(); ++itDat)
@@ -103,7 +105,7 @@ void writeStrVecToFile(vector<string> const& strVec, ofstream& outFile);
 CSVData readCSVFile(string const& fileName, string const& delimiter, bool const& removeBadLines);
 CSVData readCSVFile(string const& fileName);
 
-void writeCSVFile(CSVData const& dat, string const& fileName);
+void writeCSVFile(CSVData const& dat, string const& fileName, char const& delimiter=',');
 vector<string> splitCSVLine(string const& line, char const& delimiter=',');
 
 vector<double> convertStringVectorToDoubleVector(vector<string> const& stringVector);

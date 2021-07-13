@@ -458,6 +458,14 @@ void CSVData::printHeader() const{
     cout << endl;
 }
 
+void CSVData::sort(vector<unsigned> const& indices){
+  vector< vector< string > > dataNew;
+  for (unsigned i=0; i<indices.size(); ++i){
+    dataNew.push_back(this->data[indices[i]]);
+  }
+  this->data = dataNew;
+}
+
 vector<string> split(string const& str, string const& delimiter){
     vector<string> elems;
     size_t pos = 0;
@@ -532,7 +540,7 @@ int countCommas(string const& fileName){
     int iLine = 0;
     while (getline(inStream, line)){
         nCommas = countCommasInLine(line);
-        cout << "csvData::countCommas: nCommas = " << nCommas << endl;
+        //cout << "csvData::countCommas: nCommas = " << nCommas << endl;
         if ((iLine > 0) && (nCommas != nCommasLast)){
             cout << "csvData: count Commas: ERROR: nCommasLast(=" << nCommasLast << ") != nCommas(=" << nCommas << ")" << endl;
         }
@@ -544,6 +552,7 @@ int countCommas(string const& fileName){
 }
 
 CSVData readCSVFile(string const& fileName, string const& delimiter, bool const& removeBadLines){
+    cout << "readCSVFile: delimiter = <" << delimiter << ">" << endl;
     ifstream inStream(fileName);
     if (!inStream.is_open()){
         cout << "file with name <" << fileName << "> is not open" << endl;
@@ -571,6 +580,7 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
             }
             line = replaceDelimiterInsideQuotes(line, delimiter);
             string lineSplit(line);
+//            cout << "lineSplit = " << lineSplit << endl;
 ///            if (nQuotes > 0){
 ///                vector<string> quotes = split(lineSplit,"\"");
 ///                for (size_t iS=0; iS<quotes.size(); ++iS)
@@ -578,8 +588,10 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
 ///            }
 ///            else
             vector<string> elems = split(lineSplit,delimiter);
-            for (auto itElem=elems.begin(); itElem!=elems.end(); ++itElem)
+            for (auto itElem=elems.begin(); itElem!=elems.end(); ++itElem){
                 stripUnicode(*itElem);
+//                cout << "elem = " << *itElem << endl;
+            }
             nCommas = elems.size()-1;//count(line.begin(), line.end(), delimiter);
             //cout << "line contains " << nCommas << " commas" << endl;
             lineSplit = line;
@@ -657,14 +669,22 @@ CSVData readCSVFile(string const& fileName){
     return readCSVFile(fileName, ",", true);
 }
 
-void writeCSVFile(CSVData const& dat, string const& fileName){
+void writeCSVFile(CSVData const& dat, string const& fileName, char const& delimiter){
+    cout << "writeCSVFile: delimiter = <" << delimiter << ">" << endl;
+    char del(delimiter);
+    char emptyChar;
+    if (delimiter == emptyChar)
+        del = ',';
+
+    cout << "del = <" << del << ">" << endl;
     std::ofstream myfile;
     myfile.open(fileName);
 
     ///write header
     string outStr = dat.header[0];
     for (int i=1; i<dat.header.size(); i++){
-        outStr += ","+dat.header[i];
+        outStr += del;
+        outStr += dat.header[i];
     }
     outStr += "\n";
     myfile << outStr;
@@ -674,9 +694,11 @@ void writeCSVFile(CSVData const& dat, string const& fileName){
         vector<string> data = dat.getData(iLine);
         outStr = data[0];
         for (int i=1; i<data.size(); i++){
-            outStr += ","+data[i];
+            outStr += del;
+            outStr += data[i];
         }
         outStr += "\n";
+        cout << "outStr = " << outStr << endl;
         myfile << outStr;
     }
 
@@ -734,16 +756,16 @@ vector<string> convertDoubleVectorToStringVector(vector<double> const& doubleVec
 
 vector<string> splitCSVLine(string const& line, char const& delimiter){
     string tmpStr(line);
-    cout << "splitCSVLine: tmpStr = " << tmpStr << ", delimiter = " << delimiter << endl;
+//    cout << "splitCSVLine: tmpStr = " << tmpStr << ", delimiter = " << delimiter << endl;
     vector<string> out(0);
     size_t kommaPos = tmpStr.find(delimiter);
-    cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
+//    cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
     while (kommaPos != string::npos){
         out.push_back(tmpStr.substr(0,kommaPos));
         tmpStr = tmpStr.substr(kommaPos+1);
-        cout << "splitCSVLine: tmpStr = " << tmpStr << endl;
+//        cout << "splitCSVLine: tmpStr = " << tmpStr << endl;
         kommaPos = tmpStr.find(delimiter);
-        cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
+//        cout << "splitCSVLine: kommaPos = " << kommaPos << endl;
     }
     out.push_back(tmpStr);
     return out;

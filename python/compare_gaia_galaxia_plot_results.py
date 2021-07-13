@@ -7,7 +7,7 @@ import subprocess
 import csvData
 import csvFree
 from hammer import Pixel,XY,LonLat,Hammer
-from pnAlignment import plotLBMarks
+from myUtils import plotLBMarks
 
 resultsFile = '/Users/azuri/daten/illume_research/martin/results.csv'
 results = csvFree.readCSVFile(resultsFile)

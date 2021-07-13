@@ -4,8 +4,8 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(csvData, m) {
-    m.doc() = "pybind11 csvData plugin"; // optional module docstring
+PYBIND11_MODULE(csvData2, m) {
+    m.doc() = "pybind11 csvData2 plugin"; // optional module docstring
 
     py::class_<CSVData>(m, "CSVData")
         .def(py::init<>())
