@@ -10,7 +10,7 @@ gaiaFileNameGen = '/Volumes/discovery/azuri/data/gaia/dr2/xy/GaiaSource_%0.6f-%0
 fNameOut = '/Users/azuri/daten/illume_research/martin/results.csv'
 iPixel = 1001
 
-withDwarfs = False
+withDwarfs = True
 
 ham = Hammer()
 pixels = ham.getPixelsSmallTowardsCenter()
@@ -18,7 +18,7 @@ pixelsOld = ham.getPixels()
 print('len(pixels) = ',len(pixels))
 print('len(pixelsOld) = ',len(pixelsOld))
 
-minGBP,maxGBP = [0.,25.]#getGBPLimits(100)
+minGBP,maxGBP = [-100.,25.]#getGBPLimits(100)
 print('minGBP = ',minGBP,', maxGBP = ',maxGBP)
 
 print('we have ',len(pixels),' pixels in the Hammer projection')
@@ -122,23 +122,6 @@ def compareNumberOfStars():
                 gaiaFileName = gaiaFileNameGen % (pixels[iPixel].xLow, pixels[iPixel].xHigh, pixels[iPixel].yLow, pixels[iPixel].yHigh)
                 print('gaiaFileName = '+gaiaFileName)
                 hasXYZ = False
-                if not os.path.isfile(gaiaFileName):
-                    hasXYZ = True
-                    gaiaFileName = gaiaFileName[:-4]+'_xyz.csv'
-                    print('gaiaFileName = '+gaiaFileName)
-                    if not os.path.isfile(gaiaFileName):
-                        print('ERROR: gaiaFileName '+gaiaFileName+' does not exist')
-                        STOP
-                    gaiaData = csvFree.readCSVFile(gaiaFileName)
-                else:
-                    gaiaData = process(gaiaFileName)
-                if not withDwarfs:
-                    logg = np.asarray(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('rv_template_logg')))
-                    giants = np.where(logg < 3.5)[0]
-                    gaiaDataSize = len(giants)
-                else:
-                    gaiaDataSize = gaiaData.size()
-                gaiaData = None
 
                 galaxiaData = csvFree.readCSVFile(galaxiaFileName)
 
@@ -173,13 +156,41 @@ def compareNumberOfStars():
 
                 gbp = np.array(csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('G_BP')))
                 galaxiaData = None
-    #            print('gbp = ',gbp)
-                print('maxGBP = ',maxGBP)
+                maxGBPGalaxia = np.max(gbp)
+                print('maxGBPGalaxia = ',maxGBPGalaxia)
+#                print('maxGBP = ',maxGBP)
                 goodStars = np.where(gbp <= maxGBP)
                 gbp = None
                 print('goodStars[0] = ',goodStars[0])
                 nGoodStarsGalaxia = len(goodStars[0])
                 goodStars = None
+
+                if not os.path.isfile(gaiaFileName):
+                    hasXYZ = True
+                    gaiaFileName = gaiaFileName[:-4]+'_xyz.csv'
+                    print('gaiaFileName = '+gaiaFileName)
+                    if not os.path.isfile(gaiaFileName):
+                        print('ERROR: gaiaFileName '+gaiaFileName+' does not exist')
+                        STOP
+                    gaiaData = csvFree.readCSVFile(gaiaFileName)
+                else:
+                    gaiaData = process(gaiaFileName)
+                if not withDwarfs:
+                    logg = np.asarray(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('rv_template_logg')))
+                    giants = np.where(logg < 3.5)[0]
+                    gbp = np.asarray(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('phot_bp_mean_mag')))[giants]
+                    gbp = np.where(gbp <= maxGBPGalaxia)[0]
+                    gaiaDataSize = len(giants)
+                else:
+                    gbp = csvFree.convertStringVectorToDoubleVector(gaiaData.getData('phot_bp_mean_mag'))
+                    gbp = np.where(gbp <= maxGBPGalaxia)[0]
+                    gaiaDataSize = gbp.size()
+#                goodStars = np.where(gbp <= maxGBP)
+                gbp = None
+#                print('goodStars[0] = ',goodStars[0])
+#                nGoodStarsGalaxia = len(goodStars[0])
+                goodStars = None
+                gaiaData = None
                 print('found ',nGoodStarsGalaxia,' stars in magnitude limits in Galaxia and ',gaiaDataSize,' stars in GAIA')
 
                 with open(fNameOut,'a') as f:
@@ -268,7 +279,9 @@ def compareProperMotions():
     if len(pixelsDone) == 0:
         with open(fNameOut,'w') as f:
             f.write('iPixel,pixelxMin,pixelXMax,pixelYMin,pixelYMax,nStarsGaia,nStarsGalaxia,mean_pm_x_gaia,sdev_pm_x_gaia,mean_pm_y_gaia,sdev_pm_y_gaia,mean_pm_z_gaia,sdev_pm_z_gaia,mean_pm_x_galaxia,sdev_pm_x_galaxia,mean_pm_y_galaxia,sdev_pm_y_galaxia,mean_pm_z_galaxia,sdev_pm_z_galaxia\n')
-    for iPixel in np.random.shuffle(np.arange(0,len(pixels),1)):#len(pixels)-1,0,-1):
+    iPix = np.arange(0,len(pixels),1)
+    np.random.shuffle(iPix)
+    for iPixel in iPix:#np.arange(len(pixels)-1,0,-1):
         if iPixel not in pixelsDone:
             print(' ')
             print('running on pixel ',iPixel)
@@ -282,62 +295,6 @@ def compareProperMotions():
                         print('found old pixel containing xy = ',xy)
                         splitPixelFile(tmpPix)
 #                STOP
-
-            gaiaFileName = gaiaFileNameGen % (pixels[iPixel].xLow, pixels[iPixel].xHigh, pixels[iPixel].yLow, pixels[iPixel].yHigh)
-            print('gaiaFileName = '+gaiaFileName)
-            hasXYZ = False
-            if not os.path.isfile(gaiaFileName):
-                hasXYZ = True
-                gaiaFileName = gaiaFileName[:-4]+'_xyz.csv'
-                print('gaiaFileName = '+gaiaFileName)
-                if not os.path.isfile(gaiaFileName):
-                    print('ERROR: gaiaFileName '+gaiaFileName+' does not exist')
-                    xy = XY(pixels[iPixel].xLow+0.0000001,pixels[iPixel].yLow+0.0000001)
-                    for tmpPix in pixelsOld:
-                        if tmpPix.isInside(xy):
-                            print('found old pixel containing xy = ',xy)
-                            splitPixelFile(tmpPix)
-                    gaiaFileName = gaiaFileNameGen % (pixels[iPixel].xLow, pixels[iPixel].xHigh, pixels[iPixel].yLow, pixels[iPixel].yHigh)
-                    hasXYZ = False
-                    if not os.path.isfile(gaiaFileName):
-                        gaiaFileName = gaiaFileName[:-4]+'_xyz.csv'
-                        hasXYZ = True
-                        print('gaiaFileName = '+gaiaFileName)
-                        if not os.path.isfile(gaiaFileName):
-                            print('ERROR: gaiaFileName '+gaiaFileName+' does not exist')
-                            STOP
-                gaiaData = csvFree.readCSVFile(gaiaFileName)
-            if not hasXYZ:
-                gaiaData = process(gaiaFileName)
-            cond = np.asarray(np.array(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('rv_template_logg'))) < 3.5)
-            gaiaGiants = cond.nonzero()[0]
-            print('gaiaGiants = ',gaiaGiants)
-            print('found ',len(giants),' giants in gaiaData')
-            if withDwarfs:
-                gaiaDwarfs = np.invert(cond).nonzero()[0]#np.where(logg >= 3.5)[0]
-            #gaiaGiants = np.where(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('rv_template_logg')) < 3.5)[0]
-
-            if withDwarfs:
-                nStarsGaia = gaiaData.size()
-            else:
-                nStarsGaia = len(gaiaGiants)
-            pmVec = csvFree.convertStringVectorToDoubleVector(gaiaData.getData('pmXGal'))
-            if not withDwarfs:
-                pmVec = pmVec[gaiaGiants]
-            mean_pm_x_gaia = np.mean(pmVec)
-            sdev_pm_x_gaia = np.std(pmVec)
-            pmVec = csvFree.convertStringVectorToDoubleVector(gaiaData.getData('pmYGal'))
-            if not withDwarfs:
-                pmVec = pmVec[gaiaGiants]
-            mean_pm_y_gaia = np.mean(pmVec)
-            sdev_pm_y_gaia = np.std(pmVec)
-            pmVec = csvFree.convertStringVectorToDoubleVector(gaiaData.getData('pmZGal'))
-            if not withDwarfs:
-                pmVec = pmVec[gaiaGiants]
-            mean_pm_z_gaia = np.mean(pmVec)
-            sdev_pm_z_gaia = np.std(pmVec)
-            pmVec = None
-            gaiaData = None
 
             galaxiaData = csvFree.readCSVFile(galaxiaFileName)
 
@@ -368,36 +325,120 @@ def compareProperMotions():
 #            print('galaxiaData.header = ',galaxiaData.header)
 #            print('galaxiaData.size() = ',galaxiaData.size())
 
-            gbp = np.array(csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('G_BP')))
-#            print('gbp = ',gbp)
-            print('maxGBP = ',maxGBP)
-            goodStars = np.where(gbp <= maxGBP)
-            gbp = None
-            print('goodStars[0] = ',goodStars[0])
-            nGoodStarsGalaxia = len(goodStars[0])
-            print('found ',nGoodStarsGalaxia,' stars in magnitude limits in Galaxia and ',nStarsGaia,' stars in GAIA')
+            if galaxiaData.size() == 0:
+                nGoodStarsGalaxia = 0
+                mean_pm_x_galaxia = float("NaN")
+                sdev_pm_x_galaxia = float("NaN")
+                mean_pm_y_galaxia = float("NaN")
+                sdev_pm_y_galaxia = float("NaN")
+                mean_pm_z_galaxia = float("NaN")
+                sdev_pm_z_galaxia = float("NaN")
+            else:
+                gbp = np.array(csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('G_BP')))
+                print('galaxia: gbp = ',gbp)
+                nStarsGalaxia = gbp.shape[0]
+                goodStars = np.where(gbp <= maxGBP)
+                minGBPGalaxia = np.min(gbp)
+                maxGBPGalaxia = np.max(gbp)
+                print('galaxia: maxGBP = ',maxGBP,', minGBPGalaxia = ',minGBPGalaxia,', maxGBPGalaxia = ',maxGBPGalaxia)
+                print('galaxia: goodStars[0] = ',goodStars[0])
+                nGoodStarsGalaxia = len(goodStars[0])
 
-            pmVec = csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('px'))
-            mean_pm_x_galaxia = np.mean(pmVec)
-            sdev_pm_x_galaxia = np.std(pmVec)
-            pmVec = csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('py'))
-            mean_pm_y_galaxia = np.mean(pmVec)
-            sdev_pm_y_galaxia = np.std(pmVec)
-            pmVec = csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('pz'))
-            mean_pm_z_galaxia = np.mean(pmVec)
-            sdev_pm_z_galaxia = np.std(pmVec)
-            pmVec = None
-            galaxiaData = None
+                pmVec = csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('px'))
+                mean_pm_x_galaxia = np.mean(pmVec)
+                sdev_pm_x_galaxia = np.std(pmVec)
+                pmVec = csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('py'))
+                mean_pm_y_galaxia = np.mean(pmVec)
+                sdev_pm_y_galaxia = np.std(pmVec)
+                pmVec = csvFree.convertStringVectorToDoubleVector(galaxiaData.getData('pz'))
+                mean_pm_z_galaxia = np.mean(pmVec)
+                sdev_pm_z_galaxia = np.std(pmVec)
+                pmVec = None
+                galaxiaData = None
 
 
             goodStars = None
 
+            gaiaFileName = gaiaFileNameGen % (pixels[iPixel].xLow, pixels[iPixel].xHigh, pixels[iPixel].yLow, pixels[iPixel].yHigh)
+            print('gaiaFileName = '+gaiaFileName)
+            hasXYZ = False
+            if not os.path.isfile(gaiaFileName):
+                hasXYZ = True
+                gaiaFileName = gaiaFileName[:-4]+'_xyz.csv'
+                print('gaiaFileName = '+gaiaFileName)
+                if not os.path.isfile(gaiaFileName):
+                    print('ERROR: gaiaFileName '+gaiaFileName+' does not exist')
+                    xy = XY(pixels[iPixel].xLow+0.0000001,pixels[iPixel].yLow+0.0000001)
+                    for tmpPix in pixelsOld:
+                        if tmpPix.isInside(xy):
+                            print('found old pixel containing xy = ',xy)
+                            splitPixelFile(tmpPix)
+                    gaiaFileName = gaiaFileNameGen % (pixels[iPixel].xLow, pixels[iPixel].xHigh, pixels[iPixel].yLow, pixels[iPixel].yHigh)
+                    hasXYZ = False
+                    if not os.path.isfile(gaiaFileName):
+                        gaiaFileName = gaiaFileName[:-4]+'_xyz.csv'
+                        hasXYZ = True
+                        print('gaiaFileName = '+gaiaFileName)
+                        if not os.path.isfile(gaiaFileName):
+                            print('ERROR: gaiaFileName '+gaiaFileName+' does not exist')
+                            STOP
+                gaiaData = csvFree.readCSVFile(gaiaFileName)
+            if not hasXYZ:
+                gaiaData = process(gaiaFileName)
+
+            if gaiaData.size() == 0:
+                nStarsGaia = 0
+                mean_pm_x_gaia = float("NaN")
+                sdev_pm_x_gaia = float("NaN")
+                mean_pm_y_gaia = float("NaN")
+                sdev_pm_y_gaia = float("NaN")
+                mean_pm_z_gaia = float("NaN")
+                sdev_pm_z_gaia = float("NaN")
+            else:
+                gbp = np.asarray(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('phot_bp_mean_mag')))
+                print('gaia gbp = ',gbp)
+                print('min(gbp) = ',np.min(gbp),', max(gbp) = ',np.max(gbp))
+                inGBPLimits = np.where(gbp <= maxGBPGalaxia)[0]
+                print('gbp.shape[0] = ',gbp.shape[0],': inGBPLimits = ',inGBPLimits.shape[0],': ',inGBPLimits)
+
+                cond = np.asarray(np.array(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('rv_template_logg')))[inGBPLimits] < 3.5)
+                gaiaGiants = cond.nonzero()[0]
+                print('gaiaGiants = ',gaiaGiants)
+                print('found ',len(gaiaGiants),' giants in gaiaData')
+                if withDwarfs:
+                    gaiaDwarfs = np.invert(cond).nonzero()[0]#np.where(logg >= 3.5)[0]
+                #gaiaGiants = np.where(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('rv_template_logg')) < 3.5)[0]
+
+                if withDwarfs:
+                    nStarsGaia = inGBPLimits.shape[0]
+                else:
+                    nStarsGaia = len(gaiaGiants)
+                print('found ',nGoodStarsGalaxia,' stars out of ',nStarsGalaxia,' in magnitude limits in Galaxia and ',nStarsGaia,' stars in GAIA out of ',gbp.shape[0])
+                pmVec = np.asarray(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('pmXGal')))[inGBPLimits]
+                if not withDwarfs:
+                    pmVec = pmVec[gaiaGiants]
+                mean_pm_x_gaia = np.mean(pmVec)
+                sdev_pm_x_gaia = np.std(pmVec)
+                pmVec = np.asarray(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('pmYGal')))[inGBPLimits]
+                if not withDwarfs:
+                    pmVec = pmVec[gaiaGiants]
+                mean_pm_y_gaia = np.mean(pmVec)
+                sdev_pm_y_gaia = np.std(pmVec)
+                pmVec = np.asarray(csvFree.convertStringVectorToDoubleVector(gaiaData.getData('pmZGal')))[inGBPLimits]
+                if not withDwarfs:
+                    pmVec = pmVec[gaiaGiants]
+                mean_pm_z_gaia = np.mean(pmVec)
+                sdev_pm_z_gaia = np.std(pmVec)
+                pmVec = None
+                gaiaData = None
+
             with open(fNameOut,'a') as f:
-                #iPixel,pixelxMin,pixelXMax,pixelYMin,pixelYMax,nStarsGaia,nStarsGalaxia,mean_pm_x_gaia,sdev_pm_x_gaia,mean_pm_y_gaia,sdev_pm_y_gaia,mean_pm_z_gaia,sdev_pm_z_gaia,mean_pm_x_galaxia,sdev_pm_x_galaxia,mean_pm_y_galaxia,sdev_pm_y_galaxia,mean_pm_z_galaxia,sdev_pm_z_galaxia
+                #iPixel,pixelxMin,pixelXMax,pixelYMin,pixelYMax,nStarsGaia,nGoodStarsGalaxia,mean_pm_x_gaia,sdev_pm_x_gaia,mean_pm_y_gaia,sdev_pm_y_gaia,mean_pm_z_gaia,sdev_pm_z_gaia,mean_pm_x_galaxia,sdev_pm_x_galaxia,mean_pm_y_galaxia,sdev_pm_y_galaxia,mean_pm_z_galaxia,sdev_pm_z_galaxia
                 f.write('%d,%.6f,%.6f,%.6f,%.6f,%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n' % (iPixel,pixels[iPixel].xLow,pixels[iPixel].xHigh,pixels[iPixel].yLow,pixels[iPixel].yHigh,nStarsGaia,nGoodStarsGalaxia,mean_pm_x_gaia,sdev_pm_x_gaia,mean_pm_y_gaia,sdev_pm_y_gaia,mean_pm_z_gaia,sdev_pm_z_gaia,mean_pm_x_galaxia,sdev_pm_x_galaxia,mean_pm_y_galaxia,sdev_pm_y_galaxia,mean_pm_z_galaxia,sdev_pm_z_galaxia))
+            #STOP
 
 if __name__ == '__main__':
-    compareNumberOfStars()
+#    compareNumberOfStars()
     compareProperMotions()
     if False:
         with open('/Users/azuri/temp/pixels.dat','w') as f:
