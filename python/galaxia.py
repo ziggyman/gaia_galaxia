@@ -23,6 +23,7 @@ class Galaxia(object):
     maxVMag = 27.
     lonMin = 5
     lonMax = 180
+    photoSys = 'UBV'
     tmpDir = 'ubv_Vlt%.1f_%.1f' % (maxVMag, fSample)
     print('tmpDir = ',tmpDir)
     lockSuffix = '_'+tmpDir+'_'
@@ -211,7 +212,7 @@ class Galaxia(object):
                     with open(parameterFileOut, 'w') as fOut:
                         fOut.write('outputFile '+outputFile+'\n')
                         fOut.write('outputDir '+outputDir+'\n')
-                        fOut.write('photoSys UBV\n')
+                        fOut.write('photoSys '+Galaxia.photoSys+'\n')
                         fOut.write('magcolorNames V,B-V\n')
                         fOut.write('appMagLimits[0] -1000\n')
                         fOut.write('appMagLimits[1] %.1f\n' % (Galaxia.maxVMag))
@@ -329,7 +330,7 @@ class Galaxia(object):
                             doFind = False
                             lockSuffix = Galaxia.lockSuffix + lonLatStr
 
-                            for filename in glob(os.path.join('/var/lock/',"lock*"+lockSuffix)):
+                            for filename in glob(os.path.join('/Users/azuri/lock/',"lock*"+lockSuffix)):
                                 os.remove(filename)
 
                             nStarsWritten += moveStarsToXY2.appendCSVDataToXYFiles(csv,
@@ -358,3 +359,85 @@ class Galaxia(object):
             timeEnd = time.time()
             duration = timeEnd-timeStart
             print('ran file <',ebfFileName,'> in ',int(duration),' s')
+
+    def aebv_factor(filterName):
+        if filterName == 'Landolt U':#LamEff = 3372, A/A(V) = 1.664
+            return 5.434
+        elif filterName == 'Landolt B':#LamEff = 4404, A/A(V) = 1.321
+            return  4.315
+        elif filterName == 'Landolt V':#LamEff = 5428, A/A(V) = 1.015
+            return 3.315
+        elif filterName == 'Landolt R':#LamEff =            6509    , A/A(V) = 0.819
+            return 2.673
+        elif filterName == 'Landolt I':#LamEff =           8090    , A/A(V) = 0.594   
+            return 1.940
+        elif filterName == 'CTIO U':#LamEff =              3683    , A/A(V) = 1.521   
+            return 4.968
+        elif filterName == 'CTIO B':#LamEff =              4393    , A/A(V) = 1.324   
+            return 4.325
+        elif filterName == 'CTIO V':#LamEff =             5519    , A/A(V) = 0.992   
+            return 3.240
+        elif filterName == 'CTIO R':#LamEff =             6602    , A/A(V) = 0.807   
+            return 2.634
+        elif filterName == 'CTIO I':#LamEff =              8046    , A/A(V) = 0.601   
+            return 1.962
+        elif filterName == 'UKIRT J':#LamEff =            12660    , A/A(V) = 0.276   
+            return 0.902
+        elif filterName == 'UKIRT H':#LamEff =            16732    , A/A(V) = 0.176   
+            return 0.576
+        elif filterName == 'UKIRT K':#LamEff =            22152    , A/A(V) = 0.112   
+            return 0.367
+        elif filterName == "UKIRT L'":#LamEff =           38079    , A/A(V) = 0.047   
+            return 0.153
+        elif filterName == "Gunn g":#LamEff =              5244    , A/A(V) = 1.065   
+            return 3.476
+        elif filterName == "Gunn r":#LamEff =              6707    , A/A(V) = 0.793   
+            return 2.590
+        elif filterName == "Gunn i":#LamEff =              7985    , A/A(V) = 0.610   
+            return 1.991
+        elif filterName == "Gunn z":#LamEff =              9055    , A/A(V) = 0.472   
+            return 1.540
+        elif filterName == "Spinrad R":#LamEff =           6993    , A/A(V) = 0.755   
+            return 2.467
+        elif filterName == "APM b_J":#LamEff =             4690    , A/A(V) = 1.236   
+            return 4.035
+        elif filterName == "Stromgren u":#LamEff =         3502    , A/A(V) = 1.602   
+            return 5.231
+        elif filterName == "Stromgren b":#LamEff =         4676    , A/A(V) = 1.240   
+            return 4.049
+        elif filterName == "Stromgren v":#LamEff =         4127    , A/A(V) = 1.394   
+            return 4.552
+        elif filterName == "Stromgren beta":#LamEff =      4861    , A/A(V) = 1.182   
+            return 3.858
+        elif filterName == "Stromgren y":#LamEff =         5479    , A/A(V) = 1.004   
+            return 3.277
+        elif filterName == "Sloan u'":#LamEff =            3546    , A/A(V) = 1.579   
+            return 5.155
+        elif filterName == "Sloan g'":#LamEff =            4925    , A/A(V) = 1.161   
+            return 3.793
+        elif filterName == "Sloan r'":#LamEff =            6335    , A/A(V) = 0.843   
+            return 2.751
+        elif filterName == "Sloan i'":#LamEff =            7799    , A/A(V) = 0.639   
+            return 2.086
+        elif filterName == "Sloan z'":#LamEff =            9294    , A/A(V) = 0.453   
+            return 1.479
+        elif filterName == "WFPC2 F300W":#LamEff =         3047    , A/A(V) = 1.791   
+            return 5.849
+        elif filterName == "WFPC2 F450W":#LamEff =         4711    , A/A(V) = 1.229   
+            return 4.015
+        elif filterName == "WFPC2 F555W":#LamEff =         5498    , A/A(V) = 0.996   
+            return 3.252
+        elif filterName == "WFPC2 F606W":#LamEff =         6042    , A/A(V) = 0.885   
+            return 2.889
+        elif filterName == "WFPC2 F702W":#LamEff =        7068    , A/A(V) = 0.746   
+            return 2.435
+        elif filterName == "WFPC2 F814W":#LamEff =         8066    , A/A(V) = 0.597   
+            return 1.948
+        elif filterName == "DSS-II g":#LamEff =            4814    , A/A(V) = 1.197   
+            return 3.907
+        elif filterName == "DSS-II r":#LamEff =            6571    , A/A(V) = 0.811   
+            return 2.649
+        elif filterName == "DSS-II i":#LamEff =            8183    , A/A(V) = 0.580   
+            return 1.893
+        else:
+            raise "aebv_factor: ERROR: Could not find filterName ",filterName)
