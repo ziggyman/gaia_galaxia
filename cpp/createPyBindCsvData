@@ -8,14 +8,14 @@
 #g++ -g -shared -std=c++11 -undefined dynamic_lookup `python2 -m pybind11 --includes` galaxyMath.cc parameters.cc csvData.cc ../python/csvFree.cc -I/opt/local/include -L/usr/local/lib -Wno-c++11-extensions -o csvFree2.so
 #cp csvFree2.so ../python/
 
-rm csvData.so
-rm ../python/csvData.so
+mv csvData.so csvData.so.bak
+mv ../python/csvData.so ../python/csvData.so.bak
 clang++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` csvData.cc ../python/csvData.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -Wno-c++11-extensions -o csvData.so
 #g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` csvData.cc ../python/csvData.cc -I/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk/usr/include -I/opt/local/include -I/opt/local/include/gcc9/c++ -L/usr/local/lib -Wno-c++11-extensions -o csvData.so
 cp csvData.so ../python/
 
-rm csvFree.so
-rm ../python/csvFree.so
+mv csvFree.so csvFree.so.bak
+mv ../python/csvFree.so ../python/csvFree.so.bak
 clang++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` csvData.cc ../python/csvFree.cc -I/opt/local/include -I/Users/azuri/programs/mathgl-2.4/include/ -L/usr/local/lib -Wno-c++11-extensions -o csvFree.so
 #g++ -g -shared -std=c++11 -undefined dynamic_lookup `python3 -m pybind11 --includes` csvData.cc ../python/csvFree.cc -I/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk/usr/include -I/opt/local/include -I/opt/local/include/gcc9/c++ -L/usr/local/lib -Wno-c++11-extensions -o csvFree.so
 cp csvFree.so ../python/

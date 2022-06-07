@@ -6,6 +6,7 @@ int CSVData::findKeywordPos(string const& keyword) const{
         if (itHeader->compare(keyword) == 0)//{
             return keywordPos;
     }
+    throw std::runtime_error("CSVData::findKeywordPos: keyword "+keyword+" not found in header");
     return -1;
 }
 
@@ -250,18 +251,18 @@ void CSVData::append(CSVData const& csv){
 }
 
 vector<int> CSVData::find(string const& keyword, string const& value, long startIndex) const{
-    cout << "CSVData::find: keyword = " << keyword << ", value = " << value << ", startIndex = " << to_string(startIndex) << endl;
+    //cout << "CSVData::find: keyword = " << keyword << ", value = " << value << ", startIndex = " << to_string(startIndex) << endl;
     unsigned keywordPos = findKeywordPos(keyword);
     vector<int> vecOut(0);
     bool found = false;
     int startIndexTemp = startIndex;
     if (startIndexTemp < 0){
-        cout << "CSVData::find: PROBLEM: startIndex < 0" << endl;
+        //cout << "CSVData::find: PROBLEM: startIndex < 0" << endl;
         startIndexTemp = 0;
     }
     long i = startIndexTemp;
-    cout << "CSVData::find: i = " << to_string(startIndexTemp) << endl;
-    cout << "CSVData::find: this->size() = " << to_string(this->size()) << endl;
+    //cout << "CSVData::find: i = " << to_string(startIndexTemp) << endl;
+    //cout << "CSVData::find: this->size() = " << to_string(this->size()) << endl;
     if ((this->size() == 0) || (this->size() <= startIndexTemp)){
         vecOut.push_back(-1);
         return vecOut;
@@ -271,14 +272,14 @@ vector<int> CSVData::find(string const& keyword, string const& value, long start
         if ((*it)[keywordPos].compare(value) == 0){
             vecOut.push_back(i);
             found = true;
-            cout << "CSVData::find: value <" << value << "> found at position " << to_string(i) << endl;
+            //cout << "CSVData::find: value <" << value << "> found at position " << to_string(i) << endl;
         }
     }
     if (found){
-        cout << "CSVData::find: found == True" << endl;
+        //cout << "CSVData::find: found == True" << endl;
         return vecOut;
     }
-    cout << "CSVData::find: found == False" << endl;
+    //cout << "CSVData::find: found == False" << endl;
     vecOut.push_back(-1);
     return vecOut;
 }
@@ -552,7 +553,7 @@ int countCommas(string const& fileName){
 }
 
 CSVData readCSVFile(string const& fileName, string const& delimiter, bool const& removeBadLines){
-    cout << "readCSVFile: delimiter = <" << delimiter << ">" << endl;
+    //cout << "readCSVFile: delimiter = <" << delimiter << ">" << endl;
     ifstream inStream(fileName);
     if (!inStream.is_open()){
         cout << "file with name <" << fileName << "> is not open" << endl;
@@ -568,7 +569,7 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
         int iLine = 0;
         string line, previousLine;
         while (getline(inStream, line)){
-//            cout << "readCSVFile: line = <" << line << ">" << endl;
+            cout << "readCSVFile: line = <" << line << ">" << endl;
             int nCommas = 0;
             int nQuotes = count(line.begin(), line.end(), '"');
             while (!isEven(nQuotes)){
@@ -576,7 +577,7 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
                 getline(inStream, newLine);
                 line += newLine;
                 nQuotes = count(line.begin(), line.end(), '"');
-//                throw std::runtime_error("found uneven number of quotes ("+to_string(nQuotes)+") in line <"+line+">");
+                throw std::runtime_error("found uneven number of quotes ("+to_string(nQuotes)+") in line <"+line+">");
             }
             line = replaceDelimiterInsideQuotes(line, delimiter);
             string lineSplit(line);
@@ -590,7 +591,7 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
             vector<string> elems = split(lineSplit,delimiter);
             for (auto itElem=elems.begin(); itElem!=elems.end(); ++itElem){
                 stripUnicode(*itElem);
-//                cout << "elem = " << *itElem << endl;
+                //cout << "elem = " << *itElem << endl;
             }
             nCommas = elems.size()-1;//count(line.begin(), line.end(), delimiter);
             //cout << "line contains " << nCommas << " commas" << endl;
@@ -599,7 +600,7 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
                 csvData.header = elems;
                 iLine = 1;
                 previousLine = line;
-                cout << "readCSVFile: " << fileName << " contains " << csvData.header.size() << " columns" << endl;
+                //cout << "readCSVFile: " << fileName << " contains " << csvData.header.size() << " columns" << endl;
                 continue;
             }
             if (nCommas != csvData.header.size()-1){
@@ -657,6 +658,10 @@ CSVData readCSVFile(string const& fileName, string const& delimiter, bool const&
         cout << "fileName <" << fileName << "> read in " << ((end.tv_sec * 1000000 + end.tv_usec)
                         - (start.tv_sec * 1000000 + start.tv_usec))/1000000 << " s" << endl;
         cout << "csvData.data.size() = " << csvData.data.size() << endl;
+        cout << "csvData.header = ";
+        for (unsigned i=0; i < csvData.header.size(); ++i)
+            cout << csvData.header[i] << ", ";
+        cout << endl;
     }
     else{
         cout << "ERROR: fileName <" << fileName << "> not open" << endl;
